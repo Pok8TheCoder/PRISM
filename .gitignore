@@ -1,0 +1,38 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python / Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Data & Models
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+models/checkpoints/*
+!models/checkpoints/.gitkeep
+*.pth
+*.pt
+*.onnx
+*.parquet
+*.h5
+*.hdf5
+*.pcap
+*.pcapng
+
+# Environment & Config
+.env
+.env.local
+*.log
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
