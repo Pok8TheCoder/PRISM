@@ -1,206 +1,228 @@
-"""Adversarial training loop orchestrator.
+"""Adversarial training loop orchestrator for the isolated PRISM Docker lab.
 
 Architecture:
-  - attacker-bot container (172.17.0.3) runs attack scripts against target
-  - target-server container (172.17.0.2) runs tcpdump on eth0
-  - Host runs world model inference on GPU + retrains on evasion data
+  - attacker-bot -> target-server over internal DNS (prism-lab network)
+  - target-server runs tcpdump; host copies PCAPs for GPU inference
+  - benign-client generates background traffic on the same network
 
 Loop:
-  1. Start tcpdump on target-server
-  2. Run attack via `docker exec attacker-bot python3 attack_script.py`
-  3. Stop tcpdump, copy PCAP to host
-  4. Extract flow features from PCAP
-  5. World model predicts: attack vs benign
-  6. If detected -> bot tries next evasion strategy
-  7. If evaded -> traffic labeled and added to training dataset
-  8. Retrain model on accumulated evasion data
+  1. Ensure isolated lab is running (docker compose, internal network)
+  2. Start tcpdump on target-server
+  3. Run catalog attack bot inside attacker-bot
+  4. Multi-class world model scores traffic
+  5. On detection -> escalate evasion; on evasion/misclass -> save to missed/
+  6. Retrain on accumulated missed samples
 """
 
-import torch
-import numpy as np
-import pandas as pd
+from __future__ import annotations
+
+import json
+import shutil
 import subprocess
 import time
-import json
+from datetime import datetime, timezone
 from pathlib import Path
-from collections import defaultdict
 
+import numpy as np
+import torch
+import torch.nn as nn
+from sklearn.preprocessing import StandardScaler
+
+from src.adversarial.lab_config import (
+    ATTACKER_CONTAINER,
+    BATCH_SIZE,
+    CHECKPOINT_PATH,
+    DEFAULT_ATTACK_CLASSES,
+    DETECTION_THRESHOLD,
+    EPOCHS_PER_CYCLE,
+    MAX_EVASION_ATTEMPTS,
+    MISSED_DIR,
+    RETRAIN_BATCHES,
+    SAVE_DIR,
+    TARGET_HOST,
+)
+from src.adversarial.lab_manager import ensure_lab_running, lab_status, verify_lab_connectivity
 from src.adversarial.traffic_capture import TrafficCapture
-from src.adversarial.attacker_bot import AttackStrategy, EvasionTactic, STRATEGY_CHAIN
-from src.model.world_model import WorldModelTransformer, FEATURE_COLS, NUM_FEATURES, SEQ_LEN
-
-TARGET_IP = "172.17.0.2"
-ATTACKER_CONTAINER = "attacker-bot"
-TARGET_CONTAINER = "target-server"
-EPOCHS_PER_CYCLE = 10
-BATCH_SIZE = 64
-MAX_EVASION_ATTEMPTS = 4
-DETECTION_THRESHOLD = 0.5
-SAVE_DIR = Path("data/raw/adversarial")
-CHECKPOINT_PATH = Path("models/checkpoints/world_model_poc.pth")
-
-STRATEGY_TO_SCRIPT = {
-    AttackStrategy.SSH_BRUTEFORCE: "ssh_bruteforce",
-    AttackStrategy.PORT_SCAN_SEQUENTIAL: "port_scan_sequential",
-    AttackStrategy.PORT_SCAN_RANDOM: "port_scan_random",
-    AttackStrategy.HTTP_FLOOD: "http_flood",
-    AttackStrategy.SLOW_LORIS: "slow_loris",
-    AttackStrategy.SYN_SCAN_STEALTH: "syn_scan_stealth",
-}
+from src.model.attack_catalog import get_evasion_chains, get_mitre_map
+from src.model.world_model_multiclass import (
+    CLASS_NAMES,
+    CLASS_TO_IDX,
+    MultiClassWorldModel,
+    NUM_FEATURES,
+    SEQ_LEN,
+    pcap_to_rows,
+    predict_live,
+    rows_to_matrix,
+)
 
 
-def run_attack_in_container(strategy_name: str, evasion_name: str) -> dict:
+def run_attack_in_container(class_id: str, evasion_name: str) -> dict:
     """Run attack script inside the attacker-bot Docker container."""
     cmd = [
         "docker", "exec", ATTACKER_CONTAINER,
-        "python3", "/tmp/attack_script.py",
-        TARGET_IP, strategy_name, evasion_name,
+        "python3", "-m", "src.adversarial.attack_script",
+        TARGET_HOST, class_id, evasion_name,
     ]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        output = result.stdout.strip()
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        output = (result.stdout or "") + (result.stderr or "")
         flows = 0
-        for line in output.split("\n"):
-            if "DONE|flows=" in line:
-                flows = int(line.split("flows=")[1])
-        return {"flows": flows, "success": True}
-    except subprocess.TimeoutExpired:
-        return {"flows": 0, "success": False}
-    except Exception as e:
-        return {"flows": 0, "success": False, "error": str(e)}
-
-
-def pcap_to_features(pcap_path: Path) -> np.ndarray:
-    """Convert PCAP to flow-level feature matrix using Scapy."""
-    from scapy.all import rdpcap, TCP, UDP, IP
-
-    packets = rdpcap(str(pcap_path))
-    flows = defaultdict(list)
-
-    for pkt in packets:
-        if IP not in pkt:
-            continue
-        ip = pkt[IP]
-        proto = "TCP" if TCP in pkt else ("UDP" if UDP in pkt else "Other")
-
-        if TCP in pkt:
-            l4 = pkt[TCP]
-            key = (ip.src, l4.sport, ip.dst, l4.dport, proto)
-            flags = l4.flags
-        elif UDP in pkt:
-            l4 = pkt[UDP]
-            key = (ip.src, l4.sport, ip.dst, l4.dport, proto)
-            flags = 0
-        else:
-            key = (ip.src, 0, ip.dst, 0, proto)
-            flags = 0
-
-        flows[key].append({
-            "time": float(pkt.time),
-            "len": len(pkt),
-            "proto": proto,
-            "sport": key[1],
-            "dport": key[3],
-            "flags": int(flags) if flags else 0,
-        })
-
-    feature_rows = []
-    for key, pkts in flows.items():
-        pkts.sort(key=lambda p: p["time"])
-        times = [p["time"] for p in pkts]
-        iats = np.diff(times) if len(times) > 1 else [0]
-        lengths = [p["len"] for p in pkts]
-        flags_list = [p["flags"] for p in pkts]
-
-        dst_port = pkts[0]["dport"]
-        protocol = 6 if pkts[0]["proto"] == "TCP" else 17
-
-        syn_cnt = sum(1 for f in flags_list if f & 0x02)
-        fin_cnt = sum(1 for f in flags_list if f & 0x01)
-        rst_cnt = sum(1 for f in flags_list if f & 0x04)
-        psh_cnt = sum(1 for f in flags_list if f & 0x08)
-        ack_cnt = sum(1 for f in flags_list if f & 0x10)
-
-        duration = times[-1] - times[0] if len(times) > 1 else 0
-
-        row = {
-            "Dst Port": dst_port,
-            "Protocol": protocol,
-            "Flow Duration": duration * 1e6,
-            "Tot Fwd Pkts": len(pkts),
-            "Tot Bwd Pkts": 0,
-            "Fwd Pkt Len Max": max(lengths),
-            "Fwd Pkt Len Min": min(lengths),
-            "Fwd Pkt Len Mean": np.mean(lengths),
-            "Bwd Pkt Len Max": 0, "Bwd Pkt Len Min": 0, "Bwd Pkt Len Std": 0,
-            "Flow Byts/s": sum(lengths) / (duration + 1e-6),
-            "Flow Pkts/s": len(pkts) / (duration + 1e-6),
-            "Flow IAT Mean": np.mean(iats) if len(iats) > 0 else 0,
-            "Flow IAT Std": np.std(iats) if len(iats) > 0 else 0,
-            "SYN Flag Cnt": syn_cnt,
-            "FIN Flag Cnt": fin_cnt,
-            "RST Flag Cnt": rst_cnt,
-            "PSH Flag Cnt": psh_cnt,
-            "ACK Flag Cnt": ack_cnt,
+        resolved_class = class_id
+        for line in output.splitlines():
+            if line.startswith("DONE|"):
+                parts = dict(p.split("=", 1) for p in line.split("|")[1:] if "=" in p)
+                flows = int(parts.get("flows", 0))
+                resolved_class = parts.get("class", class_id)
+        return {
+            "flows": flows,
+            "class_id": resolved_class,
+            "success": result.returncode == 0 and flows >= 0,
+            "output": output.strip(),
         }
-        feature_rows.append(row)
-
-    if not feature_rows:
-        return np.array([]).reshape(0, NUM_FEATURES)
-
-    df = pd.DataFrame(feature_rows)
-    for col in FEATURE_COLS:
-        if col not in df.columns:
-            df[col] = 0.0
-    df = df[FEATURE_COLS].fillna(0).replace([np.inf, -np.inf], 0)
-    return df.values.astype(np.float32)
+    except subprocess.TimeoutExpired:
+        return {"flows": 0, "class_id": class_id, "success": False, "error": "timeout"}
+    except Exception as exc:
+        return {"flows": 0, "class_id": class_id, "success": False, "error": str(exc)}
 
 
-def predict_attack(model, features, device):
-    """Run world model on captured features. Returns (probability, predicted_label)."""
-    if len(features) < SEQ_LEN:
-        padding = np.zeros((SEQ_LEN - len(features), NUM_FEATURES), dtype=np.float32)
-        features = np.vstack([padding, features])
-    if len(features) > SEQ_LEN:
-        features = features[-SEQ_LEN:]
+def load_model_and_scaler(device: torch.device):
+    model = MultiClassWorldModel().to(device)
+    scaler = StandardScaler()
+    scaler.mean_ = np.zeros(NUM_FEATURES, dtype=np.float64)
+    scaler.scale_ = np.ones(NUM_FEATURES, dtype=np.float64)
 
-    x = torch.from_numpy(features).unsqueeze(0).to(device)
-    model.eval()
-    with torch.no_grad():
-        _, logits = model(x)
-        probs = torch.softmax(logits, dim=1)
-        attack_prob = probs[0, 1].item()
+    if CHECKPOINT_PATH.exists():
+        ckpt = torch.load(CHECKPOINT_PATH, map_location=device, weights_only=False)
+        state = ckpt["model"]
+        model_state = model.state_dict()
+        compatible = (
+            "input_proj.weight" in state
+            and "classify_head.weight" in state
+            and state["input_proj.weight"].shape == model_state["input_proj.weight"].shape
+            and state["classify_head.weight"].shape == model_state["classify_head.weight"].shape
+        )
+        if compatible:
+            model.load_state_dict(state)
+            mean = np.array(ckpt["scaler_mean"], dtype=np.float64)
+            scale = np.array(ckpt["scaler_std"], dtype=np.float64)
+            if len(mean) == NUM_FEATURES:
+                scaler.mean_ = mean
+                scaler.scale_ = scale
+            print(f"Loaded multi-class checkpoint: {CHECKPOINT_PATH}")
+        else:
+            print(
+                f"WARNING: Checkpoint shape mismatch "
+                f"(features={model.input_proj.in_features}, "
+                f"classes={model.classify_head.out_features}). "
+                "Using random weights — retrain with "
+                "`venv\\Scripts\\python.exe src/model/world_model_multiclass.py`."
+            )
+    else:
+        print(f"WARNING: No checkpoint at {CHECKPOINT_PATH}. Using random weights.")
 
-    return attack_prob, attack_prob > DETECTION_THRESHOLD
+    return model, scaler
 
 
-def retrain_model(model, new_features, device, epochs=EPOCHS_PER_CYCLE):
-    """Fine-tune the world model on newly captured evasion traffic."""
-    if len(new_features) < SEQ_LEN:
-        print("  Not enough data for retraining. Skipping.")
-        return
+def predict_attack(model, scaler, features: np.ndarray, device: torch.device):
+    pred_idx, probs, _ = predict_live(model, scaler, features, device)
+    benign_idx = CLASS_TO_IDX["Benign"]
+    pred_class = CLASS_NAMES[pred_idx]
+    confidence = float(probs[pred_idx])
+    attack_prob = float(1.0 - probs[benign_idx])
+    detected = pred_idx != benign_idx and confidence >= DETECTION_THRESHOLD
+    return {
+        "pred_idx": pred_idx,
+        "pred_class": pred_class,
+        "confidence": confidence,
+        "attack_prob": attack_prob,
+        "detected": detected,
+        "probs": probs,
+    }
 
+
+def save_missed_sample(
+    pcap_path: Path,
+    features: np.ndarray,
+    true_class_id: str,
+    prediction: dict,
+    reason: str,
+    evasion: str,
+    round_num: int,
+    attempt: int,
+) -> Path:
+    """Persist PCAP + features for dashboard retrain (Step 3)."""
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_dir = MISSED_DIR / true_class_id
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    stem = f"r{round_num}_a{attempt}_{true_class_id}_{evasion}_{ts}"
+    dst_pcap = out_dir / f"{stem}.pcap"
+    shutil.copy2(pcap_path, dst_pcap)
+
+    np.save(out_dir / f"{stem}.npy", features)
+
+    meta = {
+        "timestamp": ts,
+        "true_class_id": true_class_id,
+        "predicted_class": prediction["pred_class"],
+        "confidence": prediction["confidence"],
+        "attack_prob": prediction["attack_prob"],
+        "reason": reason,
+        "evasion": evasion,
+        "round": round_num,
+        "attempt": attempt,
+        "pcap": dst_pcap.name,
+        "features": f"{stem}.npy",
+        "class_probs": {
+            CLASS_NAMES[i]: float(prediction["probs"][i])
+            for i in range(len(CLASS_NAMES))
+        },
+    }
+    meta_path = out_dir / f"{stem}.json"
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=2)
+
+    print(f"  Saved missed sample -> {meta_path}")
+    return meta_path
+
+
+def retrain_model(
+    model,
+    scaler: StandardScaler,
+    feature_batches: list[np.ndarray],
+    label_indices: list[int],
+    device: torch.device,
+    epochs: int = EPOCHS_PER_CYCLE,
+):
     sequences = []
-    for i in range(len(new_features) - SEQ_LEN):
-        sequences.append(new_features[i:i + SEQ_LEN])
+    labels = []
+
+    for feats, class_idx in zip(feature_batches, label_indices):
+        if len(feats) < SEQ_LEN:
+            continue
+        norm = ((feats - scaler.mean_) / (scaler.scale_ + 1e-8)).astype(np.float32)
+        for i in range(len(norm) - SEQ_LEN):
+            sequences.append(norm[i:i + SEQ_LEN])
+            labels.append(class_idx)
 
     if not sequences:
+        print("  Not enough sequence data for retraining. Skipping.")
         return
 
     X = np.array(sequences, dtype=np.float32)
-    y = np.ones(len(sequences), dtype=np.int64)
+    y = np.array(labels, dtype=np.int64)
 
     X_t = torch.from_numpy(X).to(device)
     y_t = torch.from_numpy(y).to(device)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss()
 
     model.train()
     n = X_t.shape[0]
     for epoch in range(epochs):
         perm = torch.randperm(n, device=device)
-        total_loss = 0
+        total_loss = 0.0
         for i in range(0, n, BATCH_SIZE):
             idx = perm[i:i + BATCH_SIZE]
             optimizer.zero_grad()
@@ -210,117 +232,155 @@ def retrain_model(model, new_features, device, epochs=EPOCHS_PER_CYCLE):
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
             total_loss += loss.item() * len(idx)
-        print(f"  Retrain Epoch {epoch+1}/{epochs} | Loss: {total_loss/n:.4f}")
+        print(f"  Retrain Epoch {epoch + 1}/{epochs} | Loss: {total_loss / n:.4f}")
 
-    torch.save(model.state_dict(), CHECKPOINT_PATH)
-    print(f"  Updated model saved to {CHECKPOINT_PATH}")
+    CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(
+        {
+            "model": model.state_dict(),
+            "scaler_mean": scaler.mean_,
+            "scaler_std": scaler.scale_,
+        },
+        CHECKPOINT_PATH,
+    )
+    print(f"  Updated checkpoint -> {CHECKPOINT_PATH}")
 
 
-def run_adversarial_loop(num_rounds: int = 20):
+def run_adversarial_loop(num_rounds: int = 20, attack_classes: list[str] | None = None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    classes = attack_classes or DEFAULT_ATTACK_CLASSES
+    evasion_chains = get_evasion_chains()
+    mitre_map = get_mitre_map()
+
     print(f"Adversarial Training Loop | Device: {device}")
-    print(f"Target: {TARGET_IP} (container: {TARGET_CONTAINER})")
-    print(f"Attacker: {ATTACKER_CONTAINER}")
+    print(f"Target host: {TARGET_HOST} (isolated prism-lab DNS)")
+    print(f"Attack rotation: {len(classes)} catalog classes")
     print("=" * 70)
 
-    model = WorldModelTransformer().to(device)
-    if CHECKPOINT_PATH.exists():
-        model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=device))
-        print("Loaded pre-trained world model.")
-    else:
-        print("WARNING: No pre-trained model found. Using random init.")
+    if not ensure_lab_running():
+        print("ERROR: Could not start Docker lab. Is Docker Desktop running?")
+        return
 
-    capture = TrafficCapture(container_name=TARGET_CONTAINER)
+    status = lab_status()
+    print("Container status:", status)
+    if not verify_lab_connectivity():
+        print("ERROR: Lab connectivity verification failed.")
+        return
 
-    strategies = [
-        AttackStrategy.SSH_BRUTEFORCE,
-        AttackStrategy.PORT_SCAN_SEQUENTIAL,
-        AttackStrategy.HTTP_FLOOD,
-        AttackStrategy.SYN_SCAN_STEALTH,
-    ]
+    model, scaler = load_model_and_scaler(device)
+    capture = TrafficCapture()
 
-    evasion_data = []
-    stats = {"total_attacks": 0, "detected": 0, "evaded": 0, "retrain_cycles": 0}
+    missed_features: list[np.ndarray] = []
+    missed_labels: list[int] = []
+    stats = {
+        "total_attacks": 0,
+        "detected": 0,
+        "evaded": 0,
+        "misclassified": 0,
+        "retrain_cycles": 0,
+        "missed_saved": 0,
+    }
 
     for round_num in range(1, num_rounds + 1):
-        strategy = strategies[(round_num - 1) % len(strategies)]
-        evasion = EvasionTactic.NONE
+        class_id = classes[(round_num - 1) % len(classes)]
+        chain = evasion_chains.get(class_id, [])
+        evasion = "none"
         evasion_idx = 0
         attempt = 0
 
-        print(f"\n--- Round {round_num}/{num_rounds} | Strategy: {strategy.value} ---")
+        print(f"\n--- Round {round_num}/{num_rounds} | Class: {class_id} ---")
 
         while attempt <= MAX_EVASION_ATTEMPTS:
             attempt += 1
             stats["total_attacks"] += 1
-            pcap_name = f"r{round_num}_a{attempt}_{strategy.value}_{evasion.value}.pcap"
+            pcap_name = f"r{round_num}_a{attempt}_{class_id}_{evasion}.pcap"
 
-            print(f"  Attempt {attempt} | Evasion: {evasion.value}")
+            print(f"  Attempt {attempt} | Evasion: {evasion}")
 
-            # Start capture
             capture.start_capture(pcap_name)
-
-            # Run attack inside attacker container
-            script_name = STRATEGY_TO_SCRIPT.get(strategy, "port_scan_sequential")
-            attack_result = run_attack_in_container(script_name, evasion.value)
+            attack_result = run_attack_in_container(class_id, evasion)
             print(f"  Attack result: {attack_result}")
 
-            # Stop capture and get pcap
             time.sleep(1)
             pcap_path = capture.stop_capture()
 
             if pcap_path is None or not pcap_path.exists() or pcap_path.stat().st_size == 0:
-                print("  No traffic captured. Moving to next strategy.")
+                print("  No traffic captured. Moving to next class.")
                 break
 
             print(f"  Captured: {pcap_path.name} ({pcap_path.stat().st_size / 1024:.1f} KB)")
 
-            features = pcap_to_features(pcap_path)
+            rows = pcap_to_rows(pcap_path)
+            features = rows_to_matrix(rows)
             if len(features) == 0:
-                print("  No flows extracted. Moving to next strategy.")
+                print("  No flows extracted. Moving to next class.")
                 break
 
             print(f"  Extracted {len(features)} flows")
 
-            attack_prob, detected = predict_attack(model, features, device)
+            prediction = predict_attack(model, scaler, features, device)
+            true_idx = CLASS_TO_IDX.get(class_id)
+            if true_idx is None:
+                print(f"  WARNING: {class_id} not in CLASS_TO_IDX; skipping label checks.")
+                true_idx = prediction["pred_idx"]
 
-            print(f"  Model prediction: attack_prob={attack_prob:.4f} -> {'DETECTED' if detected else 'EVADED'}")
+            tactic, mitre_label = mitre_map.get(prediction["pred_class"], ("", ""))
+            print(
+                f"  Prediction: {prediction['pred_class']} "
+                f"(conf={prediction['confidence']:.3f}, attack_prob={prediction['attack_prob']:.3f}) "
+                f"-> {'DETECTED' if prediction['detected'] else 'EVADED'}"
+            )
+            print(f"  MITRE: {tactic} / {mitre_label}")
 
-            if detected:
+            correct_class = prediction["pred_class"] == class_id
+
+            if prediction["detected"] and correct_class:
                 stats["detected"] += 1
-                chain = STRATEGY_CHAIN.get(strategy, [])
                 if evasion_idx >= len(chain):
                     print("  No more evasion tactics. Model wins this round.")
                     break
                 evasion = chain[evasion_idx]
                 evasion_idx += 1
-                print(f"  Trying next evasion: {evasion.value}")
-            else:
-                stats["evaded"] += 1
-                print("  EVASION SUCCESSFUL! Adding to training data.")
-                evasion_data.append(features)
+                print(f"  Trying next evasion: {evasion}")
+                continue
 
-                if len(evasion_data) >= 3:
-                    print("  Retraining model on evasion data...")
-                    all_evasion = np.vstack(evasion_data)
-                    retrain_model(model, all_evasion, device)
-                    evasion_data = []
-                    stats["retrain_cycles"] += 1
-                break
+            if not prediction["detected"]:
+                stats["evaded"] += 1
+                reason = "evaded"
+            else:
+                stats["misclassified"] += 1
+                reason = "misclassified"
+
+            save_missed_sample(
+                pcap_path, features, class_id, prediction, reason, evasion, round_num, attempt,
+            )
+            stats["missed_saved"] += 1
+            missed_features.append(features)
+            missed_labels.append(true_idx)
+
+            if len(missed_features) >= RETRAIN_BATCHES:
+                print("  Retraining on missed/evaded samples...")
+                retrain_model(model, scaler, missed_features, missed_labels, device)
+                missed_features = []
+                missed_labels = []
+                stats["retrain_cycles"] += 1
+            break
 
     print("\n" + "=" * 70)
     print("Adversarial Training Complete")
-    print(f"  Total Attacks:   {stats['total_attacks']}")
-    print(f"  Detected:        {stats['detected']}")
-    print(f"  Evaded:          {stats['evaded']}")
-    print(f"  Retrain Cycles:  {stats['retrain_cycles']}")
-    print(f"  Detection Rate:  {stats['detected']/max(stats['total_attacks'],1)*100:.1f}%")
-    print(f"  Evasion Rate:    {stats['evaded']/max(stats['total_attacks'],1)*100:.1f}%")
+    print(f"  Total Attacks:     {stats['total_attacks']}")
+    print(f"  Detected (correct):{stats['detected']}")
+    print(f"  Evaded:            {stats['evaded']}")
+    print(f"  Misclassified:     {stats['misclassified']}")
+    print(f"  Missed saved:      {stats['missed_saved']}")
+    print(f"  Retrain cycles:    {stats['retrain_cycles']}")
+    total = max(stats["total_attacks"], 1)
+    print(f"  Detection rate:    {stats['detected'] / total * 100:.1f}%")
 
     stats_path = SAVE_DIR / "adversarial_stats.json"
-    with open(stats_path, "w") as f:
+    with open(stats_path, "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
-    print(f"  Stats saved to {stats_path}")
+    print(f"  Stats saved -> {stats_path}")
 
 
 if __name__ == "__main__":

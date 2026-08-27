@@ -180,11 +180,31 @@ python src/model/world_model_multiclass.py
 
 ### 3. Run Adversarial Self-Fortification Loop
 ```powershell
-# Requires Docker Desktop running
+# Requires Docker Desktop running — starts isolated lab automatically
+python scripts/lab_ctl.py up          # build + start internal network lab
+python scripts/lab_ctl.py verify      # probe attack target-server from attacker-bot
 python -m src.adversarial.training_loop
+python scripts/lab_ctl.py down        # stop lab when finished
 ```
 
-### 4. Launch Web Dashboard
+### 4. Launch SOC Dashboard
 ```powershell
-streamlit run src/ui/app.py
+# Activate venv first
+.\venv\Scripts\activate
+
+# Start isolated lab (optional — dashboard can start it from sidebar)
+python scripts/lab_ctl.py up
+
+# Launch web dashboard (Streamlit + Plotly, fully offline)
+python run_dashboard.py
+# or: streamlit run src/ui/app.py   (must run from repo root)
 ```
+
+Dashboard tabs:
+- **PS Demo** — upload PCAP/CSV, K-step forecast, MITRE stage, SHAP/attention driving features (offline)
+- **Live Monitor** — attack probability timeline, K-step forecast, flow stream, review-before-alert
+- **Attack Runbook** — 5-step wizard: lab check → configure → run → review → save/retrain
+- **Missed & Retrain** — evaded/misclassified samples saved for self-healing
+- **MITRE Catalog** — browse all 222 techniques with detectability tags
+
+Feature schema: **27 columns** (20 CIC flow + 7 packet-level: TTL, TCP window, fragments, payload, retransmits).

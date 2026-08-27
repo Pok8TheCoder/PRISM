@@ -1,12 +1,7 @@
 """Multi-class World Model: detects attack TYPE and maps to MITRE ATT&CK stage.
 
-Classes:
-  0 = Benign
-  1 = SSH_Bruteforce     -> MITRE: Initial Access (T1110)
-  2 = Port_Scan          -> MITRE: Reconnaissance (T1046)
-  3 = HTTP_Flood         -> MITRE: Impact (T1499)
-  4 = Slow_Loris         -> MITRE: Impact (T1499)
-  5 = Infiltration       -> MITRE: Lateral Movement (T1021)
+Class definitions are loaded dynamically from data/mitre_network_catalog.json
+(generated from configs/attack_catalog.yaml).
 """
 
 import torch
@@ -17,10 +12,21 @@ import subprocess
 import time
 import json
 from pathlib import Path
-from collections import defaultdict
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix
+
+from src.model.attack_catalog import (
+    get_class_names,
+    get_class_to_idx,
+    get_mitre_map,
+    get_num_classes,
+    get_legacy_strategy_map,
+    resolve_pcap_class,
+    get_bot_class_ids,
+)
+from src.pipeline.extract import pcap_to_rows, rows_to_matrix
+from src.pipeline.features import FEATURE_COLS, NUM_FEATURES
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 DATA_DIR = Path("data/raw")
@@ -39,36 +45,15 @@ NHEAD       = 4
 NLAYERS     = 3
 DROPOUT     = 0.1
 
-FEATURE_COLS = [
-    'Dst Port', 'Protocol', 'Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts',
-    'Fwd Pkt Len Max', 'Fwd Pkt Len Min', 'Fwd Pkt Len Mean',
-    'Bwd Pkt Len Max', 'Bwd Pkt Len Min', 'Bwd Pkt Len Std',
-    'Flow Byts/s', 'Flow Pkts/s', 'Flow IAT Mean', 'Flow IAT Std',
-    'SYN Flag Cnt', 'FIN Flag Cnt', 'RST Flag Cnt', 'PSH Flag Cnt', 'ACK Flag Cnt'
-]
-NUM_FEATURES = len(FEATURE_COLS)
+# FEATURE_COLS / NUM_FEATURES imported from src.pipeline.features (flow + packet)
 
-# ── Class / MITRE mapping ─────────────────────────────────────────────────────
-CLASS_NAMES = [
-    "Benign",
-    "SSH_Bruteforce",
-    "Port_Scan",
-    "HTTP_Flood",
-    "Slow_Loris",
-    "Infiltration",
-]
-NUM_CLASSES = len(CLASS_NAMES)
-
-MITRE_MAP = {
-    "Benign":         ("—",                    "—"),
-    "SSH_Bruteforce": ("Initial Access",        "T1110 – Brute Force"),
-    "Port_Scan":      ("Reconnaissance",        "T1046 – Network Service Scanning"),
-    "HTTP_Flood":     ("Impact",                "T1499 – Endpoint DoS"),
-    "Slow_Loris":     ("Impact",                "T1499 – Endpoint DoS"),
-    "Infiltration":   ("Lateral Movement",      "T1021 – Remote Services"),
-}
-
-CLASS_TO_IDX = {c: i for i, c in enumerate(CLASS_NAMES)}
+# ── Class / MITRE mapping (from catalog) ──────────────────────────────────────
+CLASS_NAMES = get_class_names()
+NUM_CLASSES = get_num_classes()
+MITRE_MAP = get_mitre_map()
+CLASS_TO_IDX = get_class_to_idx()
+LEGACY_STRATEGY_MAP = get_legacy_strategy_map()
+BOT_CLASS_IDS = get_bot_class_ids()
 
 # ── Model ─────────────────────────────────────────────────────────────────────
 class MultiClassWorldModel(nn.Module):
@@ -92,70 +77,7 @@ class MultiClassWorldModel(nn.Module):
         return self.state_head(last), self.classify_head(last)
 
 
-# ── PCAP → feature rows ───────────────────────────────────────────────────────
-def pcap_to_rows(pcap_path: Path) -> list[dict]:
-    from scapy.all import rdpcap, TCP, UDP, IP
-    try:
-        packets = rdpcap(str(pcap_path))
-    except Exception:
-        return []
-
-    flows: dict = defaultdict(list)
-    for pkt in packets:
-        if IP not in pkt:
-            continue
-        ip = pkt[IP]
-        proto = "TCP" if TCP in pkt else ("UDP" if UDP in pkt else "Other")
-        if TCP in pkt:
-            l4 = pkt[TCP]; flags = int(l4.flags)
-            key = (ip.src, l4.sport, ip.dst, l4.dport, proto)
-        elif UDP in pkt:
-            l4 = pkt[UDP]; flags = 0
-            key = (ip.src, l4.sport, ip.dst, l4.dport, proto)
-        else:
-            key = (ip.src, 0, ip.dst, 0, proto); flags = 0
-        flows[key].append({"time": float(pkt.time), "len": len(pkt), "flags": flags,
-                           "dport": key[3], "proto": proto})
-
-    rows = []
-    for key, pkts in flows.items():
-        pkts.sort(key=lambda p: p["time"])
-        times  = [p["time"] for p in pkts]
-        lens   = [p["len"]  for p in pkts]
-        iats   = np.diff(times) if len(times) > 1 else [0.0]
-        dur    = times[-1] - times[0] if len(times) > 1 else 0.0
-        fl     = [p["flags"] for p in pkts]
-        rows.append({
-            "Dst Port":         pkts[0]["dport"],
-            "Protocol":         6 if pkts[0]["proto"] == "TCP" else 17,
-            "Flow Duration":    dur * 1e6,
-            "Tot Fwd Pkts":     len(pkts),
-            "Tot Bwd Pkts":     0,
-            "Fwd Pkt Len Max":  max(lens),
-            "Fwd Pkt Len Min":  min(lens),
-            "Fwd Pkt Len Mean": np.mean(lens),
-            "Bwd Pkt Len Max":  0, "Bwd Pkt Len Min": 0, "Bwd Pkt Len Std": 0,
-            "Flow Byts/s":      sum(lens)  / (dur + 1e-9),
-            "Flow Pkts/s":      len(pkts)  / (dur + 1e-9),
-            "Flow IAT Mean":    float(np.mean(iats)),
-            "Flow IAT Std":     float(np.std(iats)),
-            "SYN Flag Cnt":     sum(1 for f in fl if f & 0x02),
-            "FIN Flag Cnt":     sum(1 for f in fl if f & 0x01),
-            "RST Flag Cnt":     sum(1 for f in fl if f & 0x04),
-            "PSH Flag Cnt":     sum(1 for f in fl if f & 0x08),
-            "ACK Flag Cnt":     sum(1 for f in fl if f & 0x10),
-        })
-    return rows
-
-
-def rows_to_matrix(rows: list[dict]) -> np.ndarray:
-    if not rows:
-        return np.zeros((0, NUM_FEATURES), dtype=np.float32)
-    df = pd.DataFrame(rows)
-    for c in FEATURE_COLS:
-        if c not in df.columns:
-            df[c] = 0.0
-    return df[FEATURE_COLS].fillna(0).replace([np.inf, -np.inf], 0).values.astype(np.float32)
+# pcap_to_rows / rows_to_matrix imported from src.pipeline.extract
 
 
 # ── Build training dataset ────────────────────────────────────────────────────
@@ -167,49 +89,47 @@ def build_dataset(scaler: StandardScaler = None):
       - PCAP captures labelled by attack type  (classes 1-4)
     """
     print("Loading CIC-IDS-2018 CSV data...")
-    dfs = [pd.read_csv(FILES[k], low_memory=False) for k in FILES]
-    df  = pd.concat(dfs, ignore_index=True)
-    df  = df[df['Label'] != 'Label']
-    df['Label'] = df['Label'].str.strip()
-    df[FEATURE_COLS] = df[FEATURE_COLS].apply(pd.to_numeric, errors='coerce')
-    df = df.replace([float('inf'), -float('inf')], float('nan')).dropna(subset=FEATURE_COLS)
-    df[FEATURE_COLS] = df[FEATURE_COLS].fillna(0)
-
-    benign       = df[df['Label'].str.lower() == 'benign'][FEATURE_COLS].values.astype(np.float32)
-    infiltration = df[df['Label'].str.lower() != 'benign'][FEATURE_COLS].values.astype(np.float32)
-
-    # Sample benign to balance
+    present = [p for p in FILES.values() if p.exists()]
+    X_parts: list = []
+    y_parts: list = []
     rng = np.random.default_rng(42)
-    n_target = min(len(infiltration), 80_000)
-    benign       = benign[rng.choice(len(benign),       n_target, replace=False)]
-    infiltration = infiltration[rng.choice(len(infiltration), n_target, replace=False)]
 
-    X_parts  = [benign, infiltration]
-    y_parts  = [
-        np.full(len(benign),       CLASS_TO_IDX["Benign"],      dtype=np.int64),
-        np.full(len(infiltration), CLASS_TO_IDX["Infiltration"], dtype=np.int64),
-    ]
+    if present:
+        dfs = [pd.read_csv(p, low_memory=False) for p in present]
+        df  = pd.concat(dfs, ignore_index=True)
+        df  = df[df['Label'] != 'Label']
+        df['Label'] = df['Label'].str.strip()
+        for c in FEATURE_COLS:
+            if c not in df.columns:
+                df[c] = 0.0
+        df[FEATURE_COLS] = df[FEATURE_COLS].apply(pd.to_numeric, errors='coerce')
+        df = df.replace([float('inf'), -float('inf')], float('nan')).dropna(subset=FEATURE_COLS)
+        df[FEATURE_COLS] = df[FEATURE_COLS].fillna(0)
 
-    # Load PCAP captures from adversarial loop and label by filename
-    pcap_label_map = {
-        "ssh_bruteforce":      CLASS_TO_IDX["SSH_Bruteforce"],
-        "port_scan_sequential":CLASS_TO_IDX["Port_Scan"],
-        "port_scan_random":    CLASS_TO_IDX["Port_Scan"],
-        "http_flood":          CLASS_TO_IDX["HTTP_Flood"],
-        "slow_loris":          CLASS_TO_IDX["Slow_Loris"],
-        "syn_scan_stealth":    CLASS_TO_IDX["Port_Scan"],
-    }
+        benign       = df[df['Label'].str.lower() == 'benign'][FEATURE_COLS].values.astype(np.float32)
+        attack_rows  = df[df['Label'].str.lower() != 'benign'][FEATURE_COLS].values.astype(np.float32)
+        n_target = min(len(attack_rows), max(len(benign), 1), 80_000)
+        if len(benign) and n_target:
+            benign = benign[rng.choice(len(benign), min(n_target, len(benign)), replace=False)]
+            X_parts.append(benign)
+            y_parts.append(np.full(len(benign), CLASS_TO_IDX["Benign"], dtype=np.int64))
+        if len(attack_rows) and n_target:
+            attack_rows = attack_rows[rng.choice(len(attack_rows), min(n_target, len(attack_rows)), replace=False)]
+            infiltration_idx = CLASS_TO_IDX.get("T1021_remote_services", CLASS_TO_IDX["Benign"])
+            X_parts.append(attack_rows)
+            y_parts.append(np.full(len(attack_rows), infiltration_idx, dtype=np.int64))
+    else:
+        print("WARNING: CIC CSVs not found in data/raw. Using PCAP captures only.")
 
-    pcap_files = list(ADVERSARIAL_DIR.glob("*.pcap")) if ADVERSARIAL_DIR.exists() else []
+    pcap_files = []
+    if ADVERSARIAL_DIR.exists():
+        pcap_files = list(ADVERSARIAL_DIR.rglob("*.pcap"))
     print(f"Found {len(pcap_files)} adversarial PCAP captures.")
     for pcap in pcap_files:
-        label_idx = None
-        for key, idx in pcap_label_map.items():
-            if key in pcap.name:
-                label_idx = idx
-                break
-        if label_idx is None:
+        label_name = resolve_pcap_class(pcap.name)
+        if label_name is None or label_name not in CLASS_TO_IDX:
             continue
+        label_idx = CLASS_TO_IDX[label_name]
         rows = pcap_to_rows(pcap)
         if not rows:
             continue
@@ -222,8 +142,10 @@ def build_dataset(scaler: StandardScaler = None):
         X_parts.append(feats)
         y_parts.append(np.full(len(feats), label_idx, dtype=np.int64))
 
-    X = np.vstack(X_parts)
-    y = np.concatenate(y_parts)
+    X = np.vstack(X_parts) if X_parts else np.zeros((0, NUM_FEATURES), dtype=np.float32)
+    y = np.concatenate(y_parts) if y_parts else np.zeros((0,), dtype=np.int64)
+    if len(X) == 0:
+        raise FileNotFoundError("No CIC CSVs or labeled PCAPs available for training.")
 
     print(f"Dataset: {len(X)} samples")
     for i, name in enumerate(CLASS_NAMES):
@@ -323,7 +245,7 @@ def train_multiclass():
 
 
 # ── Live adversarial inference ────────────────────────────────────────────────
-TARGET_IP          = "172.17.0.2"
+TARGET_IP          = "target-server"
 ATTACKER_CONTAINER = "attacker-bot"
 TARGET_CONTAINER   = "target-server"
 ADVERSARIAL_PCAP   = Path("data/raw/adversarial")
@@ -354,9 +276,9 @@ def stop_capture(filename: str) -> Path:
     return local
 
 
-def run_attack(strategy: str, evasion: str = "none"):
+def run_attack(class_id: str, evasion: str = "none"):
     cmd = ["docker", "exec", ATTACKER_CONTAINER,
-           "python3", "/tmp/attack_script.py", TARGET_IP, strategy, evasion]
+           "python3", "-m", "src.adversarial.attack_script", TARGET_IP, class_id, evasion]
     try:
         subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     except Exception as e:
@@ -385,12 +307,12 @@ def run_live_adversarial_test(model, scaler, device):
     print("="*60)
 
     attacks = [
-        ("ssh_bruteforce",       "none",          "SSH_Bruteforce"),
-        ("port_scan_sequential", "none",          "Port_Scan"),
-        ("port_scan_sequential", "randomize_port_order", "Port_Scan"),
-        ("http_flood",           "none",          "HTTP_Flood"),
-        ("http_flood",           "random_timing", "HTTP_Flood"),
-        ("slow_loris",           "none",          "Slow_Loris"),
+        ("T1110_ssh_bruteforce", "none", "T1110_ssh_bruteforce"),
+        ("T1046_service_scan", "none", "T1046_service_scan"),
+        ("T1046_service_scan", "randomize_port_order", "T1046_service_scan"),
+        ("T1499_http_flood", "none", "T1499_http_flood"),
+        ("T1499_http_flood", "random_timing", "T1499_http_flood"),
+        ("T1499_slowloris", "none", "T1499_slowloris"),
     ]
 
     results = []
@@ -420,8 +342,7 @@ def run_live_adversarial_test(model, scaler, device):
         mitre_phase, mitre_tech = MITRE_MAP[pred_class]
         attack_prob  = 1.0 - probs[CLASS_TO_IDX["Benign"]]
 
-        correct = (pred_class == true_class or
-                   (true_class == "Port_Scan" and pred_class in ("Port_Scan", "SSH_Bruteforce")))
+        correct = pred_class == true_class
 
         print(f"  Flows extracted  : {len(feats)}")
         print(f"  True class       : {true_class}")
