@@ -258,12 +258,24 @@ class FlowExtractor:
         # Replace +/-Inf in IAT columns with column max of finite values
         iat_cols_present = [c for c in _IAT_COLUMNS if c in df.columns]
         for col in iat_cols_present:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
             finite_mask = np.isfinite(df[col])
             if finite_mask.any():
                 col_max = df.loc[finite_mask, col].max()
             else:
                 col_max = 0.0
             df[col] = df[col].replace([np.inf, -np.inf], col_max)
+
+        # Coerce all non-label, non-ID columns to numeric where possible
+        skip_cols = {'Label', 'label', 'Timestamp', 'timestamp',
+                     'Src IP', 'src_ip', 'Dst IP', 'dst_ip',
+                     'Flow ID', 'flow_id'}
+        for col in df.columns:
+            if col not in skip_cols:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+        # Ensure Dst Port is numeric integer
+        if 'Dst Port' in df.columns:
+            df['Dst Port'] = pd.to_numeric(df['Dst Port'], errors='coerce').fillna(0).astype(int)
 
         # Replace remaining infinities across all numeric columns with NaN,
         # then drop rows with NaN.

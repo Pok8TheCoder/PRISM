@@ -268,13 +268,21 @@ class GraphWorldModel(nn.Module):
         Parameters
         ----------
         graph_emb_seq : (B, L, d_graph) — pre-encoded graph embeddings
+                        or (B, L, d_state) — vector state sequence
 
         Returns
         -------
         Same dict contract as StateTransformerWorldModel.forward()
         """
-        B, L, _ = graph_emb_seq.shape
+        B, L, D_in = graph_emb_seq.shape
         device = graph_emb_seq.device
+
+        if D_in != self.graph_proj[0].in_features:
+            self.graph_proj = nn.Sequential(
+                nn.Linear(D_in, self.d_model),
+                nn.LayerNorm(self.d_model),
+            ).to(device)
+            self.state_head = StatePredictionHead(self.d_model, D_in, 0.3).to(device)
 
         x = self.graph_proj(graph_emb_seq)    # (B, L, d_model)
         x = self.pos_enc(x)

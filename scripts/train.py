@@ -188,6 +188,13 @@ def main():
     d_state = splits["train"]["states"].shape[1]
     logger.info("State dimension: %d", d_state)
     cfg.model.d_state = d_state
+    if cfg.model.architecture == "gnn" and cfg.model.d_graph != d_state:
+        logger.info(
+            "Aligning GNN graph dimension to state dimension: d_graph=%d -> %d",
+            cfg.model.d_graph,
+            d_state,
+        )
+        cfg.model.d_graph = d_state
 
     loaders = create_dataloaders(
         splits,
