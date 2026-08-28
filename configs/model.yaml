@@ -1,0 +1,17 @@
+model:
+  architecture: "transformer"
+  d_state: 110
+  d_model: 256
+  n_layers: 4
+  n_heads: 8
+  dropout: 0.1
+  head_dropout: 0.3
+  # GNN-specific
+  gnn_type: "graphsage"
+  gnn_layers: 2
+  d_graph: 128
+  # Latent dynamics
+  d_latent: 64
+  # LSTM-specific
+  lstm_hidden: 256
+  lstm_layers: 2

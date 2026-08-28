@@ -1,0 +1,8 @@
+inference:
+  model_path: "weights/world_model_best.pt"
+  k_steps: 10
+  num_rollouts: 10
+  deterministic: false
+  threshold_critical: 0.85
+  threshold_high: 0.65
+  threshold_medium: 0.40

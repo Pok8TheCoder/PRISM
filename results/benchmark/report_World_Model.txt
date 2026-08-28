@@ -1,0 +1,25 @@
+=== World Model Binary Classification Report ===
+              precision    recall  f1-score   support
+
+           0       0.74      0.99      0.85       180
+           1       1.00      0.79      0.88       300
+
+    accuracy                           0.86       480
+   macro avg       0.87      0.89      0.86       480
+weighted avg       0.90      0.86      0.87       480
+
+
+=== World Model MITRE Stage Report ===
+                   precision    recall  f1-score   support
+
+           Benign       0.75      0.90      0.82       180
+   Reconnaissance       0.36      1.00      0.53        50
+   Initial Access       0.91      0.96      0.93        50
+ Lateral Movement       0.76      0.96      0.85        50
+Command & Control       0.00      0.00      0.00        50
+     Exfiltration       0.00      0.00      0.00         0
+           Impact       1.00      0.07      0.13       100
+
+         accuracy                           0.66       480
+        macro avg       0.54      0.56      0.46       480
+     weighted avg       0.70      0.66      0.57       480

@@ -1,210 +1,101 @@
-# PRISM: Predictive Risk Intelligence for Security Monitoring
+# PRISM: Predictive Recurrent Infiltration State Model
 
-**PRISM** is an AI-powered network attack forecasting platform leveraging **World Models** to move cyber defense from reactive intrusion detection to proactive, forward-looking attack prediction.
-
-Rather than classifying isolated network flows in hindsight, PRISM learns the temporal state-transition dynamics of computer networks $P(S_{t+1} \mid S_t)$, simulates potential future attack trajectories $K$-steps ahead, maps predicted behaviors to recognized **MITRE ATT&CK** stages, and provides interpretable decision support for defenders in Enterprise and Critical Information Infrastructure (CII) environments.
+> **A World Model for Network Infiltration Trajectory Forecasting & MITRE ATT&CK Mapping**
 
 ---
 
-## 🚀 Current Implementation Status
-
-PRISM is currently implemented as a functional prototype with the following core modules:
-
-### 1. Telemetry Processing & Feature Pipeline
-- **Dual-Level Feature Extraction**: Ingests flow-level attributes (NetFlow/IPFIX format: IP/ports, TCP bitmasks, byte/packet counts, IAT statistics) and packet-level details (TTL variance, payload distributions, port access patterns).
-- **Benchmark & Live Telemetry Support**: Pre-processes benchmark datasets (CSE-CIC-IDS-2018) and parses raw `.pcap` network traffic in real time via `Scapy`.
-
-### 2. Temporal Transformer World Model
-- **Dynamics Learning**: Trained to predict the probability distribution over future network states $S_{t+1}$ given sequence history $S_t, S_{t-1}, \dots, S_{t-N}$.
-- **Dual-Head Architecture**:
-  - **State Prediction Head**: Predicts full future feature state vector $S_{t+1}$ via MSE loss.
-  - **Multi-Class Attack Classifier**: Classifies network state across multiple threat types (`Benign`, `SSH_Bruteforce`, `Port_Scan`, `HTTP_Flood`, `Slow_Loris`, `Infiltration`).
-- **GPU-Accelerated**: Optimized for NVIDIA GPUs using PyTorch and PyTorch Lightning.
-
-### 3. MITRE ATT&CK Mapping & Knowledge Base
-- **Automatic Stage Tagging**: Maps predicted future states directly to MITRE ATT&CK tactics and techniques (e.g., `T1110 Brute Force` $\rightarrow$ Initial Access, `T1046 Network Service Scanning` $\rightarrow$ Reconnaissance, `T1499 Endpoint DoS` $\rightarrow$ Impact).
-- **Embedded CTI Database**: Integrated dataset (`data/mitre_attack.json`) containing **222 official Enterprise MITRE ATT&CK techniques**, descriptions, and real-world threat group examples (e.g., APT28, Sandworm, Gamaredon).
-
-### 4. Self-Fortifying Adversarial Training Loop
-- **Dockerized Environment**: Deploys an isolated Debian target server (`target-server`) running SSH and Apache, paired with a containerized attacker bot (`attacker-bot`).
-- **Live Traffic Capture**: Runs `tcpdump` inside target containers, transfers `.pcap` files to host GPU for real-time feature extraction and prediction.
-- **Adaptive Evasion & Self-Healing**: When the model detects an attack, the bot automatically escalates evasion tactics (timing randomization, port order scrambling, source port manipulation). Successful evasions are automatically appended to training data to trigger GPU retraining cycles, continuously hardening the model.
-
-### 5. Benchmark Validation
-- **Logistic Regression Baseline**: Built non-temporal baseline classifier.
-- **Performance**: Temporal Transformer World Model achieves an **85% F1 Score** (vs. 54% baseline) and cuts the False Positive Rate from ~41% down to **16.7%**, demonstrating a +31% measurable improvement from temporal dynamics learning.
+### Reference & Contact Information
+- **Agency Reference:** National Critical Information Infrastructure Protection Centre (NCIIPC), India
+- **Official Website:** [nciipc.gov.in](https://nciipc.gov.in)
+- **Helpdesk Contact:** [helpdesk1@nciipc.gov.in](mailto:helpdesk1@nciipc.gov.in)
 
 ---
 
-## 🎯 Target Vision & Future Roadmap
+## 📌 Overview
 
-The ultimate goal of PRISM is an enterprise-ready, fully autonomous predictive defense system.
+**PRISM** is an open-source, fully offline World Model AI architecture designed for Critical Information Infrastructure (CII) defense. Unlike static classifiers that operate on isolated alerts or single packet flows, PRISM models the **state-transition dynamics** $P(S_{t+1} \mid S_t, a_t)$ of an enterprise network environment.
 
-```
-                                  PRISM Target Vision
-┌──────────────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                          │
-│   Network Telemetry       Temporal & Spatial       K-Step Rollout        Proactive       │
-│   (PCAP / NetFlow)  ───►    Graph World     ───►  Future Infiltration ──► Defensive     │
-│                             Model (GNN)              Forecaster         Mitigation       │
-│                                  │                       │            (eBPF / Firewall)  │
-│                                  ▼                       ▼                               │
-│                         Interpretable SHAP &   MITRE ATT&CK Stage                        │
-│                         Attention Heatmaps     Timeline Dashboard                        │
-│                                                                                          │
-└──────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Planned Features & Enhancements
-1. **Hybrid Temporal-Graph Neural Network (TGNN)**: Incorporate Graph Neural Networks (PyTorch Geometric) to model network topology natively—treating hosts as nodes and active flows as edges to capture complex lateral movement across subnets.
-2. **Uncertainty-Aware Autoregressive Rollout**: Extend $K$-step forward simulation to output confidence intervals and probability decay bounds as predictions project further into the future.
-3. **Full SHAP & Attention Interpretability Engine**: Expose exact feature attribution heatmaps (showing which specific TCP flag, inter-arrival time, or payload anomaly triggered a prediction).
-4. **Proactive Active Defense (eBPF / iptables Integration)**: Automatically generate and push defensive firewall rules or eBPF filters to sever predicted C2 channels or lateral movement paths *before* compromise is completed.
+By combining temporal sequence models (Transformers/LSTMs/GNNs) with multi-task prediction heads, PRISM performs **$K$-step autoregressive forward simulation**, enabling defenders to forecast multi-stage attack progression (e.g. Reconnaissance $\rightarrow$ Initial Access $\rightarrow$ Lateral Movement $\rightarrow$ C2 $\rightarrow$ Exfiltration/Impact) up to 10–30 minutes before critical impact occurs.
 
 ---
 
-## 🖥️ Dashboard Architecture & Visual Design Specification
+## 📚 Supported Public Datasets & Knowledge Bases
 
-The PRISM visual interface is designed as an offline, high-density SOC (Security Operations Center) decision support web app built with **Streamlit** and **Plotly**.
+PRISM natively supports ingestion, feature normalization, and temporal windowing for major open cybersecurity datasets and threat intelligence frameworks:
 
-```
-┌──────────────────────────────────────────────────────────────────────────────────────────┐
-│  PRISM // Predictive Risk Intelligence for Security Monitoring             [SYSTEM: ONLINE] │
-├──────────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                          │
-│  [ METRIC: Ingestion Rate ]   [ METRIC: Threat Level ]   [ METRIC: Model Accuracy ]      │
-│  12.4 MB/s (1,420 flows/s)    ELEVATED (Prob 0.84)       85.2% F1 (GPU Active)           │
-│                                                                                          │
-├──────────────────────────────────────────────────────┬───────────────────────────────────┤
-│                                                      │                                   │
-│  📈 Live & Forecasted Infiltration Probability       │  🛡️ MITRE ATT&CK Kill-Chain Stage  │
-│  ┌────────────────────────────────────────────────┐  │  ┌─────────────────────────────┐  │
-│  │ 1.0 ┤                      /-- Forecast       │  │  │ Reconnaissance    [98%] ✓  │  │
-│  │ 0.5 ┤         /----\      /                   │  │  │ Initial Access    [84%] ⚡ │  │
-│  │ 0.0 └────────/──────\────/─────────────────── │  │  │ Lateral Movement  [42%] ⏳ │  │
-│  │     t-10  t-5    t    t+1  t+2  t+3  t+4  t+5 │  │  │ Command & Control [12%] ░  │  │
-│  └────────────────────────────────────────────────┘  │  └─────────────────────────────┘  │
-│                                                      │                                   │
-├──────────────────────────────────────────────────────┴───────────────────────────────────┤
-│                                                                                          │
-│  🔍 Feature Attribution (SHAP / Attention Heatmap)                                      │
-│  Flow IAT Variance    ██████████████████████ 42%                                         │
-│  SYN Flag Ratio       ██████████████ 28%                                                 │
-│  Dst Port Anomaly     ████████ 16%                                                       │
-│                                                                                          │
-├──────────────────────────────────────────────────────────────────────────────────────────┤
-│  ⚡ Live Adversarial Lab Control & Self-Healing Telemetry                                │
-│  [ Run Adversarial Bot ]   [ Trigger Retrain ]   [ Download Forensic Report (JSON) ]     │
-│                                                                                          │
-└──────────────────────────────────────────────────────────────────────────────────────────┘
-```
+### Public Datasets
+1. **CSE-CIC-IDS2018:** Canadian Institute for Cybersecurity intrusion dataset (AWS S3 mirror support).
+2. **CTU-13:** Stratosphere IPS botnet traffic dataset.
+3. **UNSW-NB15:** UNSW Canberra Cyber Range network intrusion dataset (49 features, 9 attack categories).
+4. **CICIoT2023:** Real-time IoT security dataset (86 features, 33 attack vectors).
+5. **LANL Authentication Dataset:** Los Alamos National Laboratory host and network log events.
+6. **DARPA Intrusion Detection Datasets:** DARPA 1998/1999/2000 network traffic evaluations.
 
-### Key UI Components
-1. **Header & System Telemetry Bar**:
-   - Live network ingestion rate (MB/s, flows/sec).
-   - Global network status (`NORMAL`, `ELEVATED`, `CRITICAL`).
-   - GPU VRAM consumption & inference latency metrics.
-2. **Infiltration Timeline (Interactive Line Chart)**:
-   - Historical observed traffic (solid line) transitioning seamlessly into $K$-step forecasted probability (dashed line with shaded confidence interval).
-   - Interactive slider to scrub through past time windows or simulate future projections.
-3. **MITRE ATT&CK Stage Progression Panel**:
-   - Visual kill-chain pipeline highlighting active and forecasted attack stages.
-   - Expandable technique cards detailing matching technique IDs (e.g., `T1046`), description snippets, and recommended defender remediation steps.
-4. **Interpretable Feature Attribution Panel**:
-   - Ranked horizontal bar chart of SHAP values / attention weights explaining *why* the model predicted an attack (e.g., flagging unusual inter-arrival times or SYN flag ratios).
-5. **Adversarial Red-Team Control Dashboard**:
-   - Interactive buttons to initiate containerized attacks (`SSH Brute Force`, `Port Scan`, `HTTP Flood`).
-   - Live feedback terminal displaying bot evasion escalation, traffic capture logs, and model retraining triggers.
+### Open Knowledge Bases
+- **MITRE ATT&CK Framework:** 7-stage attack kill chain mapping (TA0043, TA0001, TA0008, TA0011, TA0010, TA0040).
+- **CAPEC (Common Attack Pattern Enumeration and Classification):** Integrated attack pattern lookups (e.g. CAPEC-287 TCP Port Scan, CAPEC-66 SQLi, CAPEC-640 Pass the Hash).
+- **CVE / NVD (National Vulnerability Database):** Pre-compiled offline mapping to critical vulnerabilities (Log4Shell CVE-2021-44228, EternalBlue CVE-2017-0144, ProxyShell, Spring4Shell, Zerologon).
 
 ---
 
-## 📁 Project Structure
+## ⚙️ Key System Architecture
 
-```
-.
-├── configs/                  # Model & pipeline YAML configuration files
-│   └── default.yaml
-├── data/
-│   ├── raw/                  # Raw PCAP captures & CSV flow datasets
-│   │   └── adversarial/      # Live captured pcap files from Docker loop
-│   ├── processed/            # Timestamped normalized feature matrices (Parquet)
-│   └── mitre_attack.json     # 222 Enterprise MITRE ATT&CK techniques database
-├── models/
-│   └── checkpoints/          # PyTorch model weights (.pth)
-├── notebooks/
-│   └── data_exploration.ipynb
-├── scripts/
-│   ├── download_data.py      # Automated dataset downloader
-│   └── fetch_mitre_attack.py # Script fetching official MITRE ATT&CK STIX 2.1 data
-├── src/
-│   ├── adversarial/          # Dockerized target server, bot, and self-healing loop
-│   │   ├── attack_script.py
-│   │   ├── attacker_bot.py
-│   │   ├── traffic_capture.py
-│   │   └── training_loop.py
-│   ├── model/                # World Model PyTorch architectures
-│   │   ├── world_model.py            # Binary temporal transformer
-│   │   └── world_model_multiclass.py # Multi-class MITRE transformer
-│   ├── baseline.py           # Logistic Regression static baseline
-│   ├── pipeline/             # NetFlow & PCAP feature extraction engine
-│   ├── predict/              # K-step rollout simulation
-│   ├── explain/              # SHAP & attention interpretability
-│   └── ui/                   # Streamlit web dashboard
-├── requirements.txt
-├── idea.txt                  # Original project specification
-└── README.md
-```
+1. **Flow & Packet Extraction Pipeline:** Standardises raw netflow CSVs and Scapy PCAP features into fixed-size temporal state vectors $S_t \in \mathbb{R}^{D}$.
+2. **State Transformer World Model:** Causal multi-head self-attention network trained with multi-task loss:
+   $$\mathcal{L} = \lambda_{\text{dyn}} \mathcal{L}_{\text{NLL}}(S_{t+1}, \hat{\mu}, \hat{\sigma}^2) + \lambda_{\text{inf}} \mathcal{L}_{\text{BCE}}(y_{\text{inf}}, \hat{y}) + \lambda_{\text{mitre}} \mathcal{L}_{\text{CE}}(y_{\text{stage}}, \hat{m})$$
+3. **K-Step Autoregressive Simulator:** Predicts future state trajectories $S_{t+1}, \dots, S_{t+K}$ with Monte Carlo ensemble uncertainty estimation.
+4. **Explainability Suite:** Integrated Gradients, SHAP DeepExplainer/KernelExplainer, and temporal attention rollouts.
+5. **Streamlit Interactive Command Center:** Real-time SOC dashboard for trajectory visualization, alert escalation, and playbook guidance.
 
 ---
 
-## ⚡ Quickstart
+## 🚀 Quickstart Guide
 
-### 1. Environment Setup
-```powershell
-# Create & activate virtual environment (inherits system CUDA PyTorch)
-python -m venv venv --system-site-packages
-.\venv\Scripts\activate
-
-# Install requirements
+### 1. Installation
+```bash
+git clone https://github.com/PRISM-WorldModel/PRISM.git
+cd PRISM
 pip install -r requirements.txt
 ```
 
-### 2. Run Baseline vs. World Model Benchmark
-```powershell
-# Train & evaluate static logistic regression baseline
-python src/baseline.py
-
-# Train & evaluate multi-class Temporal Transformer World Model
-python src/model/world_model_multiclass.py
+### 2. Generate Synthetic Demo Data
+To test the pipeline out of the box without downloading massive PCAPs:
+```bash
+python scripts/download_data.py --demo
 ```
 
-### 3. Run Adversarial Self-Fortification Loop
-```powershell
-# Requires Docker Desktop running — starts isolated lab automatically
-python scripts/lab_ctl.py up          # build + start internal network lab
-python scripts/lab_ctl.py verify      # probe attack target-server from attacker-bot
-python -m src.adversarial.training_loop
-python scripts/lab_ctl.py down        # stop lab when finished
+### 3. List & Preprocess Supported Datasets
+List registered datasets:
+```bash
+python scripts/download_data.py --list-datasets
+```
+Preprocess any supported dataset (e.g., UNSW-NB15):
+```bash
+python scripts/download_data.py --dataset unsw-nb15 --preprocess
 ```
 
-### 4. Launch SOC Dashboard
-```powershell
-# Activate venv first
-.\venv\Scripts\activate
-
-# Start isolated lab (optional — dashboard can start it from sidebar)
-python scripts/lab_ctl.py up
-
-# Launch web dashboard (Streamlit + Plotly, fully offline)
-python run_dashboard.py
-# or: streamlit run src/ui/app.py   (must run from repo root)
+### 4. Train the World Model
+```bash
+python scripts/train.py --states data/raw/demo_states.npz --epochs 30
 ```
 
-Dashboard tabs:
-- **PS Demo** — upload PCAP/CSV, K-step forecast, MITRE stage, SHAP/attention driving features (offline)
-- **Live Monitor** — attack probability timeline, K-step forecast, flow stream, review-before-alert
-- **Attack Runbook** — 5-step wizard: lab check → configure → run → review → save/retrain
-- **Missed & Retrain** — evaded/misclassified samples saved for self-healing
-- **MITRE Catalog** — browse all 222 techniques with detectability tags
+### 5. Run Offline Inference & $K$-Step Rollout
+```bash
+python scripts/infer.py --states data/raw/demo_states.npz --k-steps 10 --shap
+```
 
-Feature schema: **27 columns** (20 CIC flow + 7 packet-level: TTL, TCP window, fragments, payload, retransmits).
+### 6. Run Benchmark Evaluation (World Model vs Static Baselines)
+```bash
+python scripts/evaluate.py --states data/raw/demo_states.npz --train-baselines --plot
+```
+
+### 7. Launch Interactive Dashboard
+```bash
+streamlit run app/streamlit_app.py
+```
+
+---
+
+## 📄 License & Compliance
+
+PRISM is released under the **MIT License**. All dataset parsers use open-source public schemas and operate 100% offline without external network or API dependencies.

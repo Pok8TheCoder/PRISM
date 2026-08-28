@@ -1,0 +1,25 @@
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  splits_dir: "data/splits"
+  dataset: "cicids2018"
+  supported_datasets:
+    - "cicids2018"
+    - "ctu13"
+    - "unsw-nb15"
+    - "ciciot2023"
+    - "lanl"
+    - "darpa"
+  window_size_seconds: 30
+  lookback: 20
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  use_packet_features: true
+  max_flows_per_window: 10000
+  num_workers: 4
+
+nciipc:
+  agency: "National Critical Information Infrastructure Protection Centre (NCIIPC)"
+  website: "nciipc.gov.in"
+  helpdesk: "helpdesk1@nciipc.gov.in"

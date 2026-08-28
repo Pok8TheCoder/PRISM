@@ -1,0 +1,414 @@
+"""
+PRISM - Core Transformer World Model
+Learns P(S_{t+1} | S_{t-L+1}, ..., S_t) via causal self-attention.
+Three output heads: state dynamics, infiltration binary, MITRE stage.
+"""
+
+import logging
+from typing import Optional
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from src.models.components import (
+    StateEmbedding,
+    LearnablePositionalEncoding,
+    SinusoidalPositionalEncoding,
+    StatePredictionHead,
+    ClassificationHead,
+    MultiTaskLoss,
+    generate_causal_mask,
+)
+from src.utils.constants import NUM_MITRE_STAGES
+
+logger = logging.getLogger("prism.models.world_model")
+
+
+class StateTransformerWorldModel(nn.Module):
+    """
+    Temporal Transformer World Model for network state transition dynamics.
+
+    Architecture:
+        Input:  [S_{t-L+1}, ..., S_t]  shape (B, L, D_state)
+        1. State Embedding: Linear(D_state -> D_model) + LayerNorm
+        2. Positional Encoding (learnable)
+        3. Causal Transformer Encoder (N layers, H heads)
+        4. State Prediction Head: h_t -> (mu, logvar) over S_{t+1}
+        5. Infiltration Head:     h_t -> P(attack | S_t)
+        6. MITRE Stage Head:      h_t -> P(stage | S_t)
+    """
+
+    def __init__(
+        self,
+        d_state: int = 110,
+        d_model: int = 256,
+        n_layers: int = 4,
+        n_heads: int = 8,
+        lookback: int = 20,
+        dropout: float = 0.1,
+        head_dropout: float = 0.3,
+        num_mitre_stages: int = NUM_MITRE_STAGES,
+        pos_encoding: str = "learnable",  # "learnable" | "sinusoidal"
+    ):
+        super().__init__()
+        self.d_state = d_state
+        self.d_model = d_model
+        self.lookback = lookback
+        self.num_mitre_stages = num_mitre_stages
+
+        # 1. Input embedding
+        self.embedding = StateEmbedding(d_state, d_model, dropout)
+
+        # 2. Positional encoding
+        if pos_encoding == "learnable":
+            self.pos_enc = LearnablePositionalEncoding(
+                max_len=lookback + 64, d_model=d_model
+            )
+        else:
+            self.pos_enc = SinusoidalPositionalEncoding(
+                max_len=lookback + 64, d_model=d_model, dropout=dropout
+            )
+
+        # 3. Causal Transformer Encoder
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=n_heads,
+            dim_feedforward=d_model * 4,
+            dropout=dropout,
+            activation="gelu",
+            batch_first=True,
+            norm_first=True,  # Pre-LN for stability
+        )
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer, num_layers=n_layers, enable_nested_tensor=False
+        )
+
+        # 4. State prediction head (world model core)
+        self.state_head = StatePredictionHead(d_model, d_state, head_dropout)
+
+        # 5. Binary infiltration head
+        self.infiltration_head = ClassificationHead(d_model, 2, head_dropout)
+
+        # 6. MITRE stage head
+        self.mitre_head = ClassificationHead(
+            d_model, num_mitre_stages, head_dropout
+        )
+
+        self._init_weights()
+        n_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        logger.info(
+            "StateTransformerWorldModel: d_state=%d, d_model=%d, "
+            "layers=%d, heads=%d, params=%.2fM",
+            d_state, d_model, n_layers, n_heads, n_params / 1e6,
+        )
+
+    def forward(
+        self,
+        state_seq: torch.Tensor,
+        return_attention: bool = False,
+    ) -> dict:
+        """
+        Forward pass.
+
+        Parameters
+        ----------
+        state_seq : torch.Tensor, shape (B, L, D_state)
+            Sequence of past network states.
+        return_attention : bool
+            If True, extract and return attention weights from last layer.
+
+        Returns
+        -------
+        dict with keys:
+            pred_state_mean  : (B, D_state) — predicted next state mean
+            pred_state_logvar: (B, D_state) — predicted next state log-variance
+            pred_binary      : (B, 2)       — infiltration logits
+            pred_mitre       : (B, N_stage) — MITRE stage logits
+            hidden           : (B, D_model) — last hidden state (for SHAP)
+            attention_weights: (B, L, L) or None
+        """
+        B, L, _ = state_seq.shape
+        device = state_seq.device
+
+        # Embed
+        x = self.embedding(state_seq)            # (B, L, D_model)
+        x = self.pos_enc(x)                      # (B, L, D_model)
+
+        # Causal mask: each position only attends to itself and past
+        causal_mask = generate_causal_mask(L, device)  # (L, L)
+
+        # Transformer
+        hidden_seq = self.transformer(
+            x, mask=causal_mask, is_causal=True
+        )                                        # (B, L, D_model)
+
+        # Use the LAST time-step hidden state for prediction
+        h_t = hidden_seq[:, -1, :]              # (B, D_model)
+
+        # Prediction heads
+        pred_mean, pred_logvar = self.state_head(h_t)
+        pred_binary = self.infiltration_head(h_t)
+        pred_mitre = self.mitre_head(h_t)
+
+        out = {
+            "pred_state_mean": pred_mean,
+            "pred_state_logvar": pred_logvar,
+            "pred_binary": pred_binary,
+            "pred_mitre": pred_mitre,
+            "hidden": h_t,
+            "hidden_seq": hidden_seq,
+            "attention_weights": None,
+        }
+
+        if return_attention:
+            out["attention_weights"] = self._extract_attention(
+                x, causal_mask, device
+            )
+
+        return out
+
+    def predict_infiltration_prob(self, state_seq: torch.Tensor) -> torch.Tensor:
+        """Convenience: return P(attack) scalar per batch item."""
+        with torch.no_grad():
+            out = self.forward(state_seq)
+        return torch.softmax(out["pred_binary"], dim=-1)[:, 1]
+
+    def sample_next_state(
+        self,
+        state_seq: torch.Tensor,
+        deterministic: bool = False,
+    ) -> torch.Tensor:
+        """
+        Sample (or take mean of) the predicted next state distribution.
+        Used for K-step rollout.
+        """
+        with torch.no_grad():
+            out = self.forward(state_seq)
+        mean = out["pred_state_mean"]
+        if deterministic:
+            return mean
+        logvar = out["pred_state_logvar"].clamp(-10.0, 2.0)
+        std = (0.5 * logvar).exp()
+        eps = torch.randn_like(std)
+        return mean + eps * std
+
+    # ------------------------------------------------------------------
+    # Attention extraction (for explainability)
+    # ------------------------------------------------------------------
+    def _extract_attention(
+        self,
+        x: torch.Tensor,
+        mask: torch.Tensor,
+        device: torch.device,
+    ) -> torch.Tensor:
+        """
+        Re-run the last Transformer layer and extract attention weights.
+        Returns (B, L, L) averaged over heads.
+        """
+        last_layer = self.transformer.layers[-1]
+        attn_output, attn_weights = last_layer.self_attn(
+            x, x, x,
+            attn_mask=mask.float().masked_fill(mask, float("-inf")),
+            need_weights=True,
+            average_attn_weights=True,
+        )
+        return attn_weights  # (B, L, L)
+
+    def _init_weights(self):
+        """Xavier / normal weight init."""
+        for module in self.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.xavier_uniform_(module.weight)
+                if module.bias is not None:
+                    nn.init.zeros_(module.bias)
+            elif isinstance(module, nn.LayerNorm):
+                nn.init.ones_(module.weight)
+                nn.init.zeros_(module.bias)
+
+
+class LSTMWorldModel(nn.Module):
+    """
+    LSTM-based World Model variant.
+    Same input/output contract as StateTransformerWorldModel.
+    """
+
+    def __init__(
+        self,
+        d_state: int = 110,
+        d_model: int = 256,
+        lstm_layers: int = 2,
+        lookback: int = 20,
+        dropout: float = 0.1,
+        head_dropout: float = 0.3,
+        num_mitre_stages: int = NUM_MITRE_STAGES,
+    ):
+        super().__init__()
+        self.d_state = d_state
+        self.d_model = d_model
+        self.lookback = lookback
+
+        self.embedding = StateEmbedding(d_state, d_model, dropout)
+
+        self.lstm = nn.LSTM(
+            input_size=d_model,
+            hidden_size=d_model,
+            num_layers=lstm_layers,
+            batch_first=True,
+            dropout=dropout if lstm_layers > 1 else 0.0,
+            bidirectional=False,  # causal: no look-ahead
+        )
+
+        self.state_head = StatePredictionHead(d_model, d_state, head_dropout)
+        self.infiltration_head = ClassificationHead(d_model, 2, head_dropout)
+        self.mitre_head = ClassificationHead(d_model, num_mitre_stages, head_dropout)
+
+        n_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        logger.info(
+            "LSTMWorldModel: d_state=%d, d_model=%d, "
+            "lstm_layers=%d, params=%.2fM",
+            d_state, d_model, lstm_layers, n_params / 1e6,
+        )
+
+    def forward(
+        self,
+        state_seq: torch.Tensor,
+        hidden_state: Optional[tuple] = None,
+        return_attention: bool = False,
+    ) -> dict:
+        """
+        Parameters
+        ----------
+        state_seq    : (B, L, D_state)
+        hidden_state : optional LSTM (h, c) for stateful inference
+        """
+        x = self.embedding(state_seq)                # (B, L, D_model)
+        lstm_out, (h_n, c_n) = self.lstm(x, hidden_state)  # (B, L, D_model)
+
+        h_t = lstm_out[:, -1, :]                     # (B, D_model)
+
+        pred_mean, pred_logvar = self.state_head(h_t)
+        pred_binary = self.infiltration_head(h_t)
+        pred_mitre = self.mitre_head(h_t)
+
+        return {
+            "pred_state_mean": pred_mean,
+            "pred_state_logvar": pred_logvar,
+            "pred_binary": pred_binary,
+            "pred_mitre": pred_mitre,
+            "hidden": h_t,
+            "hidden_seq": lstm_out,
+            "lstm_state": (h_n, c_n),
+            "attention_weights": None,
+        }
+
+    def predict_infiltration_prob(self, state_seq: torch.Tensor) -> torch.Tensor:
+        with torch.no_grad():
+            out = self.forward(state_seq)
+        return torch.softmax(out["pred_binary"], dim=-1)[:, 1]
+
+    def sample_next_state(
+        self, state_seq: torch.Tensor, deterministic: bool = False
+    ) -> torch.Tensor:
+        with torch.no_grad():
+            out = self.forward(state_seq)
+        mean = out["pred_state_mean"]
+        if deterministic:
+            return mean
+        logvar = out["pred_state_logvar"].clamp(-10.0, 2.0)
+        std = (0.5 * logvar).exp()
+        return mean + torch.randn_like(std) * std
+
+
+def build_world_model(cfg) -> nn.Module:
+    """
+    Factory: build the world model specified in config.
+
+    Parameters
+    ----------
+    cfg : ModelConfig dataclass or dict-like
+    """
+    arch = getattr(cfg, "architecture", "transformer")
+
+    if arch == "transformer":
+        return StateTransformerWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            lookback=getattr(cfg, "lookback", 20),
+            dropout=cfg.dropout,
+            head_dropout=cfg.head_dropout,
+        )
+    elif arch == "lstm":
+        return LSTMWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            lstm_layers=cfg.lstm_layers,
+            lookback=getattr(cfg, "lookback", 20),
+            dropout=cfg.dropout,
+            head_dropout=cfg.head_dropout,
+        )
+    elif arch == "gnn":
+        from src.models.gnn_model import GraphWorldModel
+        return GraphWorldModel(
+            d_node=cfg.d_state,
+            d_graph=cfg.d_graph,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            gnn_type=cfg.gnn_type,
+            gnn_layers=cfg.gnn_layers,
+            dropout=cfg.dropout,
+            head_dropout=cfg.head_dropout,
+        )
+    elif arch == "latent":
+        from src.models.latent_dynamics import LatentDynamicsWorldModel
+        return LatentDynamicsWorldModel(
+            d_state=cfg.d_state,
+            d_latent=cfg.d_latent,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            dropout=cfg.dropout,
+            head_dropout=cfg.head_dropout,
+        )
+    else:
+        raise ValueError(f"Unknown architecture: {arch}")
+
+
+def save_checkpoint(
+    model: nn.Module,
+    optimizer,
+    epoch: int,
+    metrics: dict,
+    path: str,
+) -> None:
+    import os
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    torch.save(
+        {
+            "epoch": epoch,
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "metrics": metrics,
+            "model_class": model.__class__.__name__,
+        },
+        path,
+    )
+    logger.info("Saved checkpoint -> %s (epoch %d)", path, epoch)
+
+
+def load_checkpoint(
+    model: nn.Module,
+    path: str,
+    optimizer=None,
+    device: str = "cpu",
+) -> dict:
+    ckpt = torch.load(path, map_location=device)
+    model.load_state_dict(ckpt["model_state_dict"])
+    if optimizer and "optimizer_state_dict" in ckpt:
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+    logger.info(
+        "Loaded checkpoint from %s (epoch %d)", path, ckpt.get("epoch", -1)
+    )
+    return ckpt

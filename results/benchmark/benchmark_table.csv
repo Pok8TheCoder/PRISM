@@ -1,0 +1,4 @@
+Model,F1,Precision,Recall,FPR,ROC_AUC,MITRE_F1_Macro,Dynamics_MSE
+World Model,0.879,0.9958,0.7867,0.0056,0.961,0.5425,0.74
+LR Baseline,1.0,1.0,1.0,0.0,1.0,0.2143,
+RF Baseline,1.0,1.0,1.0,0.0,1.0,0.2143,

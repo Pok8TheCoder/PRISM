@@ -1,35 +1,45 @@
-# Virtual Environment
-venv/
-.venv/
-env/
-
-# Python / Bytecode
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.pytest_cache/
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Data & Models
+# Virtual Environment
+venv/
+.venv/
+ENV/
+
+# Logs and outputs
+*.log
+results/logs/
+results/figures/
+
+# Data and Weights (large binary files)
 data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
-models/checkpoints/*
-!models/checkpoints/.gitkeep
-*.pth
-*.pt
-*.onnx
-*.parquet
-*.h5
-*.hdf5
-*.pcap
-*.pcapng
-
-# Environment & Config
-.env
-.env.local
-*.log
+data/splits/*
+!data/splits/.gitkeep
+weights/*
+!weights/.gitkeep
 
 # IDE & OS
 .vscode/
