@@ -31,15 +31,29 @@ ENV/
 results/logs/
 results/figures/
 
-# Data and Weights (large binary files)
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/splits/*
-!data/splits/.gitkeep
-weights/*
-!weights/.gitkeep
+# Data and Weights
+# Ignore large multi-gigabyte raw CSVs (>100MB violates GitHub push limit)
+data/raw/**/*.csv
+data/raw/*.csv
+data/processed/*.csv
+data/processed/**/*.csv
+
+# Track processed dataset splits and state representations
+!data/splits/*.npz
+!data/processed/*.npz
+!data/raw/*.npz
+!data/*.json
+
+# Ignore intermediate epoch checkpoints to avoid exceeding repository limits
+weights/*_epoch*.pt
+weights/**/*_epoch*.pt
+
+# Track best model checkpoints, baselines, scalers, and evaluation metrics
+!weights/world_model_best.pt
+!weights/**/world_model_best.pt
+!weights/*.pkl
+!weights/**/*.json
+!weights/*.json
 
 # IDE & OS
 .vscode/
