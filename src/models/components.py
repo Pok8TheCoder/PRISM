@@ -313,7 +313,8 @@ class MultiTaskLoss(nn.Module):
         lambda_mitre: float = 1.0,
         binary_class_weights: Optional[torch.Tensor] = None,
         mitre_class_weights: Optional[torch.Tensor] = None,
-        use_focal: bool = False,
+        use_focal: bool = True,
+        focal_gamma: float = 2.0,
     ):
         super().__init__()
         self.lambda_d = lambda_dynamics
@@ -323,10 +324,10 @@ class MultiTaskLoss(nn.Module):
         self.dynamics_loss = RobustDynamicsLoss()
         if use_focal:
             self.infiltration_loss = FocalLoss(
-                gamma=1.5, weight=binary_class_weights, label_smoothing=0.01
+                gamma=focal_gamma, weight=binary_class_weights, label_smoothing=0.01
             )
             self.mitre_loss = FocalLoss(
-                gamma=1.5, weight=mitre_class_weights, label_smoothing=0.01
+                gamma=focal_gamma, weight=mitre_class_weights, label_smoothing=0.01
             )
         else:
             self.infiltration_loss = nn.CrossEntropyLoss(

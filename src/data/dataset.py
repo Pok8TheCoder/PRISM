@@ -9,7 +9,7 @@ from typing import Optional
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 
 logger = logging.getLogger("prism.data.dataset")
 
@@ -67,6 +67,11 @@ class StateSequenceDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.valid_indices)
+
+    @property
+    def sample_labels_binary(self) -> np.ndarray:
+        """Returns binary labels for all valid sequence target windows."""
+        return np.array([self.labels_binary[t].item() for t in self.valid_indices])
 
     def __getitem__(self, idx: int) -> dict:
         t = self.valid_indices[idx]
@@ -193,9 +198,18 @@ def create_dataloaders(
     batch_size: int = 64,
     num_workers: int = 4,
     stride: int = 1,
+    balanced_sampling: bool = True,
 ) -> dict:
     """
     Create DataLoaders for train/val/test splits.
+
+    Parameters
+    ----------
+    splits : dict
+        Dict mapping split name ('train', 'val', 'test') to split dict.
+    balanced_sampling : bool
+        If True, use WeightedRandomSampler on the training split to enforce
+        a 50/50 balance of attack and benign windows per batch.
 
     Returns dict mapping split name -> DataLoader.
     """
@@ -208,10 +222,34 @@ def create_dataloaders(
             lookback=lookback,
             stride=stride,
         )
+
+        sampler = None
+        shuffle = (name == "train")
+
+        if balanced_sampling and name == "train":
+            labels = ds.sample_labels_binary
+            counts = np.bincount(labels, minlength=2).astype(np.float64)
+            present = counts > 0
+            class_weights = np.zeros(len(counts), dtype=np.float64)
+            if present.all():
+                class_weights[present] = 1.0 / counts[present]
+                sample_weights = torch.tensor(class_weights[labels], dtype=torch.double)
+                sampler = WeightedRandomSampler(
+                    weights=sample_weights,
+                    num_samples=len(sample_weights),
+                    replacement=True,
+                )
+                shuffle = False
+                logger.info(
+                    "Train DataLoader: WeightedRandomSampler active (Class counts: %s -> balanced batches)",
+                    counts.tolist(),
+                )
+
         loaders[name] = DataLoader(
             ds,
             batch_size=batch_size,
-            shuffle=(name == "train"),
+            shuffle=shuffle,
+            sampler=sampler,
             num_workers=num_workers,
             pin_memory=True,
             drop_last=(name == "train"),

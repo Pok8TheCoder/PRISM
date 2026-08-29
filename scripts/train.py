@@ -198,20 +198,27 @@ def main():
         )
         cfg.model.d_graph = d_state
 
+    balanced_sampling = getattr(cfg.train, "balanced_sampling", True)
+    use_focal = getattr(cfg.train, "use_focal", True)
+
     loaders = create_dataloaders(
         splits,
         lookback=cfg.data.lookback,
         batch_size=cfg.train.batch_size,
         num_workers=cfg.data.num_workers,
+        balanced_sampling=balanced_sampling,
     )
 
     # Class weights for imbalanced data
-    binary_weights = compute_class_weights(
-        splits["train"]["labels_binary"], num_classes=2
-    ).to(device)
-    # Give attack minority class sufficient weight to ensure high recall (>90%)
-    binary_weights[1] = binary_weights[1] * 1.6
-    binary_weights = binary_weights / binary_weights.sum() * 2.0
+    if balanced_sampling:
+        # Since WeightedRandomSampler already provides 50/50 batches, use balanced weights
+        binary_weights = torch.ones(2, dtype=torch.float32, device=device)
+    else:
+        binary_weights = compute_class_weights(
+            splits["train"]["labels_binary"], num_classes=2
+        ).to(device)
+        binary_weights[1] = binary_weights[1] * 1.5
+        binary_weights = binary_weights / binary_weights.sum() * 2.0
 
     from src.utils.constants import NUM_MITRE_STAGES
     mitre_weights = compute_class_weights(
@@ -230,6 +237,7 @@ def main():
         lambda_mitre=cfg.train.lambda_mitre,
         binary_class_weights=binary_weights,
         mitre_class_weights=mitre_weights,
+        use_focal=use_focal,
     )
     optimizer = build_optimizer(model, cfg)
     scheduler = build_scheduler(optimizer, cfg, len(loaders["train"]))
@@ -237,7 +245,7 @@ def main():
     # ------------------------------------------------------------------
     # Training loop
     # ------------------------------------------------------------------
-    best_val_f1 = 0.0
+    best_val_score = -999.0
     patience_counter = 0
     history = {"train_loss": [], "val_loss": [], "val_f1": []}
 
@@ -253,9 +261,13 @@ def main():
         # Quick val metrics
         val_metrics = evaluate_model(model, loaders["val"], device)
         val_f1 = val_metrics["binary"]["f1"]
+        val_prec = val_metrics["binary"]["precision"]
+        val_rec = val_metrics["binary"]["recall"]
+        val_fpr = val_metrics["binary"]["fpr"]
         val_mitre_macro = val_metrics["mitre"]["f1_macro"]
-        # Composite score prioritising binary detection while rewarding MITRE stage progression
-        val_score = val_f1 + 0.5 * val_mitre_macro
+
+        # Balanced validation score: Maximize F1 and Recall, minimize False Alarm Rate (FPR), reward MITRE progression
+        val_score = val_f1 + 0.4 * val_rec - 0.6 * val_fpr + 0.3 * val_mitre_macro
 
         history["train_loss"].append(train_loss)
         history["val_loss"].append(val_loss)
@@ -276,8 +288,8 @@ def main():
                 scheduler.step()
 
         # Checkpoint best model
-        if val_score > best_val_f1:
-            best_val_f1 = val_score
+        if val_score > best_val_score:
+            best_val_score = val_score
             patience_counter = 0
             save_checkpoint(
                 model, optimizer, epoch,
