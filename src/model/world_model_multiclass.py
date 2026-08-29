@@ -40,8 +40,8 @@ SEQ_LEN     = 10
 BATCH_SIZE  = 256
 EPOCHS      = 30
 LR          = 1e-3
-D_MODEL     = 64
-NHEAD       = 4
+D_MODEL     = 256
+NHEAD       = 16
 NLAYERS     = 3
 DROPOUT     = 0.1
 

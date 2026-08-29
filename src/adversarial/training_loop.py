@@ -11,12 +11,13 @@ Loop:
   3. Run catalog attack bot inside attacker-bot
   4. Multi-class world model scores traffic
   5. On detection -> escalate evasion; on evasion/misclass -> save to missed/
-  6. Retrain on accumulated missed samples
+  6. Retrain on the full missed/ replay buffer (all prior labeled captures)
 """
 
 from __future__ import annotations
 
 import json
+import math
 import shutil
 import subprocess
 import time
@@ -101,7 +102,12 @@ def load_model_and_scaler(device: torch.device):
             and state["input_proj.weight"].shape == model_state["input_proj.weight"].shape
             and state["classify_head.weight"].shape == model_state["classify_head.weight"].shape
         )
-        if compatible:
+        finite = all(
+            torch.isfinite(v).all()
+            for v in state.values()
+            if torch.is_tensor(v)
+        )
+        if compatible and finite:
             model.load_state_dict(state)
             mean = np.array(ckpt["scaler_mean"], dtype=np.float64)
             scale = np.array(ckpt["scaler_std"], dtype=np.float64)
@@ -109,6 +115,11 @@ def load_model_and_scaler(device: torch.device):
                 scaler.mean_ = mean
                 scaler.scale_ = scale
             print(f"Loaded multi-class checkpoint: {CHECKPOINT_PATH}")
+        elif compatible and not finite:
+            print(
+                f"WARNING: Checkpoint at {CHECKPOINT_PATH} contains NaN/Inf weights. "
+                "Using random weights — retrain from missed samples."
+            )
         else:
             print(
                 f"WARNING: Checkpoint shape mismatch "
@@ -186,6 +197,52 @@ def save_missed_sample(
     return meta_path
 
 
+def load_missed_training_set() -> tuple[list[np.ndarray], list[int]]:
+    """Load every labeled capture under missed/ for replay retraining."""
+    feature_batches: list[np.ndarray] = []
+    label_indices: list[int] = []
+    if not MISSED_DIR.exists():
+        return feature_batches, label_indices
+
+    for meta_path in sorted(MISSED_DIR.rglob("*.json")):
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        class_id = meta.get("true_class_id")
+        if class_id not in CLASS_TO_IDX:
+            continue
+        feat_file = meta_path.parent / meta.get("features", "")
+        if not feat_file.exists():
+            continue
+        feats = np.load(feat_file).astype(np.float32)
+        if feats.ndim != 2 or len(feats) == 0:
+            continue
+        if feats.shape[1] < NUM_FEATURES:
+            pad = np.zeros((feats.shape[0], NUM_FEATURES - feats.shape[1]), dtype=np.float32)
+            feats = np.hstack([feats, pad])
+        elif feats.shape[1] > NUM_FEATURES:
+            feats = feats[:, :NUM_FEATURES]
+        if len(feats) < SEQ_LEN:
+            reps = int(np.ceil((SEQ_LEN + 1) / max(len(feats), 1)))
+            feats = np.tile(feats, (reps, 1))
+        feature_batches.append(feats)
+        label_indices.append(CLASS_TO_IDX[class_id])
+    return feature_batches, label_indices
+
+
+def retrain_on_all_missed(model, scaler, device, epochs: int = EPOCHS_PER_CYCLE) -> int:
+    """Fine-tune on the full missed/ replay buffer, not only the latest batch."""
+    batches, labels = load_missed_training_set()
+    if not batches:
+        print("  No missed samples on disk to replay.")
+        return 0
+    n_classes = len(set(labels))
+    print(f"  Replaying {len(batches)} missed samples across {n_classes} classes")
+    retrain_model(model, scaler, batches, labels, device, epochs=epochs)
+    return len(batches)
+
+
 def retrain_model(
     model,
     scaler: StandardScaler,
@@ -193,14 +250,42 @@ def retrain_model(
     label_indices: list[int],
     device: torch.device,
     epochs: int = EPOCHS_PER_CYCLE,
+    save_checkpoint: bool = True,
 ):
     sequences = []
     labels = []
+    cleaned: list[np.ndarray] = []
+    kept_labels: list[int] = []
 
     for feats, class_idx in zip(feature_batches, label_indices):
+        if feats.shape[1] != NUM_FEATURES:
+            if feats.shape[1] < NUM_FEATURES:
+                pad = np.zeros((len(feats), NUM_FEATURES - feats.shape[1]), dtype=np.float32)
+                feats = np.hstack([feats, pad])
+            else:
+                feats = feats[:, :NUM_FEATURES]
+        feats = np.nan_to_num(feats, nan=0.0, posinf=1e6, neginf=-1e6).astype(np.float32)
         if len(feats) < SEQ_LEN:
             continue
-        norm = ((feats - scaler.mean_) / (scaler.scale_ + 1e-8)).astype(np.float32)
+        cleaned.append(feats)
+        kept_labels.append(class_idx)
+
+    if not cleaned:
+        print("  Not enough sequence data for retraining. Skipping.")
+        return
+
+    stacked = np.vstack(cleaned)
+    fitted = StandardScaler()
+    fitted.fit(stacked)
+    fitted.scale_ = np.maximum(fitted.scale_, 1e-6)
+    scaler.mean_ = fitted.mean_
+    scaler.scale_ = fitted.scale_
+    scaler.var_ = fitted.var_
+    scaler.n_samples_seen_ = fitted.n_samples_seen_
+    scaler.n_features_in_ = fitted.n_features_in_
+
+    for feats, class_idx in zip(cleaned, kept_labels):
+        norm = fitted.transform(feats).astype(np.float32)
         for i in range(len(norm) - SEQ_LEN):
             sequences.append(norm[i:i + SEQ_LEN])
             labels.append(class_idx)
@@ -215,11 +300,12 @@ def retrain_model(
     X_t = torch.from_numpy(X).to(device)
     y_t = torch.from_numpy(y).to(device)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
     criterion = nn.CrossEntropyLoss()
 
     model.train()
     n = X_t.shape[0]
+    last_loss = float("inf")
     for epoch in range(epochs):
         perm = torch.randperm(n, device=device)
         total_loss = 0.0
@@ -228,11 +314,22 @@ def retrain_model(
             optimizer.zero_grad()
             _, logits = model(X_t[idx])
             loss = criterion(logits, y_t[idx])
+            if not torch.isfinite(loss):
+                print("  Loss diverged; aborting retrain without saving.")
+                return
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
             total_loss += loss.item() * len(idx)
-        print(f"  Retrain Epoch {epoch + 1}/{epochs} | Loss: {total_loss / n:.4f}")
+        last_loss = total_loss / n
+        print(f"  Retrain Epoch {epoch + 1}/{epochs} | Loss: {last_loss:.4f}")
+
+    if not math.isfinite(last_loss):
+        print("  Final loss is not finite; not saving checkpoint.")
+        return
+
+    if not save_checkpoint:
+        return
 
     CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
@@ -246,29 +343,54 @@ def retrain_model(
     print(f"  Updated checkpoint -> {CHECKPOINT_PATH}")
 
 
-def run_adversarial_loop(num_rounds: int = 20, attack_classes: list[str] | None = None):
+def _write_stats(stats: dict, extra: dict | None = None):
+    payload = dict(stats)
+    if extra:
+        payload.update(extra)
+    stats_path = SAVE_DIR / "adversarial_stats.json"
+    SAVE_DIR.mkdir(parents=True, exist_ok=True)
+    with open(stats_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+
+def run_adversarial_loop(
+    num_rounds: int = 20,
+    attack_classes: list[str] | None = None,
+    duration_sec: float | None = None,
+):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     classes = attack_classes or DEFAULT_ATTACK_CLASSES
     evasion_chains = get_evasion_chains()
     mitre_map = get_mitre_map()
+    deadline = time.time() + duration_sec if duration_sec else None
+    started = time.time()
 
     print(f"Adversarial Training Loop | Device: {device}")
     print(f"Target host: {TARGET_HOST} (isolated prism-lab DNS)")
     print(f"Attack rotation: {len(classes)} catalog classes")
+    if duration_sec:
+        print(f"Duration limit: {duration_sec / 60:.1f} minutes")
     print("=" * 70)
 
     if not ensure_lab_running():
         print("ERROR: Could not start Docker lab. Is Docker Desktop running?")
-        return
+        from src.ui.live_feed import write_loop_status
+        write_loop_status("error", {"error": "lab_start_failed"})
+        return {"ok": False, "error": "lab_start_failed"}
 
     status = lab_status()
     print("Container status:", status)
     if not verify_lab_connectivity():
         print("ERROR: Lab connectivity verification failed.")
-        return
+        from src.ui.live_feed import write_loop_status
+        write_loop_status("error", {"error": "lab_connectivity_failed"})
+        return {"ok": False, "error": "lab_connectivity_failed"}
 
     model, scaler = load_model_and_scaler(device)
     capture = TrafficCapture()
+
+    from src.ui.live_feed import write_loop_status
+    write_loop_status("running", {"started": started})
 
     missed_features: list[np.ndarray] = []
     missed_labels: list[int] = []
@@ -279,18 +401,30 @@ def run_adversarial_loop(num_rounds: int = 20, attack_classes: list[str] | None 
         "misclassified": 0,
         "retrain_cycles": 0,
         "missed_saved": 0,
+        "rounds_completed": 0,
     }
 
-    for round_num in range(1, num_rounds + 1):
+    round_num = 0
+    while True:
+        round_num += 1
+        if duration_sec is None and round_num > num_rounds:
+            break
+        if deadline and time.time() >= deadline:
+            print("Duration limit reached.")
+            break
+
         class_id = classes[(round_num - 1) % len(classes)]
         chain = evasion_chains.get(class_id, [])
         evasion = "none"
         evasion_idx = 0
         attempt = 0
 
-        print(f"\n--- Round {round_num}/{num_rounds} | Class: {class_id} ---")
+        print(f"\n--- Round {round_num} | Class: {class_id} ---")
 
         while attempt <= MAX_EVASION_ATTEMPTS:
+            if deadline and time.time() >= deadline:
+                print("  Duration limit reached mid-round.")
+                break
             attempt += 1
             stats["total_attacks"] += 1
             pcap_name = f"r{round_num}_a{attempt}_{class_id}_{evasion}.pcap"
@@ -332,6 +466,18 @@ def run_adversarial_loop(num_rounds: int = 20, attack_classes: list[str] | None 
             )
             print(f"  MITRE: {tactic} / {mitre_label}")
 
+            from src.ui.live_feed import append_live_event
+            append_live_event(
+                true_class=class_id,
+                evasion=evasion,
+                prediction=prediction,
+                pcap_path=pcap_path,
+                features=features,
+                flow_count=len(features),
+                round_num=round_num,
+                attempt=attempt,
+            )
+
             correct_class = prediction["pred_class"] == class_id
 
             if prediction["detected"] and correct_class:
@@ -359,13 +505,21 @@ def run_adversarial_loop(num_rounds: int = 20, attack_classes: list[str] | None 
             missed_labels.append(true_idx)
 
             if len(missed_features) >= RETRAIN_BATCHES:
-                print("  Retraining on missed/evaded samples...")
-                retrain_model(model, scaler, missed_features, missed_labels, device)
+                print("  Retraining on ALL missed samples (replay)...")
+                n_replay = retrain_on_all_missed(model, scaler, device)
+                print(f"  Replay retrain used {n_replay} samples")
                 missed_features = []
                 missed_labels = []
                 stats["retrain_cycles"] += 1
             break
 
+        stats["rounds_completed"] = round_num
+        stats["elapsed_sec"] = round(time.time() - started, 1)
+        _write_stats(stats, {"last_class": class_id, "status": "running"})
+
+    stats["rounds_completed"] = round_num if stats["total_attacks"] else 0
+    stats["elapsed_sec"] = round(time.time() - started, 1)
+    stats["status"] = "complete"
     print("\n" + "=" * 70)
     print("Adversarial Training Complete")
     print(f"  Total Attacks:     {stats['total_attacks']}")
@@ -376,11 +530,13 @@ def run_adversarial_loop(num_rounds: int = 20, attack_classes: list[str] | None 
     print(f"  Retrain cycles:    {stats['retrain_cycles']}")
     total = max(stats["total_attacks"], 1)
     print(f"  Detection rate:    {stats['detected'] / total * 100:.1f}%")
+    print(f"  Elapsed:           {stats['elapsed_sec']}s")
 
-    stats_path = SAVE_DIR / "adversarial_stats.json"
-    with open(stats_path, "w", encoding="utf-8") as f:
-        json.dump(stats, f, indent=2)
-    print(f"  Stats saved -> {stats_path}")
+    _write_stats(stats)
+    print(f"  Stats saved -> {SAVE_DIR / 'adversarial_stats.json'}")
+    from src.ui.live_feed import write_loop_status
+    write_loop_status("complete", {"elapsed_sec": stats["elapsed_sec"]})
+    return stats
 
 
 if __name__ == "__main__":

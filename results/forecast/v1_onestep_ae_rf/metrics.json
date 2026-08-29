@@ -1,0 +1,30 @@
+{
+  "YMT (v2, 64f)": {
+    "dim": 64,
+    "n_train_pairs": 18782,
+    "n_test_pairs": 6174,
+    "naive_persistence_mse": 0.24328161776065826,
+    "autoencoder_mlp": {
+      "test_mse": 0.11273820698261261,
+      "fit_time_sec": 7.26047158241272
+    },
+    "random_forest": {
+      "test_mse": 0.19049487602487103,
+      "fit_time_sec": 17.49285912513733
+    }
+  },
+  "AMT (aryan, 82f)": {
+    "dim": 82,
+    "n_train_pairs": 18782,
+    "n_test_pairs": 6174,
+    "naive_persistence_mse": 0.08001738041639328,
+    "autoencoder_mlp": {
+      "test_mse": 0.19749288260936737,
+      "fit_time_sec": 6.982632637023926
+    },
+    "random_forest": {
+      "test_mse": 0.3075689552807505,
+      "fit_time_sec": 22.494662284851074
+    }
+  }
+}

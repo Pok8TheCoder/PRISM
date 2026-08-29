@@ -1,0 +1,126 @@
+{
+  "attack (T1595_active_scan)": {
+    "v2": {
+      "n_steps": 241,
+      "coverage": {
+        "win_dst_port_entropy": {
+          "AE-MLP": 4.507073718404322,
+          "RF": 0.36272774108714373,
+          "XGBoost": 6.381525790321947,
+          "Hybrid (flat window)": 19.366388222802684,
+          "Temporal-GRU (recurrent)": 5.609384321245227,
+          "Holt damped-trend": 21.73758888244629
+        },
+        "win_syn_frac": {
+          "AE-MLP": 2.1864425708951067,
+          "RF": 0.09844781804259092,
+          "XGBoost": 0.7914198139620394,
+          "Hybrid (flat window)": 1.0224374476862776,
+          "Temporal-GRU (recurrent)": 1.026129525837104,
+          "Holt damped-trend": 1.2635999917984009
+        },
+        "cur_duration_log": {
+          "AE-MLP": 0.7235296682758788,
+          "RF": 0.06064303101823207,
+          "XGBoost": 1.1985530793383274,
+          "Hybrid (flat window)": 1.1868206245400776,
+          "Temporal-GRU (recurrent)": 1.2702604720290758,
+          "Holt damped-trend": 1.0374008417129517
+        }
+      },
+      "plot": "rollout3_v2_attack.png"
+    },
+    "amt": {
+      "n_steps": 241,
+      "coverage": {
+        "port_entropy": {
+          "AE-MLP": 10.74867690091463,
+          "RF": 0.4662100619826546,
+          "XGBoost": 6.873017362996489,
+          "Hybrid (flat window)": 25.232745052973083,
+          "Temporal-GRU (recurrent)": 10.451266978649786,
+          "Holt damped-trend": 21.73758888244629
+        },
+        "flag_frac_SYN": {
+          "AE-MLP": 18.305698892632027,
+          "RF": 0.11766942401245199,
+          "XGBoost": 1.0475386841696814,
+          "Hybrid (flat window)": 5.687025067437436,
+          "Temporal-GRU (recurrent)": 5.15141959700355,
+          "Holt damped-trend": 2.5199995040893555
+        },
+        "mean_duration_us": {
+          "AE-MLP": 59858.91020653767,
+          "RF": 0.020425650175361902,
+          "XGBoost": 114794.24229333889,
+          "Hybrid (flat window)": 168151.1682337188,
+          "Temporal-GRU (recurrent)": 175869.27726265197,
+          "Holt damped-trend": 0.3573707640171051
+        }
+      },
+      "plot": "rollout3_amt_attack.png"
+    }
+  },
+  "benign (CIC CSV)": {
+    "v2": {
+      "n_steps": 243,
+      "coverage": {
+        "win_dst_port_entropy": {
+          "AE-MLP": 0.22685427458562923,
+          "RF": 0.05313750228862462,
+          "XGBoost": 0.07923800661560719,
+          "Hybrid (flat window)": 0.17195503882700025,
+          "Temporal-GRU (recurrent)": 0.2864085711786677,
+          "Holt damped-trend": 1.130050539970398
+        },
+        "win_syn_frac": {
+          "AE-MLP": 0.390694027297348,
+          "RF": 0.03908076781133243,
+          "XGBoost": 0.03216791655416872,
+          "Hybrid (flat window)": 4.7571068693896015,
+          "Temporal-GRU (recurrent)": 1.1582452416922964,
+          "Holt damped-trend": 0.0
+        },
+        "cur_duration_log": {
+          "AE-MLP": 0.059445869063476986,
+          "RF": 0.011553845560400549,
+          "XGBoost": 0.22604091710847807,
+          "Hybrid (flat window)": 0.4382304264120806,
+          "Temporal-GRU (recurrent)": 0.28237810200809477,
+          "Holt damped-trend": 0.7129916548728943
+        }
+      },
+      "plot": "rollout3_v2_benign.png"
+    },
+    "amt": {
+      "n_steps": 243,
+      "coverage": {
+        "port_entropy": {
+          "AE-MLP": 0.37389305322158184,
+          "RF": 0.0063004595007761085,
+          "XGBoost": 0.5961533789735688,
+          "Hybrid (flat window)": 1.109779745494213,
+          "Temporal-GRU (recurrent)": 6.221179217743031,
+          "Holt damped-trend": 1.130050539970398
+        },
+        "flag_frac_SYN": {
+          "AE-MLP": 0.25402022845222805,
+          "RF": 0.0073468547060749675,
+          "XGBoost": 0.0976367729282102,
+          "Hybrid (flat window)": 1.0159893897251824,
+          "Temporal-GRU (recurrent)": 6.397402653327412,
+          "Holt damped-trend": 0.0
+        },
+        "mean_duration_us": {
+          "AE-MLP": 0.12729966684034405,
+          "RF": 0.006347760694239736,
+          "XGBoost": 0.4898973215548827,
+          "Hybrid (flat window)": 0.26393769813641577,
+          "Temporal-GRU (recurrent)": 7.676138672460011,
+          "Holt damped-trend": 0.28641706705093384
+        }
+      },
+      "plot": "rollout3_amt_benign.png"
+    }
+  }
+}

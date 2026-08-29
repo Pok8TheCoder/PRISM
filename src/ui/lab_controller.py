@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import threading
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -28,7 +29,7 @@ from src.adversarial.traffic_capture import TrafficCapture
 from src.adversarial.training_loop import (
     load_model_and_scaler,
     predict_attack,
-    retrain_model,
+    retrain_on_all_missed,
     run_attack_in_container,
     save_missed_sample,
 )
@@ -46,6 +47,7 @@ from src.model.world_model_multiclass import (
     pcap_to_rows,
     rows_to_matrix,
 )
+from src.pipeline.features import NUM_FEATURES
 
 K_ROLLOUT = 5
 MITRE_TACTICS = [
@@ -226,6 +228,18 @@ def run_attack_session(
     if model is not None and scaler is not None and device is not None:
         prediction = predict_attack(model, scaler, features, device)
 
+    from src.ui.live_feed import append_live_event
+    append_live_event(
+        true_class=class_id,
+        evasion=evasion,
+        prediction=prediction,
+        pcap_path=pcap_path,
+        features=features,
+        flow_count=len(features),
+        round_num=round_num,
+        attempt=attempt,
+    )
+
     return AttackRunResult(
         success=True,
         class_id=class_id,
@@ -396,27 +410,93 @@ def retrain_from_missed(
     device: torch.device,
     epochs: int = EPOCHS_PER_CYCLE,
 ) -> tuple[bool, str, int]:
-    feature_batches: list[np.ndarray] = []
-    label_indices: list[int] = []
-
-    for meta in list_missed_samples():
-        class_id = meta.get("true_class_id")
-        if class_id not in CLASS_TO_IDX:
-            continue
-        meta_dir = Path(meta["_path"]).parent
-        feat_file = meta_dir / meta.get("features", "")
-        if not feat_file.exists():
-            continue
-        feats = np.load(feat_file)
-        if len(feats) >= SEQ_LEN:
-            feature_batches.append(feats.astype(np.float32))
-            label_indices.append(CLASS_TO_IDX[class_id])
-
-    if not feature_batches:
+    n = retrain_on_all_missed(model, scaler, device, epochs=epochs)
+    if n == 0:
         return False, "No usable missed samples for retraining.", 0
+    return True, f"Retrained on {n} missed samples (full replay).", n
 
-    retrain_model(model, scaler, feature_batches, label_indices, device, epochs=epochs)
-    return True, f"Retrained on {len(feature_batches)} missed samples.", len(feature_batches)
+
+def train_on_all_dashboard_attacks(model, scaler, device) -> tuple[bool, str, dict]:
+    """Run every catalog bot once, label the capture, then fine-tune."""
+    from src.model.attack_catalog import get_bot_class_ids
+
+    if not ensure_lab_running() or not verify_lab_connectivity():
+        return False, "Lab is not ready. Start the lab first.", {}
+
+    classes = get_bot_class_ids()
+    log: list[str] = []
+    saved = 0
+    failed: list[str] = []
+    progress_path = SAVE_DIR / "catalog_train_progress.json"
+
+    for i, class_id in enumerate(classes, 1):
+        result = run_attack_session(
+            class_id, "none", round_num=i, attempt=1,
+            model=model, scaler=scaler, device=device,
+        )
+        entry = {
+            "class_id": class_id,
+            "success": result.success,
+            "flows": result.flow_count,
+            "message": result.message,
+        }
+        if result.success and result.features is not None and result.prediction:
+            save_result_to_missed(result, reason="catalog_seed", round_num=i, attempt=1)
+            saved += 1
+            entry["predicted"] = result.prediction["pred_class"]
+            entry["attack_prob"] = result.prediction["attack_prob"]
+            log.append(
+                f"{class_id}: pred={result.prediction['pred_class']} "
+                f"p={result.prediction['attack_prob']:.2f} flows={result.flow_count}"
+            )
+        else:
+            failed.append(class_id)
+            log.append(f"{class_id}: FAIL {result.message}")
+        progress_path.write_text(
+            json.dumps({"i": i, "n": len(classes), "saved": saved, "failed": failed, "log": log}, indent=2),
+            encoding="utf-8",
+        )
+
+    ok, msg, n = retrain_from_missed(model, scaler, device)
+    summary = {"saved": saved, "failed": failed, "retrain": msg, "samples": n, "log": log}
+    progress_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    if not ok and saved == 0:
+        return False, msg, summary
+    return True, f"Seeded {saved}/{len(classes)} attacks. {msg}", summary
+
+
+def run_timed_adversarial_loop(duration_sec: float = 1200) -> dict:
+    from src.model.attack_catalog import get_bot_class_ids
+    from src.adversarial.training_loop import run_adversarial_loop
+
+    return run_adversarial_loop(
+        num_rounds=10_000,
+        attack_classes=get_bot_class_ids(),
+        duration_sec=duration_sec,
+    )
+
+
+_loop_thread: threading.Thread | None = None
+
+
+def start_background_loop(duration_sec: float = 1200) -> str:
+    """Run the adversarial loop off the Streamlit script thread so Live Monitor can refresh."""
+    global _loop_thread
+    if _loop_thread is not None and _loop_thread.is_alive():
+        return "Adversarial loop already running — watch Live Monitor."
+
+    from src.ui.live_feed import write_loop_status
+    write_loop_status("starting")
+
+    def _run():
+        try:
+            run_timed_adversarial_loop(duration_sec)
+        except Exception as exc:
+            write_loop_status("error", {"error": str(exc)})
+
+    _loop_thread = threading.Thread(target=_run, name="prism-adv-loop", daemon=True)
+    _loop_thread.start()
+    return "Loop started in background. Open Live Monitor to watch packets."
 
 
 def build_forensic_report(

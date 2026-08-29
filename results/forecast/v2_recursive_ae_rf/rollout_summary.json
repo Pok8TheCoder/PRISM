@@ -1,0 +1,38 @@
+{
+  "attack (T1595_active_scan)": {
+    "v2": {
+      "n_steps": 247,
+      "ae_mse": 1.4333407212911593,
+      "rf_mse": 1.3240132747763487,
+      "ae_collapse_ratio": 26178906.635568827,
+      "rf_collapse_ratio": 52562.38912675471,
+      "plot": "rollout_v2_attack.png"
+    },
+    "amt": {
+      "n_steps": 247,
+      "ae_mse": 0.601724157730286,
+      "rf_mse": 0.39441670247882915,
+      "ae_collapse_ratio": 9868692.857747685,
+      "rf_collapse_ratio": 239570.49290693278,
+      "plot": "rollout_amt_attack.png"
+    }
+  },
+  "benign (CIC CSV)": {
+    "v2": {
+      "n_steps": 249,
+      "ae_mse": 0.6820421340781305,
+      "rf_mse": 0.7593881497210997,
+      "ae_collapse_ratio": 185352.9437524329,
+      "rf_collapse_ratio": 380.7795696940193,
+      "plot": "rollout_v2_benign.png"
+    },
+    "amt": {
+      "n_steps": 249,
+      "ae_mse": 0.7636291659082457,
+      "rf_mse": 0.56104587076649,
+      "ae_collapse_ratio": 8769721.573699929,
+      "rf_collapse_ratio": 4495.701478196175,
+      "plot": "rollout_amt_benign.png"
+    }
+  }
+}

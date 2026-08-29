@@ -1,0 +1,93 @@
+{
+  "overall_mse": {
+    "Temporal-Y (GRU, frozen)": 8.52151596000307,
+    "TFT.01 (Transformer, frozen)": 6.1603357205902265,
+    "RAM.01 (GRU+memory)": 8.129420632881155,
+    "RAMT.01 (Transformer+memory)": 6.041308618292829
+  },
+  "segment_mse": {
+    "Temporal-Y (GRU, frozen)": {
+      "Benign": 6.203028155586938,
+      "T1595_active_scan": 4.219968337886262,
+      "T1499_http_flood": 34.75184406057125,
+      "T1498_network_dos": 1.0873632343447674
+    },
+    "TFT.01 (Transformer, frozen)": {
+      "Benign": 6.186994152710458,
+      "T1595_active_scan": 3.038495499502569,
+      "T1499_http_flood": 19.01190011972253,
+      "T1498_network_dos": 1.1477961936761714
+    },
+    "RAM.01 (GRU+memory)": {
+      "Benign": 6.455074614494718,
+      "T1595_active_scan": 4.178666056232521,
+      "T1499_http_flood": 31.188291980639587,
+      "T1498_network_dos": 0.992728798378287
+    },
+    "RAMT.01 (Transformer+memory)": {
+      "Benign": 6.31764178159758,
+      "T1595_active_scan": 3.10669551537606,
+      "T1499_http_flood": 17.466552595009162,
+      "T1498_network_dos": 1.1649041204681139
+    }
+  },
+  "segments": [
+    [
+      "Benign",
+      0,
+      98
+    ],
+    [
+      "T1595_active_scan",
+      98,
+      346
+    ],
+    [
+      "Benign",
+      346,
+      444
+    ],
+    [
+      "T1499_http_flood",
+      444,
+      564
+    ],
+    [
+      "Benign",
+      564,
+      662
+    ],
+    [
+      "T1498_network_dos",
+      662,
+      904
+    ],
+    [
+      "Benign",
+      904,
+      1002
+    ]
+  ],
+  "memory_delta_pct": {
+    "GRU": -4.60123913353292,
+    "Transformer": -1.9321528516629793
+  },
+  "retrieval": {
+    "RAM.01": {
+      "n_surprises": 19,
+      "n_matched": 13,
+      "n_correct": 9,
+      "accuracy": 0.6923076923076923
+    },
+    "RAMT.01": {
+      "n_surprises": 20,
+      "n_matched": 13,
+      "n_correct": 10,
+      "accuracy": 0.7692307692307692
+    }
+  },
+  "n_params": {
+    "GRU": 33280,
+    "Transformer": 83264
+  }
+}

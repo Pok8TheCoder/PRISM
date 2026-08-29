@@ -41,7 +41,11 @@ from src.ui.lab_controller import (
     start_lab,
     stop_lab,
     threat_level,
+    train_on_all_dashboard_attacks,
+    start_background_loop,
 )
+from src.ui.live_feed import render_packet_visualizer
+from src.ui.forecast_player import render_forecast_player
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -74,9 +78,55 @@ SOC_CSS = """
         margin: 0.5rem 0;
     }
     div[data-testid="stExpander"] { background: #161b22; border: 1px solid #30363d; }
+    .wire-banner {
+        display: flex; justify-content: space-between; align-items: center;
+        font-family: Consolas, monospace; font-size: 0.85rem;
+        padding: 0.55rem 0.8rem; margin-bottom: 0.8rem;
+        background: #010409; border: 1px solid #30363d; border-radius: 8px;
+    }
+    .wire-live.on { color: #f85149; letter-spacing: 0.08em; animation: pulse 1.4s ease-in-out infinite; }
+    .wire-live.off { color: #8b949e; letter-spacing: 0.08em; }
+    .wire-legend { color: #8b949e; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 6px 0 12px; }
+    .dot.intrusion { background: #f85149; }
+    .dot.evasion { background: #a371f7; }
+    .dot.misclass { background: #d29922; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .verdict-card {
+        background: #010409; border: 1px solid #30363d; border-left-width: 4px;
+        border-radius: 8px; padding: 0.85rem 1rem; margin-top: 0.4rem;
+        font-family: Consolas, monospace; font-size: 0.82rem;
+    }
+    .verdict-tag { font-weight: 700; letter-spacing: 0.14em; margin-bottom: 0.35rem; }
+    .verdict-true, .verdict-pred, .verdict-meta { color: #c9d1d9; margin-top: 0.2rem; }
+    .verdict-meta { color: #8b949e; }
+    .pkt-feed {
+        background: #010409; border: 1px solid #30363d; border-radius: 8px;
+        padding: 0.4rem 0; max-height: 320px; overflow-y: auto;
+        font-family: Consolas, ui-monospace, monospace; font-size: 0.75rem;
+    }
+    .pkt-row {
+        display: grid; grid-template-columns: 118px 1fr 220px;
+        gap: 0.6rem; padding: 0.32rem 0.8rem;
+        border-left: 3px solid #30363d; color: #c9d1d9;
+    }
+    .pkt-row:nth-child(odd) { background: #0d1117; }
+    .pkt-tag { font-weight: 700; letter-spacing: 0.06em; }
+    .pkt-line { color: #8b949e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pkt-cls { color: #58a6ff; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 """
 st.markdown(SOC_CSS, unsafe_allow_html=True)
+
+
+def _live_packet_fragment():
+    render_packet_visualizer()
+
+
+try:
+    _live_packet_fragment = st.fragment(run_every=2.0)(_live_packet_fragment)
+except Exception:
+    pass
 
 
 def _init_session():
@@ -234,7 +284,7 @@ def _plot_attribution(scores: list[tuple[str, float]]):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def _render_suspect_review():
+def _render_suspect_review(key_prefix: str = "suspect"):
     suspect = st.session_state.pending_suspect
     if not suspect:
         return
@@ -254,7 +304,7 @@ def _render_suspect_review():
     c2.write(f"**Flows:** {result.flow_count} | **Evasion:** {result.evasion}")
 
     a1, a2, a3, a4 = st.columns(4)
-    if a1.button("Confirm Alert", type="primary"):
+    if a1.button("Confirm Alert", type="primary", key=f"{key_prefix}_confirm"):
         st.session_state.alerts.append({
             "time": datetime.now(timezone.utc).isoformat(),
             "result": result.to_dict(),
@@ -265,19 +315,19 @@ def _render_suspect_review():
         st.session_state.pending_suspect = None
         st.rerun()
 
-    if a2.button("Dismiss"):
+    if a2.button("Dismiss", key=f"{key_prefix}_dismiss"):
         _log(f"Dismissed suspect: {pred['pred_class']}")
         st.session_state.pending_suspect = None
         st.rerun()
 
-    if a3.button("Save to missed dataset"):
+    if a3.button("Save to missed dataset", key=f"{key_prefix}_save"):
         path = save_result_to_missed(result, reason="operator_save")
         _log(f"Saved missed sample -> {path}")
         st.session_state.pending_suspect = None
         st.cache_resource.clear()
         st.rerun()
 
-    if a4.button("Save + Dismiss"):
+    if a4.button("Save + Dismiss", key=f"{key_prefix}_save_dismiss"):
         save_result_to_missed(result, reason="operator_save")
         st.session_state.pending_suspect = None
         st.rerun()
@@ -365,6 +415,7 @@ def main():
 
         st.divider()
         st.subheader("Model")
+        st.caption("Retrain and the adversarial loop replay every labeled capture in missed/, not only the latest batch.")
         if not lab.checkpoint_compatible:
             st.warning("Train 33-class model or retrain checkpoint.")
         if st.button("Retrain on missed samples", use_container_width=True):
@@ -374,6 +425,24 @@ def main():
                 st.cache_resource.clear()
             st.success(msg) if ok else st.error(msg)
 
+        if st.button("Train on ALL catalog attacks", use_container_width=True):
+            with st.spinner("Running every dashboard attack class against the lab, then retraining..."):
+                ok, msg, summary = train_on_all_dashboard_attacks(model, scaler, device)
+            _log(msg)
+            st.session_state.catalog_train_summary = summary
+            if ok:
+                st.cache_resource.clear()
+                st.success(msg)
+            else:
+                st.error(msg)
+            if summary.get("log"):
+                st.code("\n".join(summary["log"][:40]), language=None)
+
+        if st.button("Adversarial loop 20 min", use_container_width=True):
+            msg = start_background_loop(1200)
+            _log(msg)
+            st.info(msg)
+
         st.divider()
         summary = get_catalog_summary()
         st.caption(
@@ -382,8 +451,9 @@ def main():
         )
 
     # ── Tabs ──────────────────────────────────────────────────────────────────
-    tab_demo, tab_live, tab_runbook, tab_missed, tab_mitre = st.tabs([
+    tab_demo, tab_live, tab_runbook, tab_missed, tab_mitre, tab_player = st.tabs([
         "PS Demo", "Live Monitor", "Attack Runbook", "Missed & Retrain", "MITRE Catalog",
+        "Forecast Player",
     ])
 
     last_pred = None
@@ -394,8 +464,19 @@ def main():
         _render_ps_demo(model, scaler, device)
 
     with tab_live:
+        st.subheader("Live packet wire")
+        st.caption(
+            "Red = correctly identified intrusion. Purple = evasion (attack not confidently named). "
+            "Amber = model saw an attack but named the wrong class."
+        )
+        try:
+            _live_packet_fragment()
+        except Exception:
+            render_packet_visualizer()
+
+        st.divider()
         _render_metrics(lab, last_pred)
-        _render_suspect_review()
+        _render_suspect_review("live")
 
         col_chart, col_tactic = st.columns([3, 2])
         forecast = None
@@ -529,7 +610,7 @@ def main():
             else:
                 st.warning("No scored result yet.")
 
-            _render_suspect_review()
+            _render_suspect_review("runbook")
 
             c1, c2 = st.columns(2)
             if c1.button("Back"):
@@ -628,6 +709,9 @@ def main():
                 "detectable": tech.get("detectable_from_network"),
             })
         st.dataframe(rows, use_container_width=True, hide_index=True)
+
+    with tab_player:
+        render_forecast_player()
 
 
 if __name__ == "__main__":

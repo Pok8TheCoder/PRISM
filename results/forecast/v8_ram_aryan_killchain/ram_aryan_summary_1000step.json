@@ -1,0 +1,75 @@
+{
+  "overall_mse": {
+    "Aryan-WM (frozen)": 1.736221194267273,
+    "RAM-A.01": 1.7528961896896362
+  },
+  "segment_mse": {
+    "Aryan-WM (frozen)": {
+      "Benign": 1.7832736670970917,
+      "InitialAccess": 4.780484676361084,
+      "LateralMovement": 2.7800650596618652,
+      "Impact": 0.6248119473457336
+    },
+    "RAM-A.01": {
+      "Benign": 1.802715688943863,
+      "InitialAccess": 4.8360700607299805,
+      "LateralMovement": 2.8379218578338623,
+      "Impact": 0.5986698865890503
+    }
+  },
+  "segments": [
+    [
+      "Benign",
+      0,
+      216
+    ],
+    [
+      "InitialAccess",
+      216,
+      236
+    ],
+    [
+      "Benign",
+      236,
+      452
+    ],
+    [
+      "LateralMovement",
+      452,
+      473
+    ],
+    [
+      "Benign",
+      473,
+      689
+    ],
+    [
+      "Impact",
+      689,
+      782
+    ],
+    [
+      "Benign",
+      782,
+      998
+    ]
+  ],
+  "n_params": 3800941,
+  "checkpoint_epoch": 13,
+  "checkpoint_metrics": {
+    "val_score": 0.8703744829980997,
+    "val_f1": 0.583941605839416,
+    "val_loss": 1.7451868951320648
+  },
+  "retrieval": {
+    "n_anomalies": 3,
+    "n_matched": 0,
+    "n_correct": 0,
+    "accuracy": null
+  },
+  "caveats": [
+    "Impact segment is drawn from the TRAIN split (only long contiguous run available) -- the model has seen this exact data during training, so it is a sanity check, not a fair test.",
+    "InitialAccess (val) and LateralMovement (test) segments are genuinely held-out.",
+    "Dataset is small (1957/419/420 train/val/test windows total) -- a real limitation of the underlying CIC-IDS-2018 sample used for training, not of RAM or the model architecture."
+  ]
+}

@@ -17,7 +17,13 @@ def main() -> int:
     prefix = str(ROOT)
     env["PYTHONPATH"] = prefix if not env.get("PYTHONPATH") else f"{prefix}{os.pathsep}{env['PYTHONPATH']}"
 
-    cmd = [sys.executable, "-m", "streamlit", "run", str(APP), *sys.argv[1:]]
+    cmd = [sys.executable, "-m", "streamlit", "run", str(APP)]
+    extra = list(sys.argv[1:])
+    if not any(a.startswith("--server.address") or a.startswith("--server.address=") for a in extra):
+        extra = ["--server.address", "0.0.0.0", *extra]
+    if not any(a.startswith("--server.headless") or a.startswith("--server.headless=") for a in extra):
+        extra = ["--server.headless", "true", *extra]
+    cmd.extend(extra)
     return subprocess.call(cmd, cwd=str(ROOT), env=env)
 
 
