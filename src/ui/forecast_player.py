@@ -26,13 +26,26 @@ TICK_SECONDS = 0.4             # fragment refresh interval. Each tick rebuilds 3
                                 # app/session, which is what made Play "not do much".
 TRANSITION_MS = 140            # plotly animates each redraw over this long instead of a hard cut
 
-SEGMENT_COLORS = {
-    "InitialAccess": "rgba(248,81,73,0.15)",
-    "LateralMovement": "rgba(88,166,255,0.15)",
-    "Impact": "rgba(210,153,34,0.15)",
-}
-
 SLOT_LINE_COLORS = {1: "#27ae60", 2: "#8e44ad", 3: "#e67e22"}
+
+# Shading palette — past vs future use different hues so overlaps read at a glance.
+# Overview chart uses GT_ATTACK_* only (labels, not model output).
+GT_ATTACK_PAST_FILL = "rgba(248,81,73,0.14)"
+GT_ATTACK_PAST_EDGE = "#f85149"
+GT_ATTACK_FUTURE_EDGE = "rgba(248,81,73,0.45)"   # dashed hint only, no fill
+
+PAST_ANOMALY_FILL = "rgba(56,139,253,0.32)"
+PAST_ANOMALY_EDGE = "rgba(56,139,253,0.55)"
+FUTURE_ANOMALY_FILL = "rgba(125,211,252,0.16)"
+FUTURE_ANOMALY_EDGE = "rgba(125,211,252,0.45)"
+
+PAST_INTRUSION_FILL = "rgba(248,81,73,0.38)"
+PAST_INTRUSION_EDGE = "rgba(248,81,73,0.75)"
+FUTURE_INTRUSION_FILL = "rgba(255,166,87,0.22)"   # orange = model forecast suspicion
+FUTURE_INTRUSION_EDGE = "rgba(255,166,87,0.55)"
+
+MEMORY_FILL = "rgba(255,193,7,0.28)"
+MEMORY_EDGE = "rgba(255,193,7,0.55)"
 
 NOW_LINE = dict(color="#c9d1d9", width=1.6, dash="dot")
 CHART_LAYOUT_BASE = dict(
@@ -74,10 +87,11 @@ def _render_top_controls():
     st.caption(
         "Replays a synthetic multi-attack timeline built from Aryan's real held-out "
         "CIC-IDS-2018 windows through his real trained checkpoint (no retraining). "
-        "**Blue** = model surprised (forecast error once revealed, or its own predicted-state "
-        "unusualness ahead of now). **Red** = suspected intrusion (infiltration head, run on real "
-        "data behind now and on the model's own rolled-out forecast ahead of now). "
-        "**Yellow** = RAM-A.01 writing a surprise window to its episodic memory cache."
+        "**Overview (top):** red shading = ground-truth attack labels (not model output) — only "
+        "filled up to the playhead; future attacks show as a faint dashed line at their start. "
+        "**Model slots:** solid blue/red = model signals on **revealed** real data; pale "
+        "cyan/orange = the model's own **forecast** cone ahead of now (no ground truth used). "
+        "**Yellow** = RAM-A.01 memory writes (revealed steps only)."
     )
     c1, c2 = st.columns([1, 1])
     with c1:
@@ -100,20 +114,22 @@ def _render_top_controls():
                      format_func=lambda k: fs.MODEL_CHOICES[k], key="fp_slot3")
 
 
-def _segment_shapes(segments, lo: int, hi: int) -> list[dict]:
-    shapes = []
-    for lbl, a, b in segments:
-        color = SEGMENT_COLORS.get(lbl)
-        if not color:
-            continue
-        aa, bb = max(a, lo), min(b, hi)
-        if aa < bb:
-            shapes.append(dict(type="rect", xref="x", yref="paper", x0=aa, x1=bb, y0=0, y1=1,
-                                fillcolor=color, line=dict(width=0), layer="below"))
-    return shapes
+def _clip_mask_side(mask: np.ndarray, playhead: int, side: str) -> np.ndarray:
+    out = mask.copy()
+    idx = np.arange(len(mask))
+    if side == "past":
+        out[idx > playhead] = False
+    else:
+        out[idx <= playhead] = False
+    return out
 
 
-def _mask_regions(mask: np.ndarray, lo: int, hi: int, color: str, layer: str = "below") -> list[dict]:
+def _intrusion_mask(probs: np.ndarray) -> np.ndarray:
+    return np.nan_to_num(probs, nan=0.0) > fs.INTRUSION_PROB_THRESH
+
+
+def _mask_regions(mask: np.ndarray, lo: int, hi: int, fill: str, layer: str = "below",
+                  edge: str | None = None) -> list[dict]:
     """Collapses a boolean mask into contiguous-run rectangles instead of one
     shape per flagged index -- far fewer shapes to build/serialize/diff each
     frame, which is most of what made playback feel janky."""
@@ -129,9 +145,12 @@ def _mask_regions(mask: np.ndarray, lo: int, hi: int, color: str, layer: str = "
         runs.append((start, prev))
         start = prev = i
     runs.append((start, prev))
+    line = dict(width=0)
+    if edge:
+        line = dict(color=edge, width=1)
     return [
         dict(type="rect", xref="x", yref="paper", x0=a - 0.5, x1=b + 0.5, y0=0, y1=1,
-             fillcolor=color, line=dict(width=0), layer=layer)
+             fillcolor=fill, line=line, layer=layer)
         for a, b in runs
     ]
 
@@ -154,11 +173,20 @@ def _render_overview(recordings: list[tuple[int, fs.Recording]], feature_idx: in
     for lbl, a, b in base_rec.segments:
         if lbl == "Benign":
             continue
-        shapes.append(dict(type="rect", xref="x", yref="paper", x0=a, x1=b, y0=0, y1=1,
-                            fillcolor="rgba(248,81,73,0.20)", line=dict(width=0), layer="below"))
-        for edge in (a, b):
-            shapes.append(dict(type="line", xref="x", yref="paper", x0=edge, x1=edge, y0=0, y1=1,
-                                line=dict(color="#f85149", width=1.3), layer="below"))
+        fill_end = min(b, playhead + 1)
+        if a < fill_end:
+            shapes.append(dict(
+                type="rect", xref="x", yref="paper", x0=a, x1=fill_end, y0=0, y1=1,
+                fillcolor=GT_ATTACK_PAST_FILL,
+                line=dict(color=GT_ATTACK_PAST_EDGE, width=1),
+                layer="below",
+            ))
+        if a > playhead:
+            shapes.append(dict(
+                type="line", xref="x", yref="paper", x0=a, x1=a, y0=0, y1=1,
+                line=dict(color=GT_ATTACK_FUTURE_EDGE, width=1.2, dash="dash"),
+                layer="below",
+            ))
     shapes.append(_now_line(playhead))
 
     fig = go.Figure()
@@ -173,7 +201,10 @@ def _render_overview(recordings: list[tuple[int, fs.Recording]], feature_idx: in
     fig.update_xaxes(range=[0, max(1, n_steps - 1)], gridcolor="#21262d")
     fig.update_yaxes(gridcolor="#21262d")
     st.plotly_chart(fig, use_container_width=True, key="fp_overview_chart")
-    st.caption("Red = ground-truth attack window (start/end marked). Dotted line = current playhead.")
+    st.caption(
+        "Filled red = ground-truth attack already passed (labels, not prediction). "
+        "Dashed red line = upcoming attack start (hint only). Dotted white = playhead."
+    )
 
 
 def _render_error_ranking(recordings: list[tuple[int, fs.Recording]], playhead: int):
@@ -207,11 +238,19 @@ def _render_model_row(rec: fs.Recording, feature_idx: int, playhead: int, slot_i
     lo, hi = int(x[0]), int(x[-1]) + 1
     color = SLOT_LINE_COLORS[slot_idx]
 
-    shapes = _segment_shapes(rec.segments, lo, hi)
+    past_anom = _clip_mask_side(rec.retro_anomaly_mask, playhead, "past")
+    future_anom = _clip_mask_side(rec.prospective_anomaly_mask, playhead, "future")
+    past_intr = _clip_mask_side(_intrusion_mask(rec.retro_intrusion_prob), playhead, "past")
+    future_intr = _clip_mask_side(_intrusion_mask(rec.prospective_intrusion_prob), playhead, "future")
+
+    shapes = []
+    shapes += _mask_regions(future_anom, lo, hi, FUTURE_ANOMALY_FILL, layer="below", edge=FUTURE_ANOMALY_EDGE)
+    shapes += _mask_regions(past_anom, lo, hi, PAST_ANOMALY_FILL, layer="below", edge=PAST_ANOMALY_EDGE)
     if rec.has_memory:
-        shapes += _mask_regions(rec.memory_write_mask, lo, hi, "rgba(255,215,0,0.25)", layer="below")
-    shapes += _mask_regions(rec.anomaly_mask_at(playhead), lo, hi, "rgba(31,111,235,0.28)", layer="below")
-    shapes += _mask_regions(rec.intrusion_mask_at(playhead), lo, hi, "rgba(248,81,73,0.32)", layer="above")
+        mem_past = _clip_mask_side(rec.memory_write_mask, playhead, "past")
+        shapes += _mask_regions(mem_past, lo, hi, MEMORY_FILL, layer="below", edge=MEMORY_EDGE)
+    shapes += _mask_regions(future_intr, lo, hi, FUTURE_INTRUSION_FILL, layer="above", edge=FUTURE_INTRUSION_EDGE)
+    shapes += _mask_regions(past_intr, lo, hi, PAST_INTRUSION_FILL, layer="above", edge=PAST_INTRUSION_EDGE)
     shapes.append(_now_line(playhead))
 
     fig = go.Figure()
@@ -231,8 +270,12 @@ def _render_model_row(rec: fs.Recording, feature_idx: int, playhead: int, slot_i
     fig.update_xaxes(range=[lo, hi], gridcolor="#21262d", title="step (dotted line = now)")
     fig.update_yaxes(gridcolor="#21262d")
     st.plotly_chart(fig, use_container_width=True, key=f"fp_chart_slot{slot_idx}")
-    if rec.has_memory:
-        st.caption("Yellow band = RAM-A.01 writing this window to its episodic memory cache.")
+    st.caption(
+        "Solid blue/red = model on revealed real data. Pale cyan/orange = model forecast ahead of now "
+        "(infiltration head run on the model's own rolled-out states, not ground truth). "
+        + ("Yellow = RAM memory writes so far. " if rec.has_memory else "")
+        + "Dashed line = forecast trajectory."
+    )
 
 
 def _tick(max_step: int):
