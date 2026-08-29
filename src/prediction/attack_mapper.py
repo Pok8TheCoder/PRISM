@@ -204,6 +204,18 @@ class AttackStageMapper:
 
         return {"stage_name": stage_name, "stage_id": stage_id, **meta}
 
+    def get_tactic_meta(self, stage: str | int) -> dict:
+        """
+        Lookup tactic metadata by stage name or stage ID.
+        """
+        if isinstance(stage, int):
+            return self.map_stage_id(stage)
+        stage_name = str(stage)
+        meta = dict(MITRE_TACTIC_META.get(stage_name, MITRE_TACTIC_META["Benign"]))
+        meta["capec_patterns"] = self.capec_kb.get_capec_for_stage(stage_name)
+        meta["cve_vulnerabilities"] = self.cve_kb.get_cves_for_stage(stage_name)
+        return meta
+
     def map_from_probs(self, mitre_probs: list[float]) -> dict:
         """
         Map from a probability distribution over stages.

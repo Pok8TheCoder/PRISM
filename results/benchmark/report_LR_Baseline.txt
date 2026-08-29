@@ -1,20 +1,22 @@
 === LR Baseline Binary Classification Report ===
               precision    recall  f1-score   support
 
-           0       1.00      0.85      0.92       420
-           1       0.00      0.00      0.00         0
+           0       0.90      0.97      0.93       345
+           1       0.78      0.52      0.62        75
 
-    accuracy                           0.85       420
-   macro avg       0.50      0.43      0.46       420
-weighted avg       1.00      0.85      0.92       420
+    accuracy                           0.89       420
+   macro avg       0.84      0.74      0.78       420
+weighted avg       0.88      0.89      0.88       420
 
 
 === LR Baseline MITRE Stage Report ===
               precision    recall  f1-score   support
 
-           0       1.00      0.85      0.92       420
+           0       0.92      0.94      0.93       362
            1       0.00      0.00      0.00         0
+           3       0.00      0.00      0.00        57
+           6       0.00      0.00      0.00         1
 
-    accuracy                           0.85       420
-   macro avg       0.50      0.43      0.46       420
-weighted avg       1.00      0.85      0.92       420
+    accuracy                           0.81       420
+   macro avg       0.23      0.23      0.23       420
+weighted avg       0.79      0.81      0.80       420

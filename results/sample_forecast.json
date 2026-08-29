@@ -1,0 +1,90 @@
+{
+  "overall_alert": "none",
+  "peak_infiltration_prob": 0.015054226713255047,
+  "peak_step": 10,
+  "is_escalating": false,
+  "early_warning_steps": 0,
+  "trajectory_summary": "Network trajectory appears benign. No significant threat indicators detected.",
+  "steps": [
+    {
+      "step": 1,
+      "infiltration_prob": 0.00033035737578757107,
+      "mitre_stage": "Benign",
+      "confidence": 1.0,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 2,
+      "infiltration_prob": 0.001700372653431259,
+      "mitre_stage": "Benign",
+      "confidence": 0.9987368074484352,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 3,
+      "infiltration_prob": 0.002083931262313854,
+      "mitre_stage": "Benign",
+      "confidence": 0.9979676176249384,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 4,
+      "infiltration_prob": 0.0036802235379582273,
+      "mitre_stage": "Benign",
+      "confidence": 0.9977756112783261,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 5,
+      "infiltration_prob": 0.0037350556813180447,
+      "mitre_stage": "Benign",
+      "confidence": 0.9974720070184786,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 6,
+      "infiltration_prob": 0.0035161005449481308,
+      "mitre_stage": "Benign",
+      "confidence": 0.9981625304050107,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 7,
+      "infiltration_prob": 0.003454842753126286,
+      "mitre_stage": "Benign",
+      "confidence": 0.9971615546070951,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 8,
+      "infiltration_prob": 0.00335849204857368,
+      "mitre_stage": "Benign",
+      "confidence": 0.9966025747191696,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 9,
+      "infiltration_prob": 0.003171638783533126,
+      "mitre_stage": "Benign",
+      "confidence": 0.9959990306583062,
+      "alert_level": "none",
+      "top_features": []
+    },
+    {
+      "step": 10,
+      "infiltration_prob": 0.015054226713255047,
+      "mitre_stage": "Benign",
+      "confidence": 0.9810131665369832,
+      "alert_level": "none",
+      "top_features": []
+    }
+  ]
+}

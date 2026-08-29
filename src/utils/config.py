@@ -22,7 +22,7 @@ class DataConfig:
     test_ratio: float = 0.15
     use_packet_features: bool = True
     max_flows_per_window: int = 10000
-    num_workers: int = 4
+    num_workers: int = 0
 
 
 @dataclass

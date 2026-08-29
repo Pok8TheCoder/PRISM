@@ -1,20 +1,22 @@
 === RF Baseline Binary Classification Report ===
               precision    recall  f1-score   support
 
-           0       1.00      0.91      0.95       420
-           1       0.00      0.00      0.00         0
+           0       0.87      1.00      0.93       345
+           1       1.00      0.33      0.50        75
 
-    accuracy                           0.91       420
-   macro avg       0.50      0.45      0.48       420
-weighted avg       1.00      0.91      0.95       420
+    accuracy                           0.88       420
+   macro avg       0.94      0.67      0.72       420
+weighted avg       0.90      0.88      0.86       420
 
 
 === RF Baseline MITRE Stage Report ===
               precision    recall  f1-score   support
 
-           0       1.00      0.91      0.95       420
+           0       0.88      0.96      0.92       362
            1       0.00      0.00      0.00         0
+           3       0.00      0.00      0.00        57
+           6       0.00      0.00      0.00         1
 
-    accuracy                           0.91       420
-   macro avg       0.50      0.45      0.48       420
-weighted avg       1.00      0.91      0.95       420
+    accuracy                           0.83       420
+   macro avg       0.22      0.24      0.23       420
+weighted avg       0.76      0.83      0.79       420

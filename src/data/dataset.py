@@ -225,11 +225,15 @@ def create_dataloaders(
 
 
 def compute_class_weights(labels: np.ndarray, num_classes: int = 2) -> torch.Tensor:
-    """Compute inverse-frequency class weights for imbalanced data."""
+    """Compute balanced inverse-frequency class weights for present classes."""
     counts = np.bincount(labels, minlength=num_classes).astype(np.float64)
-    counts = np.maximum(counts, 1.0)  # avoid division by zero
-    weights = 1.0 / counts
-    weights = weights / weights.sum() * num_classes  # normalise
+    present = counts > 0
+    weights = np.zeros(num_classes, dtype=np.float64)
+    if present.any():
+        # Smoothed inverse square root frequency prevents extreme skew while boosting minority
+        inv = 1.0 / np.sqrt(counts[present])
+        weights[present] = inv / inv.sum() * present.sum()
+    weights[~present] = 0.0
     return torch.tensor(weights, dtype=torch.float32)
 
 

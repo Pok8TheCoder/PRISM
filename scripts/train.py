@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, ReduceLROnPlateau
+from torch.optim.lr_scheduler import CosineAnnealingLR, ReduceLROnPlateau
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -59,8 +59,8 @@ def build_optimizer(model, cfg):
 
 def build_scheduler(optimizer, cfg, steps_per_epoch: int):
     if cfg.train.scheduler == "cosine":
-        return CosineAnnealingWarmRestarts(
-            optimizer, T_0=10, T_mult=2, eta_min=1e-6
+        return CosineAnnealingLR(
+            optimizer, T_max=cfg.train.epochs, eta_min=1e-6
         )
     elif cfg.train.scheduler == "plateau":
         return ReduceLROnPlateau(
@@ -134,6 +134,7 @@ def main():
     parser.add_argument("--states", default=None, help="Path to states.npz (skips split creation)")
     parser.add_argument("--splits-dir", default=None, help="Path to pre-split directory")
     parser.add_argument("--epochs", type=int, default=None)
+    parser.add_argument("--patience", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--arch", default=None, choices=["transformer", "lstm", "gnn", "latent"])
@@ -144,6 +145,7 @@ def main():
     # Load config
     overrides = {}
     if args.epochs: overrides["train.epochs"] = args.epochs
+    if args.patience: overrides["train.patience"] = args.patience
     if args.batch_size: overrides["train.batch_size"] = args.batch_size
     if args.lr: overrides["train.learning_rate"] = args.lr
     if args.arch: overrides["model.architecture"] = args.arch
@@ -207,11 +209,16 @@ def main():
     binary_weights = compute_class_weights(
         splits["train"]["labels_binary"], num_classes=2
     ).to(device)
+    # Give attack minority class sufficient weight to ensure high recall (>90%)
+    binary_weights[1] = binary_weights[1] * 1.6
+    binary_weights = binary_weights / binary_weights.sum() * 2.0
+
     from src.utils.constants import NUM_MITRE_STAGES
     mitre_weights = compute_class_weights(
         splits["train"]["labels_mitre"], num_classes=NUM_MITRE_STAGES
     ).to(device)
     logger.info("Binary class weights: %s", binary_weights.cpu().tolist())
+    logger.info("MITRE class weights: %s", mitre_weights.cpu().tolist())
 
     # ------------------------------------------------------------------
     # Model, loss, optimizer
@@ -246,6 +253,9 @@ def main():
         # Quick val metrics
         val_metrics = evaluate_model(model, loaders["val"], device)
         val_f1 = val_metrics["binary"]["f1"]
+        val_mitre_macro = val_metrics["mitre"]["f1_macro"]
+        # Composite score prioritising binary detection while rewarding MITRE stage progression
+        val_score = val_f1 + 0.5 * val_mitre_macro
 
         history["train_loss"].append(train_loss)
         history["val_loss"].append(val_loss)
@@ -253,28 +263,37 @@ def main():
 
         logger.info(
             "Epoch %3d/%d | train_loss=%.4f | val_loss=%.4f | "
-            "val_F1=%.4f | val_FPR=%.4f",
+            "val_F1=%.4f | val_MITRE=%.4f | val_FPR=%.4f",
             epoch, cfg.train.epochs, train_loss, val_loss,
-            val_f1, val_metrics["binary"]["fpr"],
+            val_f1, val_mitre_macro, val_metrics["binary"]["fpr"],
         )
 
         # Scheduler step
         if scheduler:
             if isinstance(scheduler, ReduceLROnPlateau):
-                scheduler.step(val_f1)
+                scheduler.step(val_score)
             else:
                 scheduler.step()
 
         # Checkpoint best model
-        if val_f1 > best_val_f1:
-            best_val_f1 = val_f1
+        if val_score > best_val_f1:
+            best_val_f1 = val_score
             patience_counter = 0
             save_checkpoint(
                 model, optimizer, epoch,
-                {"val_f1": val_f1, "val_loss": val_loss},
+                {"val_score": val_score, "val_f1": val_f1, "val_mitre": val_mitre_macro, "val_loss": val_loss},
                 best_ckpt_path,
             )
-            logger.info("  -> New best model saved (val_F1=%.4f)", best_val_f1)
+            # Sync to weights/transformer if training primary transformer
+            if args.output_dir == "weights" and cfg.model.architecture in ("transformer", "temporal_transformer"):
+                tf_dir = os.path.join(args.output_dir, "transformer")
+                os.makedirs(tf_dir, exist_ok=True)
+                save_checkpoint(
+                    model, optimizer, epoch,
+                    {"val_score": val_score, "val_f1": val_f1, "val_loss": val_loss},
+                    os.path.join(tf_dir, "world_model_best.pt"),
+                )
+            logger.info("  -> New best model saved (val_score=%.4f, val_F1=%.4f, val_MITRE=%.4f)", val_score, val_f1, val_mitre_macro)
         else:
             patience_counter += 1
 

@@ -77,11 +77,12 @@ class AttentionVisualiser:
         result = {}
 
         if last_attn is not None:
-            last_np = (
-                last_attn[0].cpu().numpy()
-                if hasattr(last_attn, "cpu")
-                else np.array(last_attn)
-            )
+            if hasattr(last_attn, "detach"):
+                last_np = last_attn[0].detach().cpu().numpy()
+            elif hasattr(last_attn, "cpu"):
+                last_np = last_attn[0].cpu().numpy()
+            else:
+                last_np = np.array(last_attn)
             result["last_layer_attn"] = last_np  # (L, L)
             result["top_attended_steps"] = self._top_attended(last_np[-1])
         else:

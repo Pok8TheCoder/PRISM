@@ -7,7 +7,14 @@ Produces comparison tables, plots, and saves results to disk.
 import json
 import logging
 import os
+import sys
+from pathlib import Path
 from typing import Optional
+
+# Ensure project root in sys.path
+_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 import numpy as np
 import pandas as pd
@@ -301,3 +308,13 @@ class BenchmarkRunner:
             logger.info("Saved benchmark plot -> %s", save_path)
 
         return fig
+
+
+def main():
+    """CLI entry point for running benchmark directly from src/evaluation/benchmark.py."""
+    from src.model_comparison import run_model_comparison
+    run_model_comparison()
+
+
+if __name__ == "__main__":
+    main()

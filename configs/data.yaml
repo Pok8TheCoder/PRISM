@@ -17,7 +17,7 @@ data:
   test_ratio: 0.15
   use_packet_features: true
   max_flows_per_window: 10000
-  num_workers: 4
+  num_workers: 0
 
 nciipc:
   agency: "National Critical Information Infrastructure Protection Centre (NCIIPC)"

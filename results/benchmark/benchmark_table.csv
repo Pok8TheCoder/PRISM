@@ -1,4 +1,4 @@
 Model,F1,Precision,Recall,FPR,ROC_AUC,MITRE_F1_Macro,Dynamics_MSE
-World Model,0.0,0.0,0.0,0.0,,1.0,176.0543
-LR Baseline,0.0,0.0,0.0,0.1452,,0.4608,
-RF Baseline,0.0,0.0,0.0,0.0929,,0.4757,
+PRISM World Model (Ours),0.7273,0.9362,0.5946,0.0092,0.8839,0.5599,173.5911
+Logistic Regression,0.624,0.78,0.52,0.0319,0.913,0.2316,
+Random Forest,0.5,1.0,0.3333,0.0,0.9729,0.2305,
