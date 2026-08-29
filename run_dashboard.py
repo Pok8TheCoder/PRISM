@@ -16,6 +16,8 @@ def main() -> int:
     env = os.environ.copy()
     prefix = str(ROOT)
     env["PYTHONPATH"] = prefix if not env.get("PYTHONPATH") else f"{prefix}{os.pathsep}{env['PYTHONPATH']}"
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
 
     cmd = [sys.executable, "-m", "streamlit", "run", str(APP), *sys.argv[1:]]
     return subprocess.call(cmd, cwd=str(ROOT), env=env)

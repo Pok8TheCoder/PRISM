@@ -18,12 +18,15 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 def _container_running(name: str) -> bool:
-    result = subprocess.run(
-        ["docker", "inspect", "-f", "{{.State.Running}}", name],
-        capture_output=True,
-        text=True,
-    )
-    return result.returncode == 0 and result.stdout.strip() == "true"
+    try:
+        result = subprocess.run(
+            ["docker", "inspect", "-f", "{{.State.Running}}", name],
+            capture_output=True,
+            text=True,
+        )
+        return result.returncode == 0 and result.stdout.strip() == "true"
+    except (FileNotFoundError, Exception):
+        return False
 
 
 def lab_status() -> dict[str, bool]:
@@ -42,8 +45,11 @@ def ensure_lab_running() -> bool:
 
     print("PRISM lab not fully running. Starting docker compose...")
     cmd = [sys.executable, str(ROOT / "scripts" / "lab_ctl.py"), "up"]
-    result = subprocess.run(cmd, cwd=str(ROOT))
-    return result.returncode == 0
+    try:
+        result = subprocess.run(cmd, cwd=str(ROOT))
+        return result.returncode == 0
+    except (FileNotFoundError, Exception):
+        return False
 
 
 def verify_lab_connectivity() -> bool:
@@ -53,9 +59,12 @@ def verify_lab_connectivity() -> bool:
         "python3", "-m", "src.adversarial.attack_script",
         TARGET_HOST, "T1046_service_scan", "none",
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, cwd=str(ROOT))
-    ok = result.returncode == 0 and "DONE|class=" in (result.stdout or "")
-    if not ok:
-        print("Lab connectivity check failed:")
-        print(result.stdout or result.stderr)
-    return ok
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, cwd=str(ROOT))
+        ok = result.returncode == 0 and "DONE|class=" in (result.stdout or "")
+        if not ok:
+            print("Lab connectivity check failed:")
+            print(result.stdout or result.stderr)
+        return ok
+    except (FileNotFoundError, Exception):
+        return False
