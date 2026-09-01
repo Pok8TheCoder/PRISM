@@ -108,9 +108,12 @@ class StateBuilder:
 
             # Labels — attack if any attack flow present in window
             if label_col in window.columns:
-                stage_counts = window[label_col].value_counts()
                 has_attack = int((window[label_col] > 0).any())
-                dominant_stage = int(stage_counts.idxmax())
+                if has_attack:
+                    attack_flows = window[window[label_col] > 0]
+                    dominant_stage = int(attack_flows[label_col].value_counts().idxmax()) if len(attack_flows) > 0 else 0
+                else:
+                    dominant_stage = 0
             else:
                 has_attack = 0
                 dominant_stage = 0
@@ -271,7 +274,11 @@ class StateBuilder:
 
             if label_col in window.columns:
                 has_attack = int((window[label_col] > 0).any())
-                dominant_stage = int(window[label_col].value_counts().idxmax())
+                if has_attack:
+                    attack_flows = window[window[label_col] > 0]
+                    dominant_stage = int(attack_flows[label_col].value_counts().idxmax()) if len(attack_flows) > 0 else 0
+                else:
+                    dominant_stage = 0
             else:
                 has_attack = 0
                 dominant_stage = 0

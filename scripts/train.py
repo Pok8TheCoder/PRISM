@@ -231,6 +231,7 @@ def main():
     # Model, loss, optimizer
     # ------------------------------------------------------------------
     model = build_world_model(cfg.model).to(device)
+    asymmetric_fn_weight = getattr(cfg.train, "asymmetric_fn_weight", 3.0)
     loss_fn = MultiTaskLoss(
         lambda_dynamics=cfg.train.lambda_dynamics,
         lambda_infiltration=cfg.train.lambda_infiltration,
@@ -238,6 +239,7 @@ def main():
         binary_class_weights=binary_weights,
         mitre_class_weights=mitre_weights,
         use_focal=use_focal,
+        asymmetric_fn_weight=asymmetric_fn_weight,
     )
     optimizer = build_optimizer(model, cfg)
     scheduler = build_scheduler(optimizer, cfg, len(loaders["train"]))

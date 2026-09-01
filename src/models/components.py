@@ -299,22 +299,110 @@ class GaussianNLL(nn.Module):
         return nll.mean()
 
 
-class MultiTaskLoss(nn.Module):
+class MultiScaleTemporalConvBlock(nn.Module):
     """
-    Combined loss for world model training:
-      L = lambda_d * L_dynamics + lambda_i * L_infiltration + lambda_m * L_mitre
-    Uses RobustDynamicsLoss for dynamics and balanced CrossEntropy for classification.
+    Generation 5 Multi-Scale Causal 1D Inception Temporal Block.
+    Extracts temporal dynamics across 3 parallel causal receptive fields:
+      - Branch 1 (k=1): Instantaneous pointwise state anomaly.
+      - Branch 2 (k=3): Fast packet burst & port scan pacing (90s window).
+      - Branch 3 (k=5): Slow-and-low multi-window stealth drift (150s window).
+      - Branch 4: Causal MaxPool1d + 1x1 conv (Peak flow envelope tracking).
+    Fuses all branches with linear projection, LayerNorm, GELU, and residual skip connection.
+    """
+
+    def __init__(self, d_model: int, dropout: float = 0.1):
+        super().__init__()
+        b_dim = d_model // 4
+        self.b1 = nn.Conv1d(d_model, b_dim, kernel_size=1)
+
+        self.pad3 = 2  # Causal left padding for k=3
+        self.b2 = nn.Conv1d(d_model, b_dim, kernel_size=3, padding=0)
+
+        self.pad5 = 4  # Causal left padding for k=5
+        self.b3 = nn.Conv1d(d_model, b_dim, kernel_size=5, padding=0)
+
+        self.pad_pool = 2
+        self.pool = nn.MaxPool1d(kernel_size=3, stride=1, padding=0)
+        self.b4 = nn.Conv1d(d_model, d_model - 3 * b_dim, kernel_size=1)
+
+        self.proj = nn.Linear(d_model, d_model)
+        self.norm = nn.LayerNorm(d_model)
+        self.act = nn.GELU()
+        self.dropout = nn.Dropout(dropout)
+        # Initialize projection to scale residual smoothly
+        nn.init.xavier_uniform_(self.proj.weight, gain=0.5)
+        nn.init.zeros_(self.proj.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        residual = x
+        xt = x.transpose(1, 2)  # (batch, d_model, seq_len)
+
+        out1 = self.b1(xt)
+        out2 = self.b2(F.pad(xt, (self.pad3, 0)))
+        out3 = self.b3(F.pad(xt, (self.pad5, 0)))
+        out4 = self.b4(self.pool(F.pad(xt, (self.pad_pool, 0))))
+
+        fused = torch.cat([out1, out2, out3, out4], dim=1).transpose(1, 2)
+        out = self.proj(fused)
+        out = self.dropout(self.act(out))
+        return self.norm(residual + out)
+
+
+class AsymmetricFocalLoss(nn.Module):
+    """
+    Asymmetric Cost-Sensitive Focal Loss for Threat Detection.
+    Applies asymmetric penalty weights: False Negatives (missed attacks) carry a
+    higher penalty weight w_fn (e.g. 3.0) than False Positives (w_fp = 1.0).
+    This directly forces the optimizer to maximize threat recall and suppress missed breaches.
     """
 
     def __init__(
         self,
-        lambda_dynamics: float = 0.5,
-        lambda_infiltration: float = 1.2,
-        lambda_mitre: float = 1.0,
+        gamma: float = 2.0,
+        fn_weight: float = 3.0,
+        weight: Optional[torch.Tensor] = None,
+        label_smoothing: float = 0.01,
+    ):
+        super().__init__()
+        self.gamma = gamma
+        self.fn_weight = fn_weight
+        self.weight = weight
+        self.label_smoothing = label_smoothing
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        probs = torch.softmax(logits, dim=-1)
+        p_t = probs.gather(1, targets.unsqueeze(1)).squeeze(1)
+        p_t = torch.clamp(p_t, min=1e-7, max=1.0)
+        
+        focal_mod = (1.0 - p_t) ** self.gamma
+        ce_loss = -torch.log(p_t)
+
+        is_positive = (targets > 0).float()
+        cost_weights = 1.0 + (self.fn_weight - 1.0) * is_positive
+        
+        if self.weight is not None:
+            w_class = self.weight[targets]
+            return (w_class * cost_weights * focal_mod * ce_loss).mean()
+        return (cost_weights * focal_mod * ce_loss).mean()
+
+
+class MultiTaskLoss(nn.Module):
+    """
+    Combined loss for world model training:
+      L = lambda_d * L_dynamics + lambda_i * L_infiltration + lambda_m * L_mitre
+    Uses RobustDynamicsLoss for dynamics and AsymmetricFocalLoss for classification.
+    """
+
+    def __init__(
+        self,
+        lambda_dynamics: float = 0.03,
+        lambda_infiltration: float = 3.0,
+        lambda_mitre: float = 1.5,
         binary_class_weights: Optional[torch.Tensor] = None,
         mitre_class_weights: Optional[torch.Tensor] = None,
         use_focal: bool = True,
         focal_gamma: float = 2.0,
+        asymmetric_fn_weight: float = 3.0,
     ):
         super().__init__()
         self.lambda_d = lambda_dynamics
@@ -323,12 +411,20 @@ class MultiTaskLoss(nn.Module):
 
         self.dynamics_loss = RobustDynamicsLoss()
         if use_focal:
-            self.infiltration_loss = FocalLoss(
-                gamma=focal_gamma, weight=binary_class_weights, label_smoothing=0.01
-            )
-            self.mitre_loss = FocalLoss(
-                gamma=focal_gamma, weight=mitre_class_weights, label_smoothing=0.01
-            )
+            if asymmetric_fn_weight > 1.0:
+                self.infiltration_loss = AsymmetricFocalLoss(
+                    gamma=focal_gamma, fn_weight=asymmetric_fn_weight, weight=binary_class_weights, label_smoothing=0.01
+                )
+                self.mitre_loss = AsymmetricFocalLoss(
+                    gamma=focal_gamma, fn_weight=asymmetric_fn_weight, weight=mitre_class_weights, label_smoothing=0.01
+                )
+            else:
+                self.infiltration_loss = FocalLoss(
+                    gamma=focal_gamma, weight=binary_class_weights, label_smoothing=0.01
+                )
+                self.mitre_loss = FocalLoss(
+                    gamma=focal_gamma, weight=mitre_class_weights, label_smoothing=0.01
+                )
         else:
             self.infiltration_loss = nn.CrossEntropyLoss(
                 weight=binary_class_weights, label_smoothing=0.01
@@ -347,10 +443,6 @@ class MultiTaskLoss(nn.Module):
         pred_mitre: torch.Tensor,
         target_mitre: torch.Tensor,
     ) -> dict:
-        """
-        Compute multi-task loss.
-        Returns dict with total loss and individual components.
-        """
         l_dyn = self.dynamics_loss(pred_mean, pred_logvar, target_state)
         l_inf = self.infiltration_loss(pred_binary, target_binary)
         l_mit = self.mitre_loss(pred_mitre, target_mitre)

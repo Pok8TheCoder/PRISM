@@ -16,6 +16,7 @@ from src.models.components import (
     LearnablePositionalEncoding,
     SinusoidalPositionalEncoding,
     TemporalConv1DBlock,
+    MultiScaleTemporalConvBlock,
     TemporalAttentionPooling,
     StatePredictionHead,
     ClassificationHead,
@@ -29,14 +30,10 @@ logger = logging.getLogger("prism.models.world_model")
 
 class TemporalTransformerWorldModel(nn.Module):
     """
-    Temporal Transformer World Model for network state transition dynamics.
-    Learns P(S_{t+1} | S_{t-L+1}, ..., S_t) via causal multi-head temporal self-attention,
-    causal 1D temporal convolutions, temporal attention pooling, and residual state dynamics.
-
+    Generation 5 Multi-Scale Temporal Transformer World Model for Network Dynamics.
     Architecture:
-        Input:  [S_{t-L+1}, ..., S_t]  shape (B, L, D_state)
-        1. State Embedding: Linear(D_state -> D_model) + LayerNorm
-        2. Causal 1D Temporal Convolution (extracts local burst & sequence shapes)
+        1. Linear State Embedding (D_state -> D_model) + Dropout
+        2. Generation 5 Multi-Scale 1D Inception Temporal Block (k=1, 3, 5, MaxPool)
         3. Positional Encoding (learnable or sinusoidal)
         4. Causal Transformer Encoder (N layers, H heads, Pre-LN)
         5. Temporal Attention Pooling (fuses sequence context with instantaneous state)
@@ -68,8 +65,8 @@ class TemporalTransformerWorldModel(nn.Module):
         # 1. Input embedding
         self.embedding = StateEmbedding(d_state, d_model, dropout)
 
-        # 2. Causal 1D Temporal Convolution (local inter-window dynamics)
-        self.temporal_conv = TemporalConv1DBlock(d_model, kernel_size=3, dropout=dropout)
+        # 2. Generation 5 Multi-Scale Causal 1D Inception Temporal Block
+        self.temporal_conv = MultiScaleTemporalConvBlock(d_model, dropout=dropout)
 
         # 3. Positional encoding
         if pos_encoding == "learnable":

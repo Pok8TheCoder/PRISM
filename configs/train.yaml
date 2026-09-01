@@ -5,9 +5,10 @@ train:
   epochs: 200
   patience: 200
   grad_clip: 1.0
-  lambda_dynamics: 0.02
-  lambda_infiltration: 2.5
+  lambda_dynamics: 0.03
+  lambda_infiltration: 3.0
   lambda_mitre: 1.5
+  asymmetric_fn_weight: 3.0
   use_focal: true
   balanced_sampling: true
   scheduler: "cosine"
