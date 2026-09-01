@@ -54,6 +54,7 @@ class TemporalTransformerWorldModel(nn.Module):
         num_mitre_stages: int = NUM_MITRE_STAGES,
         pos_encoding: str = "learnable",  # "learnable" | "sinusoidal"
         residual_dynamics: bool = True,
+        conv_type: str = "multiscale",  # "multiscale" (Gen 5) | "single" (Gen 4/3)
     ):
         super().__init__()
         self.d_state = d_state
@@ -61,12 +62,16 @@ class TemporalTransformerWorldModel(nn.Module):
         self.lookback = lookback
         self.num_mitre_stages = num_mitre_stages
         self.residual_dynamics = residual_dynamics
+        self.conv_type = conv_type
 
         # 1. Input embedding
         self.embedding = StateEmbedding(d_state, d_model, dropout)
 
-        # 2. Generation 5 Multi-Scale Causal 1D Inception Temporal Block
-        self.temporal_conv = MultiScaleTemporalConvBlock(d_model, dropout=dropout)
+        # 2. Causal 1D Temporal Convolution (Multi-scale for Gen 5, Single for Gen 4)
+        if conv_type == "single":
+            self.temporal_conv = TemporalConv1DBlock(d_model, kernel_size=3, dropout=dropout)
+        else:
+            self.temporal_conv = MultiScaleTemporalConvBlock(d_model, dropout=dropout)
 
         # 3. Positional encoding
         if pos_encoding == "learnable":
@@ -357,6 +362,16 @@ class LSTMWorldModel(nn.Module):
         return mean + torch.randn_like(std) * std
 
 
+# ===========================================================================
+# Generation-Specific Model Aliases
+# ===========================================================================
+Gen5_MultiScaleTemporalTransformer = TemporalTransformerWorldModel
+Gen4_BalancedTemporalTransformer = TemporalTransformerWorldModel
+Gen3_TemporalTransformer = TemporalTransformerWorldModel
+Gen2_DeepTransformer = StateTransformerWorldModel
+Gen1_BaselineTransformer = StateTransformerWorldModel
+
+
 def build_world_model(cfg) -> nn.Module:
     """
     Factory: build the world model specified in config.
@@ -367,7 +382,12 @@ def build_world_model(cfg) -> nn.Module:
     """
     arch = getattr(cfg, "architecture", "transformer").lower()
 
-    if arch in ("transformer", "temporal_transformer", "temporal"):
+    if arch in (
+        "gen5", "gen5_transformer", "gen5_multiscale_transformer",
+        "gen4", "gen4_transformer", "gen4_balanced_transformer",
+        "gen3", "gen3_transformer",
+        "transformer", "temporal_transformer", "temporal",
+    ):
         return TemporalTransformerWorldModel(
             d_state=cfg.d_state,
             d_model=cfg.d_model,
@@ -377,6 +397,16 @@ def build_world_model(cfg) -> nn.Module:
             dropout=cfg.dropout,
             head_dropout=cfg.head_dropout,
             residual_dynamics=getattr(cfg, "residual_dynamics", True),
+        )
+    elif arch in ("gen1", "gen1_transformer", "gen2", "gen2_transformer", "state_transformer"):
+        return StateTransformerWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            lookback=getattr(cfg, "lookback", 20),
+            dropout=cfg.dropout,
+            head_dropout=cfg.head_dropout,
         )
     elif arch == "lstm":
         return LSTMWorldModel(
