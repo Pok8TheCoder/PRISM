@@ -1,0 +1,3 @@
+{"class_id": "T1552_key_theft", "stage": "recon", "success": true, "ts": 1788351158.167185, "evidence": "hinted_file=site_backup_2026.txt", "round_id": "3ba3ed7c7162"}
+{"class_id": "T1552_key_theft", "stage": "exploit", "success": true, "ts": 1788351158.460723, "evidence": "status=200 bytes=64", "round_id": "3ba3ed7c7162"}
+{"class_id": "T1552_key_theft", "stage": "post_exploit", "success": true, "ts": 1788351158.6284122, "evidence": "format_valid=True", "round_id": "3ba3ed7c7162"}

@@ -1,0 +1,766 @@
+{
+  "model": "v01",
+  "checkpoint": "D:\\Cursor\\PRISM\\models\\checkpoints\\ary_5sv01.pt",
+  "round_id": "a84e4a360602",
+  "duration_sec": 60.0,
+  "speed": 10.0,
+  "state_window_sec": 5.0,
+  "wall_window_sec": 0.5,
+  "warmup_sec": 30.0,
+  "warmup_windows": 7,
+  "n_windows": 20,
+  "redteam_ip": "172.18.0.4",
+  "system_id": "ary5_ramx",
+  "events": [
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368487.1721437,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368487.7288163,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368488.2651663,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368490.3397057,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368491.2655323,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368491.84854,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368494.643029,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368494.917364,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368495.1563556,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368498.9980583,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368499.4684277,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368499.7130299,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368501.4083548,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368501.9634535,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368502.2724578,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368505.0891323,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368505.893606,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368506.4757788,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368507.5181339,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368508.0288663,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368508.546178,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368510.5355256,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368511.498468,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368512.1408935,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368513.977384,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368514.8372693,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368515.2420754,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368518.5420365,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368518.8107724,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368519.3809419,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368521.1290607,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368521.7395005,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368522.241508,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368526.0827558,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368526.7368371,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368527.4853334,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368529.4143124,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368529.884799,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368530.240786,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368532.1320076,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368532.8312368,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368533.36896,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368536.5818872,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368537.5638459,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368537.9321287,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368539.7378628,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368540.066678,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368540.3433447,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368542.7526186,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368543.2282655,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368543.5097003,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788368546.337923,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": true,
+      "ts": 1788368547.12694,
+      "evidence": "status=200",
+      "round_id": "a84e4a360602"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "post_exploit",
+      "success": true,
+      "ts": 1788368547.6076198,
+      "evidence": "count=3",
+      "round_id": "a84e4a360602"
+    }
+  ],
+  "trace": [
+    {
+      "window_idx": 0,
+      "t_start": 1788368452.611198,
+      "t_end": 1788368457.3723652,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.04407235607504845
+        }
+      }
+    },
+    {
+      "window_idx": 1,
+      "t_start": 1788368458.035297,
+      "t_end": 1788368462.761436,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.05087541043758392
+        }
+      }
+    },
+    {
+      "window_idx": 2,
+      "t_start": 1788368462.7923956,
+      "t_end": 1788368467.5083358,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.03317129611968994
+        }
+      }
+    },
+    {
+      "window_idx": 3,
+      "t_start": 1788368467.5657651,
+      "t_end": 1788368472.2854452,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.06040545925498009
+        }
+      }
+    },
+    {
+      "window_idx": 4,
+      "t_start": 1788368472.326357,
+      "t_end": 1788368477.0429568,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.04142114892601967
+        }
+      }
+    },
+    {
+      "window_idx": 5,
+      "t_start": 1788368477.0710986,
+      "t_end": 1788368481.8014097,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.05473177134990692
+        }
+      }
+    },
+    {
+      "window_idx": 6,
+      "t_start": 1788368481.828213,
+      "t_end": 1788368486.5714178,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.038215622305870056
+        }
+      }
+    },
+    {
+      "window_idx": 7,
+      "t_start": 1788368486.7731774,
+      "t_end": 1788368491.4911506,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.03822750970721245
+        }
+      }
+    },
+    {
+      "window_idx": 8,
+      "t_start": 1788368491.601567,
+      "t_end": 1788368496.3021545,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.05207744613289833
+        }
+      }
+    },
+    {
+      "window_idx": 9,
+      "t_start": 1788368496.4115906,
+      "t_end": 1788368501.1173642,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.04566523805260658
+        }
+      }
+    },
+    {
+      "window_idx": 10,
+      "t_start": 1788368501.2372308,
+      "t_end": 1788368505.9533288,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.04418213292956352
+        }
+      }
+    },
+    {
+      "window_idx": 11,
+      "t_start": 1788368506.0705218,
+      "t_end": 1788368510.7882063,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.04205842688679695
+        }
+      }
+    },
+    {
+      "window_idx": 12,
+      "t_start": 1788368510.9107864,
+      "t_end": 1788368515.639548,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.05087580159306526
+        }
+      }
+    },
+    {
+      "window_idx": 13,
+      "t_start": 1788368515.77621,
+      "t_end": 1788368520.5174682,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.04027474299073219
+        }
+      }
+    },
+    {
+      "window_idx": 14,
+      "t_start": 1788368520.623727,
+      "t_end": 1788368525.3324685,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.047150347381830215
+        }
+      }
+    },
+    {
+      "window_idx": 15,
+      "t_start": 1788368525.4535325,
+      "t_end": 1788368530.1686966,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.043221306055784225
+        }
+      }
+    },
+    {
+      "window_idx": 16,
+      "t_start": 1788368530.2821934,
+      "t_end": 1788368534.9973292,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.03286372870206833
+        }
+      }
+    },
+    {
+      "window_idx": 17,
+      "t_start": 1788368535.1067333,
+      "t_end": 1788368539.8220584,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.04445366561412811
+        }
+      }
+    },
+    {
+      "window_idx": 18,
+      "t_start": 1788368539.932274,
+      "t_end": 1788368544.6424215,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.0359249971807003
+        }
+      }
+    },
+    {
+      "window_idx": 19,
+      "t_start": 1788368544.7531114,
+      "t_end": 1788368549.4545486,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "ips_blocked": false,
+      "systems": {
+        "ary5_ramx": {
+          "p_att": 0.03291124105453491
+        }
+      }
+    }
+  ],
+  "scores": {
+    "binary_f1": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "fpr": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "tn": 7,
+    "fn": 13,
+    "ttd_windows": null,
+    "ttd_sec": null,
+    "detected": false,
+    "lost_to_attacker": true,
+    "benign_harm_count": 0,
+    "n_windows": 20,
+    "system_id": "ary5_ramx",
+    "creds_stolen": true,
+    "theft_succeeded": true,
+    "stolen_at_sec": 35.653968334198,
+    "ips_blocked": false,
+    "blocked_at_sec": null,
+    "blocked_at_window": null,
+    "theft_prevented": false,
+    "prevented_theft": false,
+    "time_to_block_sec": null,
+    "time_to_detect_sec": null,
+    "outcome": "undetected_theft",
+    "benign_harm": 0
+  },
+  "creds_stolen": true,
+  "stolen_at_sec": 35.653968334198,
+  "ips_blocked": false,
+  "blocked_at_sec": null,
+  "blocked_at_window": null,
+  "prevented_theft": false,
+  "outcome": "undetected_theft"
+}

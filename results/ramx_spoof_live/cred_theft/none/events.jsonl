@@ -1,0 +1,3 @@
+{"class_id": "T1555_sqli_cred_theft", "stage": "recon", "success": true, "ts": 1788351486.0004656, "evidence": "status=200", "round_id": "dda50d2f3e11"}
+{"class_id": "T1555_sqli_cred_theft", "stage": "exploit", "success": true, "ts": 1788351486.0581467, "evidence": "status=200", "round_id": "dda50d2f3e11"}
+{"class_id": "T1555_sqli_cred_theft", "stage": "post_exploit", "success": true, "ts": 1788351486.1146476, "evidence": "count=3", "round_id": "dda50d2f3e11"}

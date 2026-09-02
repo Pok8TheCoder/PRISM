@@ -34,5 +34,6 @@ models/checkpoints/*
 # IDE & OS
 .vscode/
 .idea/
+.cursor-backup/
 .DS_Store
 Thumbs.db

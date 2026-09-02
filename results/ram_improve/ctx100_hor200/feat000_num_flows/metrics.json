@@ -1,0 +1,40 @@
+{
+  "context": 100,
+  "horizon": 200,
+  "ary_lookback": 20,
+  "feature_idx": 0,
+  "feature_name": "num_flows",
+  "target_len": 998,
+  "metrics": [
+    {
+      "variant": "ary_base",
+      "mse": 45277.0859375,
+      "mae": 126.6390609741211,
+      "n_covered": 800
+    },
+    {
+      "variant": "ary_V8",
+      "mse": 350620.03125,
+      "mae": 446.4801025390625,
+      "n_covered": 800
+    },
+    {
+      "variant": "ary_V10",
+      "mse": 350493.53125,
+      "mae": 446.433837890625,
+      "n_covered": 800
+    },
+    {
+      "variant": "timesfm",
+      "mse": 41138.8359375,
+      "mae": 99.46829986572266,
+      "n_covered": 800
+    },
+    {
+      "variant": "timesfm_ram",
+      "mse": 374643.71875,
+      "mae": 447.0987854003906,
+      "n_covered": 800
+    }
+  ]
+}

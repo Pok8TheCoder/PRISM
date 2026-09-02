@@ -1,0 +1,26 @@
+{
+  "ary_01": {
+    "epoch": 13,
+    "val_f1": 0.584,
+    "test_f1": 0.696,
+    "test_recall": 0.541,
+    "test_precision": 0.976,
+    "test_fpr": 0.003,
+    "test_mitre_f1": 0.879,
+    "checkpoint": "models/checkpoints/aryan_world_model_best.pt"
+  },
+  "ary_02": {
+    "epoch": 22,
+    "val_score": 0.945,
+    "val_f1": 0.603,
+    "val_loss": 2.104,
+    "test_f1": 0.708,
+    "test_recall": 0.689,
+    "test_precision": 0.729,
+    "test_fpr": 0.058,
+    "test_mitre_f1": 0.899,
+    "checkpoint": "models/checkpoints/aryan_world_model_ary02.pt",
+    "git": "origin/aryan de0d27a"
+  },
+  "note": "Same architecture (d_state=242, 3.8M). ARY.02 is a retrain with focal loss and balanced sampling."
+}

@@ -10,7 +10,7 @@ and wrapped in RAM's receding-horizon test-time-training + episodic memory
 This is a dashboard-facing port of the research in
 `results/forecast/v8_ram_aryan_killchain/` (originally
 `scripts/ram_aryan_killchain_eval.py` on the `aryan` worktree). See
-`docs/WORKSPACE_AND_ARYAN_BRANCH.md` for the branch/model background.
+`docs/ARY01_VS_ARY02.md` for the branch/model background.
 
 Every step in the timeline is annotated with TWO kinds of signal, computed
 differently depending on whether the step is behind or ahead of the current
@@ -41,11 +41,16 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from src.aryan.constants import KILLCHAIN_ATTACKS, STAGE_ID_TO_ATTACK
 from src.aryan.world_model import TemporalTransformerWorldModel
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-CKPT_PATH = ROOT / "models" / "checkpoints" / "aryan_world_model_best.pt"
+CKPT_ARY01 = ROOT / "models" / "checkpoints" / "aryan_world_model_best.pt"
+CKPT_ARY02 = ROOT / "models" / "checkpoints" / "aryan_world_model_ary02.pt"
+CKPT_XMT01 = ROOT / "models" / "checkpoints" / "xmt_world_model_best.pt"
+CKPT_PATH = CKPT_ARY01  # back-compat alias
 SPLITS_DIR = ROOT / "data" / "aryan_splits"
+XMT_SPLITS_DIR = ROOT / "data" / "xmt_splits"
 
 STAGE_NAMES = {0: "Benign", 1: "Reconnaissance", 2: "InitialAccess", 3: "LateralMovement",
                4: "C2", 5: "Exfiltration", 6: "Impact"}
@@ -57,6 +62,8 @@ GAP_COUNT = 4
 ANOMALY_PCTL = 97.0            # retrospective forecast-error percentile -> blue
 UNUSUAL_PCTL = 97.0            # prospective state-magnitude percentile -> blue (future cone)
 INTRUSION_PROB_THRESH = 0.5    # infiltration-head P(attack) threshold -> red
+# Bump when timeline labels / Recording fields change so Streamlit cache rebuilds.
+RECORDING_BUILD_VERSION = 4
 MEM_RADIUS = 5
 MATCH_MAX_DIST_FALLBACK = 30.0
 BLEND_MAX_WEIGHT = 0.6
@@ -66,8 +73,20 @@ PULLBACK = 5e-3
 
 MODEL_CHOICES = {
     "none": "\u2014 none \u2014",
-    "aryan_frozen": "Aryan-WM (frozen)",
-    "ram_a01": "RAM-A.01 (Aryan-WM + TTT + memory)",
+    "ary_01": "ARY.01 (frozen)",
+    "ary_02": "ARY.02 (frozen)",
+    "xmt_01": "XMT.01 (lab-trained)",
+    "ram_a01": "RAM-A.01 (ARY.01 + TTT + memory)",
+    "ram_a02": "RAM-A.02 (ARY.02 + TTT + memory)",
+}
+
+_MODEL_ALIASES = {"aryan_frozen": "ary_01"}
+_CKPT_FOR = {
+    "ary_01": CKPT_ARY01,
+    "ary_02": CKPT_ARY02,
+    "xmt_01": CKPT_XMT01,
+    "ram_a01": CKPT_ARY01,
+    "ram_a02": CKPT_ARY02,
 }
 
 
@@ -89,11 +108,12 @@ class ModelAdapter(nn.Module):
     def forward(self, seq: torch.Tensor) -> torch.Tensor:
         return self.inner(seq)["pred_state_mean"]
 
-    def forward_full(self, seq: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """Returns (next_state, p_attack), each (batch, ...)."""
+    def forward_full(self, seq: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Returns (next_state, p_attack, p_mitre), p_mitre is (batch, 7)."""
         out = self.inner(seq)
         p_attack = torch.softmax(out["pred_binary"], dim=-1)[:, 1]
-        return out["pred_state_mean"], p_attack
+        p_mitre = torch.softmax(out["pred_mitre"], dim=-1)
+        return out["pred_state_mean"], p_attack, p_mitre
 
 
 class EpisodicMemoryBank:
@@ -138,42 +158,94 @@ class OnlineAdaptive:
             loss_val = loss.item()
         return loss_val
 
-    def rollout_with_infiltration(self, window_buf: list[np.ndarray], h: int) -> tuple[np.ndarray, np.ndarray]:
+    def rollout_with_infiltration(self, window_buf: list[np.ndarray], h: int
+                                  ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         buf = list(window_buf)
-        preds, p_attacks = [], []
+        preds, p_attacks, p_mitres = [], [], []
         self.model.eval()
         with torch.no_grad():
             for _ in range(h):
                 x = torch.from_numpy(np.stack(buf).astype(np.float32)).unsqueeze(0)
-                nxt, p_att = self.model.forward_full(x)
+                nxt, p_att, p_mit = self.model.forward_full(x)
                 nxt = nxt.squeeze(0).numpy()
                 preds.append(nxt)
                 p_attacks.append(float(p_att.squeeze(0)))
+                p_mitres.append(p_mit.squeeze(0).cpu().numpy())
                 buf = buf[1:] + [nxt]
         self.model.train()
-        return np.stack(preds), np.array(p_attacks, dtype=np.float32)
+        return np.stack(preds), np.array(p_attacks, dtype=np.float32), np.stack(p_mitres)
 
 
-def frozen_rollout_with_infiltration(model: ModelAdapter, window_buf: list[np.ndarray], h: int) -> tuple[np.ndarray, np.ndarray]:
+def frozen_rollout_with_infiltration(model: ModelAdapter, window_buf: list[np.ndarray], h: int
+                                     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     buf = list(window_buf)
-    preds, p_attacks = [], []
+    preds, p_attacks, p_mitres = [], [], []
     with torch.no_grad():
         for _ in range(h):
             x = torch.from_numpy(np.stack(buf).astype(np.float32)).unsqueeze(0)
-            nxt, p_att = model.forward_full(x)
+            nxt, p_att, p_mit = model.forward_full(x)
             nxt = nxt.squeeze(0).numpy()
             preds.append(nxt)
             p_attacks.append(float(p_att.squeeze(0)))
+            p_mitres.append(p_mit.squeeze(0).cpu().numpy())
             buf = buf[1:] + [nxt]
-    return np.stack(preds), np.array(p_attacks, dtype=np.float32)
+    return np.stack(preds), np.array(p_attacks, dtype=np.float32), np.stack(p_mitres)
 
 
 # --------------------------------------------------------------------------
 # Data assembly
 # --------------------------------------------------------------------------
-def load_split(name: str):
-    d = np.load(SPLITS_DIR / f"{name}.npz")
+def load_split(name: str, splits_dir: Path | None = None):
+    root = splits_dir or SPLITS_DIR
+    d = np.load(root / f"{name}.npz")
     return d["states"].astype(np.float32), d["labels_binary"], d["labels_mitre"]
+
+
+def _splits_for(model_choice: str, source: str) -> Path:
+    if model_choice == "xmt_01" or source == "xmt_lab":
+        return XMT_SPLITS_DIR
+    return SPLITS_DIR
+
+
+def _labels_from_mitre(states_len: int, labels_binary, labels_mitre) -> list[str]:
+    out = []
+    for b, m in zip(labels_binary, labels_mitre):
+        if not b:
+            out.append("Benign")
+        else:
+            out.append(STAGE_ID_TO_ATTACK.get(int(m), STAGE_NAMES.get(int(m), f"Stage-{m}")))
+    if len(out) < states_len:
+        out.extend(["Benign"] * (states_len - len(out)))
+    return out[:states_len]
+
+
+def _segments_from_labels(labels: list[str]) -> list[tuple[str, int, int]]:
+    segments: list[tuple[str, int, int]] = []
+    if not labels:
+        return segments
+    start, cur = 0, labels[0]
+    for i, lab in enumerate(labels + [None]):
+        if lab != cur:
+            segments.append((cur, start, i))
+            start, cur = i, lab
+    return segments
+
+
+def build_xmt_timeline(splits_dir: Path, target_len: int):
+    """Timeline from XMT held-out test windows (lab PCAP aggregate)."""
+    te_s, te_b, te_m = load_split("test", splits_dir)
+    if len(te_s) == 0:
+        raise ValueError("XMT test split is empty — run scripts/build_xmt_splits.py first.")
+    labels = _labels_from_mitre(len(te_s), te_b, te_m)
+    full = te_s
+    if len(full) > target_len:
+        full = full[:target_len]
+        labels = labels[:target_len]
+    elif len(full) < target_len and len(full) > 0:
+        reps = int(np.ceil(target_len / len(full)))
+        full = np.tile(full, (reps, 1))[:target_len]
+        labels = (labels * reps)[:target_len]
+    return full, labels, _segments_from_labels(labels)
 
 
 def _longest_run(labels_mitre, stage_id):
@@ -215,9 +287,12 @@ def build_timeline(train, val, test, target_len: int):
     gaps = [benign_tiled[i * gap_len:(i + 1) * gap_len] for i in range(GAP_COUNT)]
 
     pieces = [
-        ("Benign", gaps[0]), ("InitialAccess", seg_initial_access),
-        ("Benign", gaps[1]), ("LateralMovement", seg_lateral_move),
-        ("Benign", gaps[2]), ("Impact", seg_impact),
+        ("Benign", gaps[0]),
+        (KILLCHAIN_ATTACKS[2], seg_initial_access),
+        ("Benign", gaps[1]),
+        (KILLCHAIN_ATTACKS[3], seg_lateral_move),
+        ("Benign", gaps[2]),
+        (KILLCHAIN_ATTACKS[6], seg_impact),
         ("Benign", gaps[3]),
     ]
     arrs, labels, segments = [], [], []
@@ -273,7 +348,7 @@ def seed_memory(model: ModelAdapter, train_states: np.ndarray, train_mitre: np.n
     while t + 1 < n:
         h = min(horizon, n - 1 - t)
         buf = [s[t - context + 1 + i] for i in range(context)]
-        preds, _ = frozen_rollout_with_infiltration(model, buf, h)
+        preds, _, _ = frozen_rollout_with_infiltration(model, buf, h)
         true_future = s[t + 1:t + 1 + h]
         pred_z = (preds - sc_mean) / sc_scale_report
         true_z = (true_future - sc_mean) / sc_scale_report
@@ -312,21 +387,27 @@ def calibrate_match_thresh(bank: EpisodicMemoryBank) -> float:
     return float((np.percentile(same_d, 40) + np.percentile(diff_d, 10)) / 2)
 
 
-def compute_retro_infiltration(model: ModelAdapter, full: np.ndarray, context: int,
-                                batch_size: int = 256) -> np.ndarray:
-    """P(attack) at every real step, using the true context window ending
-    there -- vectorized (batched forward passes) since it needs no
-    autoregression."""
+def compute_retro_heads(model: ModelAdapter, full: np.ndarray, context: int,
+                         batch_size: int = 256) -> tuple[np.ndarray, np.ndarray]:
+    """P(attack) and P(mitre stages) at every real step."""
     n = len(full)
     probs = np.full(n, np.nan, dtype=np.float32)
+    mitre = np.full((n, 7), np.nan, dtype=np.float32)
     idxs = list(range(context - 1, n))
     for start in range(0, len(idxs), batch_size):
         chunk_idxs = idxs[start:start + batch_size]
         batch = np.stack([full[t - context + 1:t + 1] for t in chunk_idxs]).astype(np.float32)
         x = torch.from_numpy(batch)
         with torch.no_grad():
-            _, p_att = model.forward_full(x)
+            _, p_att, p_mit = model.forward_full(x)
         probs[chunk_idxs] = p_att.numpy()
+        mitre[chunk_idxs] = p_mit.numpy()
+    return probs, mitre
+
+
+def compute_retro_infiltration(model: ModelAdapter, full: np.ndarray, context: int,
+                                batch_size: int = 256) -> np.ndarray:
+    probs, _ = compute_retro_heads(model, full, context, batch_size)
     return probs
 
 
@@ -346,12 +427,16 @@ class Recording:
     prospective_anomaly_mask: np.ndarray  # (T,) bool
     retro_intrusion_prob: np.ndarray   # (T,) float, NaN before context
     prospective_intrusion_prob: np.ndarray  # (T,) float, NaN outside forecast coverage
+    retro_mitre_prob: np.ndarray       # (T, 7)
+    prospective_mitre_prob: np.ndarray  # (T, 7)
     retro_mse: np.ndarray              # (T,) float, NaN outside forecast coverage -- standardized MSE vs actual, all features
     memory_write_mask: np.ndarray      # (T,) bool
     segments: list[tuple[str, int, int]]
     labels: list[str]
     retrievals: list[dict] = field(default_factory=list)
     meta: dict = field(default_factory=dict)
+    adapter: object | None = field(default=None, repr=False)
+    technique_by_step: list[str | None] = field(default_factory=list)
 
     @property
     def n_steps(self) -> int:
@@ -367,6 +452,66 @@ class Recording:
         past = idx <= playhead
         prob = np.where(past, self.retro_intrusion_prob, self.prospective_intrusion_prob)
         return np.nan_to_num(prob, nan=0.0) > INTRUSION_PROB_THRESH
+
+    def mitre_prob_at(self, playhead: int) -> np.ndarray:
+        """(7,) stage distribution at playhead (revealed / retro)."""
+        row = self.retro_mitre_prob[playhead] if 0 <= playhead < self.n_steps else None
+        if row is None or np.all(np.isnan(row)):
+            return np.full(7, np.nan)
+        return row
+
+    def forecast_mitre_at(self, playhead: int) -> np.ndarray:
+        idx = min(playhead + 1, self.n_steps - 1)
+        row = self.prospective_mitre_prob[idx]
+        if np.all(np.isnan(row)):
+            return np.full(7, np.nan)
+        return row
+
+    def stage_label(self, probs: np.ndarray) -> tuple[str, float]:
+        if probs is None or np.all(np.isnan(probs)):
+            return "unknown", float("nan")
+        i = int(np.nanargmax(probs))
+        return STAGE_NAMES.get(i, f"stage_{i}"), float(probs[i])
+
+    def attack_label(self, probs: np.ndarray) -> tuple[str, float]:
+        return attack_label_from_probs(probs)
+
+    def predicted_attack_at(self, playhead: int, *, future: bool = False) -> tuple[str, float]:
+        return predicted_attack(self, playhead, future=future)
+
+    def ground_truth_attack_at(self, step: int) -> str | None:
+        return ground_truth_attack(self, step)
+
+    def suspicion_text(self, playhead: int) -> str:
+        bits = []
+        if 0 <= playhead < self.n_steps:
+            if self.retro_anomaly_mask[playhead]:
+                bits.append("forecast error is unusual (blue)")
+            p = self.retro_intrusion_prob[playhead]
+            if np.isfinite(p) and p > INTRUSION_PROB_THRESH:
+                attack_now, conf_now = self.predicted_attack_at(playhead)
+                line = f"**{attack_now}** (red band, attack prob {p:.0%}"
+                if np.isfinite(conf_now) and attack_now != "Benign":
+                    line += f", class {conf_now:.0%}"
+                bits.append(line + ")")
+        attack, conf = self.predicted_attack_at(playhead)
+        fut_attack, fut_conf = self.predicted_attack_at(playhead, future=True)
+        gt = self.ground_truth_attack_at(playhead)
+        why = "; ".join(bits) if bits else "no surprise flags on the revealed step"
+        line = f"Suspicious because: {why}. Model says now: **{attack}**"
+        if np.isfinite(conf):
+            line += f" (p={conf:.2f})"
+        line += f". Forecast cone: **{fut_attack}**"
+        if np.isfinite(fut_conf):
+            line += f" (p={fut_conf:.2f})"
+        if gt:
+            line += f". Ground truth in timeline: **{gt}**"
+        return line
+
+    def window_at(self, playhead: int) -> np.ndarray | None:
+        if playhead < self.context - 1:
+            return None
+        return self.full_actual[playhead - self.context + 1:playhead + 1]
 
     def cumulative_error_at(self, playhead: int) -> float:
         """Mean standardized MSE (all features) over every step revealed so
@@ -390,6 +535,35 @@ class Recording:
         return x, actual_y, pred_y
 
 
+def attack_label_from_probs(probs: np.ndarray) -> tuple[str, float]:
+    if probs is None or np.all(np.isnan(probs)):
+        return "unknown", float("nan")
+    i = int(np.nanargmax(probs))
+    return STAGE_ID_TO_ATTACK.get(i, STAGE_NAMES.get(i, f"stage_{i}")), float(probs[i])
+
+
+def ground_truth_attack(rec: Recording, step: int) -> str | None:
+    for lbl, a, b in rec.segments:
+        if lbl != "Benign" and a <= step < b:
+            return lbl
+    return None
+
+
+def predicted_attack(rec: Recording, playhead: int, *, future: bool = False) -> tuple[str, float]:
+    if future:
+        idx = min(playhead + 1, rec.n_steps - 1)
+        row = rec.prospective_mitre_prob[idx]
+        probs = row if not np.all(np.isnan(row)) else np.full(7, np.nan)
+    else:
+        probs = rec.mitre_prob_at(playhead)
+    attack, conf = attack_label_from_probs(probs)
+    if rec.technique_by_step and 0 <= playhead < len(rec.technique_by_step):
+        tech = rec.technique_by_step[playhead]
+        if tech:
+            attack = tech.split(" (p=")[0]
+    return attack, conf
+
+
 def _run_chunks(base_model: ModelAdapter, full: np.ndarray, labels: list[str],
                  context: int, horizon: int, use_ram: bool,
                  mem_bank: EpisodicMemoryBank | None, anomaly_thresh: float,
@@ -400,6 +574,7 @@ def _run_chunks(base_model: ModelAdapter, full: np.ndarray, labels: list[str],
     retro_anomaly_mask = np.zeros(n, dtype=bool)
     prospective_anomaly_mask = np.zeros(n, dtype=bool)
     prospective_intrusion_prob = np.full(n, np.nan, dtype=np.float32)
+    prospective_mitre_prob = np.full((n, 7), np.nan, dtype=np.float32)
     retro_mse = np.full(n, np.nan, dtype=np.float32)
     memory_write_mask = np.zeros(n, dtype=bool)
     retrievals: list[dict] = []
@@ -410,9 +585,9 @@ def _run_chunks(base_model: ModelAdapter, full: np.ndarray, labels: list[str],
     while t + horizon < n:
         window_buf = [full[t - context + 1 + i] for i in range(context)]
         if use_ram:
-            raw_preds, p_att_preds = online.rollout_with_infiltration(window_buf, horizon)
+            raw_preds, p_att_preds, p_mit_preds = online.rollout_with_infiltration(window_buf, horizon)
         else:
-            raw_preds, p_att_preds = frozen_rollout_with_infiltration(base_model, window_buf, horizon)
+            raw_preds, p_att_preds, p_mit_preds = frozen_rollout_with_infiltration(base_model, window_buf, horizon)
 
         preds = raw_preds
         if use_ram and pending_match is not None:
@@ -435,6 +610,7 @@ def _run_chunks(base_model: ModelAdapter, full: np.ndarray, labels: list[str],
         pred_unusual = _state_unusualness(preds, sc_mean, sc_scale_report)
         prospective_anomaly_mask[t + 1:t + 1 + horizon] = pred_unusual > unusual_thresh
         prospective_intrusion_prob[t + 1:t + 1 + horizon] = p_att_preds
+        prospective_mitre_prob[t + 1:t + 1 + horizon] = p_mit_preds
 
         # retrospective (ground truth now available in this offline recording)
         pred_z = (raw_preds - sc_mean) / sc_scale_report
@@ -479,35 +655,65 @@ def _run_chunks(base_model: ModelAdapter, full: np.ndarray, labels: list[str],
         t += horizon
 
     return (full_predicted, retro_anomaly_mask, prospective_anomaly_mask,
-            prospective_intrusion_prob, retro_mse, memory_write_mask, retrievals)
+            prospective_intrusion_prob, prospective_mitre_prob, retro_mse,
+            memory_write_mask, retrievals)
 
 
-def build_recording(model_choice: str, target_len: int) -> Recording:
-    """Loads Aryan's real checkpoint + data, builds the synthetic timeline,
-    and runs the requested model (frozen or RAM-A.01) across it."""
-    if model_choice not in ("aryan_frozen", "ram_a01"):
-        raise ValueError(f"Unknown model_choice: {model_choice}")
-    use_ram = model_choice == "ram_a01"
+def _normalize_choice(model_choice: str) -> str:
+    return _MODEL_ALIASES.get(model_choice, model_choice)
 
-    train = load_split("train")
-    val = load_split("val")
-    test = load_split("test")
-    tr_s, _, tr_m = train
-    va_s, _, _ = val
 
-    ck = torch.load(CKPT_PATH, map_location="cpu", weights_only=False)
+def load_adapter(model_choice: str) -> tuple[ModelAdapter, dict]:
+    choice = _normalize_choice(model_choice)
+    ckpt = _CKPT_FOR.get(choice)
+    if ckpt is None or not ckpt.exists():
+        raise FileNotFoundError(f"Checkpoint missing for {choice}: {ckpt}")
+    ck = torch.load(ckpt, map_location="cpu", weights_only=False)
     d_state = ck["model_state_dict"]["embedding.proj.weight"].shape[1]
     inner = TemporalTransformerWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=CONTEXT)
     inner.load_state_dict(ck["model_state_dict"])
     inner.eval()
-    base_model = ModelAdapter(inner)
+    return ModelAdapter(inner), ck
+
+
+def build_recording(model_choice: str, target_len: int, source: str = "synthetic",
+                    uploaded_path: str | None = None) -> Recording:
+    """Loads ARY.01, ARY.02, or XMT.01 and runs frozen or RAM wrap on a timeline."""
+    choice = _normalize_choice(model_choice)
+    if choice not in _CKPT_FOR:
+        raise ValueError(f"Unknown model_choice: {model_choice}")
+    use_ram = choice in ("ram_a01", "ram_a02")
+    splits_dir = _splits_for(choice, source)
+
+    train = load_split("train", splits_dir)
+    val = load_split("val", splits_dir)
+    test = load_split("test", splits_dir)
+    tr_s, _, tr_m = train
+    va_s, _, _ = val
+
+    base_model, ck = load_adapter(choice)
     n_params = sum(p.numel() for p in base_model.parameters())
 
     sc_mean = tr_s.mean(axis=0)
     sc_scale_calc = np.clip(tr_s.std(axis=0), 1e-6, None)
     sc_scale_report = np.where(sc_scale_calc > 1e-2, sc_scale_calc, np.inf)
 
-    full, labels, segments = build_timeline(train, val, test, target_len)
+    technique_by_step: list[str | None] = []
+    if source == "upload" and uploaded_path:
+        from src.aryan.ingest import path_to_states
+        full, labels, segments = path_to_states(uploaded_path)
+        if len(full) < CONTEXT + HORIZON + 1:
+            raise ValueError("Not enough windows in the uploaded file for a lookback=20 forecast.")
+        technique_by_step = _technique_overlay(uploaded_path, len(full))
+    elif source == "live":
+        from src.aryan.ingest import lab_live_states
+        full, labels, segments = lab_live_states()
+        if len(full) < CONTEXT + HORIZON + 1:
+            raise ValueError("Not enough lab capture windows yet. Run an attack from the lab first.")
+    elif source == "xmt_lab":
+        full, labels, segments = build_xmt_timeline(splits_dir, target_len)
+    else:
+        full, labels, segments = build_timeline(train, val, test, target_len)
 
     anomaly_thresh = calibrate_anomaly_threshold(base_model, va_s, sc_mean, sc_scale_report, CONTEXT)
     unusual_thresh = calibrate_unusualness_threshold(tr_s, sc_mean, sc_scale_report)
@@ -522,16 +728,17 @@ def build_recording(model_choice: str, target_len: int) -> Recording:
         mem_stats = {"size": len(mem_bank), "by_class": dict(Counter(e["label"] for e in mem_bank.entries).most_common(10))}
 
     (full_predicted, retro_anomaly_mask, prospective_anomaly_mask,
-     prospective_intrusion_prob, retro_mse, memory_write_mask, retrievals) = _run_chunks(
+     prospective_intrusion_prob, prospective_mitre_prob, retro_mse,
+     memory_write_mask, retrievals) = _run_chunks(
         base_model, full, labels, CONTEXT, HORIZON, use_ram, mem_bank,
         anomaly_thresh, unusual_thresh, match_thresh, sc_mean, sc_scale_calc, sc_scale_report,
     )
 
-    retro_intrusion_prob = compute_retro_infiltration(base_model, full, CONTEXT)
+    retro_intrusion_prob, retro_mitre_prob = compute_retro_heads(base_model, full, CONTEXT)
 
     return Recording(
-        model_id=model_choice,
-        display_name=MODEL_CHOICES[model_choice],
+        model_id=choice,
+        display_name=MODEL_CHOICES[choice],
         has_memory=use_ram,
         context=CONTEXT,
         horizon=HORIZON,
@@ -541,11 +748,15 @@ def build_recording(model_choice: str, target_len: int) -> Recording:
         prospective_anomaly_mask=prospective_anomaly_mask,
         retro_intrusion_prob=retro_intrusion_prob,
         prospective_intrusion_prob=prospective_intrusion_prob,
+        retro_mitre_prob=retro_mitre_prob,
+        prospective_mitre_prob=prospective_mitre_prob,
         retro_mse=retro_mse,
         memory_write_mask=memory_write_mask,
         segments=segments,
         labels=labels,
         retrievals=retrievals,
+        adapter=base_model,
+        technique_by_step=technique_by_step,
         meta={
             "n_params": n_params,
             "checkpoint_epoch": ck.get("epoch"),
@@ -554,8 +765,38 @@ def build_recording(model_choice: str, target_len: int) -> Recording:
             "unusual_thresh": unusual_thresh,
             "match_thresh": match_thresh,
             "memory": mem_stats,
+            "source": source,
+            "splits_dir": str(splits_dir),
+            "family": (
+                "XMT.01" if choice == "xmt_01"
+                else "ARY.02" if choice in ("ary_02", "ram_a02")
+                else "ARY.01"
+            ),
         },
     )
+
+
+def _technique_overlay(path: str, n_steps: int) -> list[str | None]:
+    """Best-effort 33-class label from a pcap using the lab 27-d classifier."""
+    from pathlib import Path
+    suffix = Path(path).suffix.lower()
+    if suffix not in {".pcap", ".pcapng"}:
+        return [None] * n_steps
+    try:
+        from src.pipeline.extract import pcap_to_rows, rows_to_matrix
+        from src.adversarial.training_loop import load_model_and_scaler, predict_attack
+        import torch as _torch
+        device = _torch.device("cpu")
+        model, scaler = load_model_and_scaler(device)
+        rows = pcap_to_rows(path)
+        feats = rows_to_matrix(rows)
+        if feats is None or len(feats) == 0:
+            return [None] * n_steps
+        pred = predict_attack(model, scaler, feats, device)
+        label = str(pred.get("pred_class", "unknown"))
+        return [label] * n_steps
+    except Exception:
+        return [None] * n_steps
 
 
 def top_variance_features(k: int = 12) -> list[int]:

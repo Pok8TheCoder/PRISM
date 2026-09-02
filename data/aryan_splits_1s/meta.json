@@ -1,0 +1,34 @@
+{
+  "window_sec": 1,
+  "nrows_per_csv": 200000,
+  "splits": {
+    "train": {
+      "windows": 44972,
+      "attack_pct": 0.2644,
+      "mitre_stages": [
+        0,
+        2,
+        3,
+        6
+      ]
+    },
+    "val": {
+      "windows": 9637,
+      "attack_pct": 0.1646,
+      "mitre_stages": [
+        0,
+        2,
+        6
+      ]
+    },
+    "test": {
+      "windows": 9640,
+      "attack_pct": 0.136,
+      "mitre_stages": [
+        0,
+        2,
+        6
+      ]
+    }
+  }
+}

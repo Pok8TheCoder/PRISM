@@ -1,0 +1,4775 @@
+{
+  "model": "ARY-5sV01 + RAMX (oracle labels, 5s windows, lab PCAPs)",
+  "checkpoint": "D:\\Cursor\\PRISM\\models\\checkpoints\\ary5s_v01.pt",
+  "summary": {
+    "total_mitre_techniques": 222,
+    "host_only_not_evaluable": 161,
+    "network_observable": 61,
+    "tested_with_lab_pcap": 61,
+    "detected_pass_strict": 52,
+    "detected_fail_strict": 9,
+    "partial_class_misses": 2,
+    "no_lab_pcap": 0,
+    "pass_rate_of_tested": 0.8524590163934426,
+    "lab_pcap_classes": 32,
+    "lab_pcap_count": 138
+  },
+  "failed_classes": [
+    {
+      "class_id": "T1046_service_scan",
+      "technique_ids": [
+        "T1046",
+        "T1590",
+        "T1592",
+        "T1593",
+        "T1594",
+        "T1596",
+        "T1597",
+        "T1598"
+      ],
+      "n_pcaps": 9,
+      "mean_f1": 0.873015873015873,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ]
+    },
+    {
+      "class_id": "T1135_share_discovery",
+      "technique_ids": [
+        "T1135"
+      ],
+      "n_pcaps": 4,
+      "mean_f1": 0.75,
+      "missed_pcaps": [
+        "r44_a1_T1135_share_discovery_none.pcap"
+      ]
+    }
+  ],
+  "partial_fail_classes": [
+    {
+      "class_id": "T1046_service_scan",
+      "n_pcaps": 9,
+      "detected": true,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "class_id": "T1135_share_discovery",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": false,
+      "det_rate": 0.75,
+      "mean_f1": 0.75,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "r44_a1_T1135_share_discovery_none.pcap"
+      ],
+      "passed_pcaps": [
+        "r12_a1_T1135_share_discovery_none.pcap",
+        "r76_a1_T1135_share_discovery_none.pcap",
+        "ui_r12_a1_T1135_share_discovery_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "r44_a1_T1135_share_discovery_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.008076250553131104
+        }
+      ]
+    }
+  ],
+  "techniques": [
+    {
+      "technique_id": "T1001",
+      "name": "Data Obfuscation",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1071_http_beacon",
+      "family_id": "http_c2_obfuscation",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r14_a1_T1071_http_beacon_none.pcap",
+        "r46_a1_T1071_http_beacon_none.pcap",
+        "r78_a1_T1071_http_beacon_none.pcap",
+        "ui_r14_a1_T1071_http_beacon_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1003",
+      "name": "OS Credential Dumping",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1005",
+      "name": "Data from Local System",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1006",
+      "name": "Direct Volume Access",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1007",
+      "name": "System Service Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": "remote_discovery_scan",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1008",
+      "name": "Fallback Channels",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1071_http_beacon",
+      "family_id": "c2_standard_protocol",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r14_a1_T1071_http_beacon_none.pcap",
+        "r46_a1_T1071_http_beacon_none.pcap",
+        "r78_a1_T1071_http_beacon_none.pcap",
+        "ui_r14_a1_T1071_http_beacon_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1010",
+      "name": "Application Window Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": "remote_discovery_scan",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1011",
+      "name": "Exfiltration Over Other Network Medium",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1012",
+      "name": "Query Registry",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1014",
+      "name": "Rootkit",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1016",
+      "name": "System Network Configuration Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": "remote_discovery_scan",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1018",
+      "name": "Remote System Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1020",
+      "name": "Automated Exfiltration",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1020_automated_exfil",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r25_a1_T1020_automated_exfil_none.pcap",
+        "r57_a1_T1020_automated_exfil_none.pcap",
+        "r89_a1_T1020_automated_exfil_none.pcap",
+        "ui_r25_a1_T1020_automated_exfil_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1021",
+      "name": "Remote Services",
+      "tactics": [
+        "Lateral Movement"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1021_remote_services",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r10_a1_T1021_remote_services_none.pcap",
+        "r42_a1_T1021_remote_services_none.pcap",
+        "r74_a1_T1021_remote_services_none.pcap",
+        "ui_r10_a1_T1021_remote_services_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1025",
+      "name": "Data from Removable Media",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1041_exfil_c2",
+      "family_id": "exfil_transfer",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r22_a1_T1041_exfil_c2_none.pcap",
+        "r54_a1_T1041_exfil_c2_none.pcap",
+        "r86_a1_T1041_exfil_c2_none.pcap",
+        "ui_r22_a1_T1041_exfil_c2_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1027",
+      "name": "Obfuscated Files or Information",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1071_http_beacon",
+      "family_id": "http_c2_obfuscation",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r14_a1_T1071_http_beacon_none.pcap",
+        "r46_a1_T1071_http_beacon_none.pcap",
+        "r78_a1_T1071_http_beacon_none.pcap",
+        "ui_r14_a1_T1071_http_beacon_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1029",
+      "name": "Scheduled Transfer",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1041_exfil_c2",
+      "family_id": "exfil_transfer",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r22_a1_T1041_exfil_c2_none.pcap",
+        "r54_a1_T1041_exfil_c2_none.pcap",
+        "r86_a1_T1041_exfil_c2_none.pcap",
+        "ui_r22_a1_T1041_exfil_c2_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1030",
+      "name": "Data Transfer Size Limits",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1030_exfil_size_limit",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r24_a1_T1030_exfil_size_limit_none.pcap",
+        "r56_a1_T1030_exfil_size_limit_none.pcap",
+        "r88_a1_T1030_exfil_size_limit_none.pcap",
+        "ui_r24_a1_T1030_exfil_size_limit_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1033",
+      "name": "System Owner/User Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": "remote_discovery_scan",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1036",
+      "name": "Masquerading",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1037",
+      "name": "Boot or Logon Initialization Scripts",
+      "tactics": [
+        "Persistence",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1039",
+      "name": "Data from Network Shared Drive",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1040",
+      "name": "Network Sniffing",
+      "tactics": [
+        "Credential Access",
+        "Discovery"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1040_network_sniffing",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r36_a1_T1040_network_sniffing_none.pcap",
+        "r4_a1_T1040_network_sniffing_none.pcap",
+        "r68_a1_T1040_network_sniffing_none.pcap",
+        "ui_r4_a1_T1040_network_sniffing_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1041",
+      "name": "Exfiltration Over C2 Channel",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1041_exfil_c2",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r22_a1_T1041_exfil_c2_none.pcap",
+        "r54_a1_T1041_exfil_c2_none.pcap",
+        "r86_a1_T1041_exfil_c2_none.pcap",
+        "ui_r22_a1_T1041_exfil_c2_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1046",
+      "name": "Network Service Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1047",
+      "name": "Windows Management Instrumentation",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1048",
+      "name": "Exfiltration Over Alternative Protocol",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1048_exfil_alt_protocol",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r23_a1_T1048_exfil_alt_protocol_none.pcap",
+        "r55_a1_T1048_exfil_alt_protocol_none.pcap",
+        "r87_a1_T1048_exfil_alt_protocol_none.pcap",
+        "ui_r23_a1_T1048_exfil_alt_protocol_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1049",
+      "name": "System Network Connections Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1049_connections_discovery",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r13_a1_T1049_connections_discovery_none.pcap",
+        "r45_a1_T1049_connections_discovery_none.pcap",
+        "r77_a1_T1049_connections_discovery_none.pcap",
+        "ui_r13_a1_T1049_connections_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1052",
+      "name": "Exfiltration Over Physical Medium",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1053",
+      "name": "Scheduled Task/Job",
+      "tactics": [
+        "Execution",
+        "Persistence",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1055",
+      "name": "Process Injection",
+      "tactics": [
+        "Stealth",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1056",
+      "name": "Input Capture",
+      "tactics": [
+        "Collection",
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1057",
+      "name": "Process Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1059",
+      "name": "Command and Scripting Interpreter",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1068",
+      "name": "Exploitation for Privilege Escalation",
+      "tactics": [
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1069",
+      "name": "Permission Groups Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1070",
+      "name": "Indicator Removal",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1071",
+      "name": "Application Layer Protocol",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1071_dns_tunnel",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.5113636363636364,
+      "best_f1": 0.5454545454545454,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r15_a1_T1071_dns_tunnel_none.pcap",
+        "r47_a1_T1071_dns_tunnel_none.pcap",
+        "r79_a1_T1071_dns_tunnel_none.pcap",
+        "ui_r15_a1_T1071_dns_tunnel_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1072",
+      "name": "Software Deployment Tools",
+      "tactics": [
+        "Execution",
+        "Lateral Movement"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1074",
+      "name": "Data Staged",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1078",
+      "name": "Valid Accounts",
+      "tactics": [
+        "Stealth",
+        "Persistence",
+        "Privilege Escalation",
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1080",
+      "name": "Taint Shared Content",
+      "tactics": [
+        "Lateral Movement"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1021_remote_services",
+      "family_id": "lateral_movement_remote",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r10_a1_T1021_remote_services_none.pcap",
+        "r42_a1_T1021_remote_services_none.pcap",
+        "r74_a1_T1021_remote_services_none.pcap",
+        "ui_r10_a1_T1021_remote_services_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1082",
+      "name": "System Information Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": "remote_discovery_scan",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1083",
+      "name": "File and Directory Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": "remote_discovery_scan",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1087",
+      "name": "Account Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1018_remote_discovery",
+      "family_id": "remote_discovery_scan",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r35_a1_T1018_remote_discovery_none.pcap",
+        "r3_a1_T1018_remote_discovery_none.pcap",
+        "r67_a1_T1018_remote_discovery_none.pcap",
+        "ui_r3_a1_T1018_remote_discovery_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1090",
+      "name": "Proxy",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1090_proxy",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 3,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r29_a1_T1090_proxy_none.pcap",
+        "r61_a1_T1090_proxy_none.pcap",
+        "ui_r29_a1_T1090_proxy_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1091",
+      "name": "Replication Through Removable Media",
+      "tactics": [
+        "Lateral Movement",
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1092",
+      "name": "Communication Through Removable Media",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1071_http_beacon",
+      "family_id": "c2_standard_protocol",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r14_a1_T1071_http_beacon_none.pcap",
+        "r46_a1_T1071_http_beacon_none.pcap",
+        "r78_a1_T1071_http_beacon_none.pcap",
+        "ui_r14_a1_T1071_http_beacon_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1095",
+      "name": "Non-Application Layer Protocol",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1095_non_app_protocol",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.8660714285714285,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r19_a1_T1095_non_app_protocol_none.pcap",
+        "r51_a1_T1095_non_app_protocol_none.pcap",
+        "r83_a1_T1095_non_app_protocol_none.pcap",
+        "ui_r19_a1_T1095_non_app_protocol_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1098",
+      "name": "Account Manipulation",
+      "tactics": [
+        "Persistence",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1102",
+      "name": "Web Service",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1102_web_service",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r20_a1_T1102_web_service_none.pcap",
+        "r52_a1_T1102_web_service_none.pcap",
+        "r84_a1_T1102_web_service_none.pcap",
+        "ui_r20_a1_T1102_web_service_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1104",
+      "name": "Multi-Stage Channels",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1104_multistage_channel",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r21_a1_T1104_multistage_channel_none.pcap",
+        "r53_a1_T1104_multistage_channel_none.pcap",
+        "r85_a1_T1104_multistage_channel_none.pcap",
+        "ui_r21_a1_T1104_multistage_channel_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1105",
+      "name": "Ingress Tool Transfer",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1106",
+      "name": "Native API",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1110",
+      "name": "Brute Force",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1110_web_bruteforce",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r38_a1_T1110_web_bruteforce_none.pcap",
+        "r6_a1_T1110_web_bruteforce_none.pcap",
+        "r70_a1_T1110_web_bruteforce_none.pcap",
+        "ui_r6_a1_T1110_web_bruteforce_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1111",
+      "name": "Multi-Factor Authentication Interception",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1110_ssh_bruteforce",
+      "family_id": "credential_access_network",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.9555555555555555,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "live_ssh_bruteforce_none.pcap",
+        "r1_a1_ssh_bruteforce_none.pcap",
+        "r1_a1_T1110_ssh_bruteforce_none.pcap",
+        "r1_a2_ssh_bruteforce_random_timing.pcap",
+        "r1_a3_ssh_bruteforce_slow_timing.pcap",
+        "r37_a1_T1110_ssh_bruteforce_none.pcap",
+        "r5_a1_T1110_ssh_bruteforce_none.pcap",
+        "r69_a1_T1110_ssh_bruteforce_none.pcap",
+        "ui_r5_a1_T1110_ssh_bruteforce_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1112",
+      "name": "Modify Registry",
+      "tactics": [
+        "Defense Impairment",
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1113",
+      "name": "Screen Capture",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1114",
+      "name": "Email Collection",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1115",
+      "name": "Clipboard Data",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1119",
+      "name": "Automated Collection",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1120",
+      "name": "Peripheral Device Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1123",
+      "name": "Audio Capture",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1124",
+      "name": "System Time Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1125",
+      "name": "Video Capture",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1127",
+      "name": "Trusted Developer Utilities Proxy Execution",
+      "tactics": [
+        "Stealth",
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1129",
+      "name": "Shared Modules",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1132",
+      "name": "Data Encoding",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1071_http_beacon",
+      "family_id": "http_c2_obfuscation",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r14_a1_T1071_http_beacon_none.pcap",
+        "r46_a1_T1071_http_beacon_none.pcap",
+        "r78_a1_T1071_http_beacon_none.pcap",
+        "ui_r14_a1_T1071_http_beacon_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1133",
+      "name": "External Remote Services",
+      "tactics": [
+        "Persistence",
+        "Initial Access"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1133_external_remote",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r40_a1_T1133_external_remote_none.pcap",
+        "r72_a1_T1133_external_remote_none.pcap",
+        "r8_a1_T1133_external_remote_none.pcap",
+        "ui_r8_a1_T1133_external_remote_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1134",
+      "name": "Access Token Manipulation",
+      "tactics": [
+        "Stealth",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1135",
+      "name": "Network Share Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1135_share_discovery",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.75,
+      "mean_f1": 0.75,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "r44_a1_T1135_share_discovery_none.pcap"
+      ],
+      "passed_pcaps": [
+        "r12_a1_T1135_share_discovery_none.pcap",
+        "r76_a1_T1135_share_discovery_none.pcap",
+        "ui_r12_a1_T1135_share_discovery_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "r44_a1_T1135_share_discovery_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.008076250553131104
+        }
+      ]
+    },
+    {
+      "technique_id": "T1136",
+      "name": "Create Account",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1137",
+      "name": "Office Application Startup",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1140",
+      "name": "Deobfuscate/Decode Files or Information",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1176",
+      "name": "Software Extensions",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1185",
+      "name": "Browser Session Hijacking",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1187",
+      "name": "Forced Authentication",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1187_password_spray",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r39_a1_T1187_password_spray_none.pcap",
+        "r71_a1_T1187_password_spray_none.pcap",
+        "r7_a1_T1187_password_spray_none.pcap",
+        "ui_r7_a1_T1187_password_spray_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1189",
+      "name": "Drive-by Compromise",
+      "tactics": [
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactics": [
+        "Initial Access"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1190_web_exploit_probe",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r41_a1_T1190_web_exploit_probe_none.pcap",
+        "r73_a1_T1190_web_exploit_probe_none.pcap",
+        "r9_a1_T1190_web_exploit_probe_none.pcap",
+        "ui_r9_a1_T1190_web_exploit_probe_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1195",
+      "name": "Supply Chain Compromise",
+      "tactics": [
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1197",
+      "name": "BITS Jobs",
+      "tactics": [
+        "Stealth",
+        "Persistence",
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1199",
+      "name": "Trusted Relationship",
+      "tactics": [
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1200",
+      "name": "Hardware Additions",
+      "tactics": [
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1201",
+      "name": "Password Policy Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1202",
+      "name": "Indirect Command Execution",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1203",
+      "name": "Exploitation for Client Execution",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1204",
+      "name": "User Execution",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1205",
+      "name": "Traffic Signaling",
+      "tactics": [
+        "Stealth",
+        "Persistence",
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1205_traffic_signaling",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 3,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r31_a1_T1205_traffic_signaling_none.pcap",
+        "r63_a1_T1205_traffic_signaling_none.pcap",
+        "ui_r31_a1_T1205_traffic_signaling_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1207",
+      "name": "Rogue Domain Controller",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1210",
+      "name": "Exploitation of Remote Services",
+      "tactics": [
+        "Lateral Movement"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1210_exploit_remote",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r11_a1_T1210_exploit_remote_none.pcap",
+        "r43_a1_T1210_exploit_remote_none.pcap",
+        "r75_a1_T1210_exploit_remote_none.pcap",
+        "ui_r11_a1_T1210_exploit_remote_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1211",
+      "name": "Exploitation for Stealth",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1212",
+      "name": "Exploitation for Credential Access",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1213",
+      "name": "Data from Information Repositories",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1216",
+      "name": "System Script Proxy Execution",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1217",
+      "name": "Browser Information Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1218",
+      "name": "System Binary Proxy Execution",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1219",
+      "name": "Remote Access Tools",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1021_remote_services",
+      "family_id": "lateral_movement_remote",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r10_a1_T1021_remote_services_none.pcap",
+        "r42_a1_T1021_remote_services_none.pcap",
+        "r74_a1_T1021_remote_services_none.pcap",
+        "ui_r10_a1_T1021_remote_services_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1220",
+      "name": "XSL Script Processing",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1221",
+      "name": "Template Injection",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1222",
+      "name": "File and Directory Permissions Modification",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1480",
+      "name": "Execution Guardrails",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1482",
+      "name": "Domain Trust Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1484",
+      "name": "Domain or Tenant Policy Modification",
+      "tactics": [
+        "Defense Impairment",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1485",
+      "name": "Data Destruction",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1499_http_flood",
+      "family_id": "web_impact_flood",
+      "status": "tested",
+      "n_pcaps": 8,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.7439473684210527,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "live_http_flood_none.pcap",
+        "live_http_flood_random_timing.pcap",
+        "r27_a1_T1499_http_flood_none.pcap",
+        "r3_a1_http_flood_none.pcap",
+        "r3_a2_http_flood_random_timing.pcap",
+        "r3_a3_http_flood_slow_timing.pcap",
+        "r59_a1_T1499_http_flood_none.pcap",
+        "ui_r27_a1_T1499_http_flood_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1486",
+      "name": "Data Encrypted for Impact",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1499_http_flood",
+      "family_id": "web_impact_flood",
+      "status": "tested",
+      "n_pcaps": 8,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.7439473684210527,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "live_http_flood_none.pcap",
+        "live_http_flood_random_timing.pcap",
+        "r27_a1_T1499_http_flood_none.pcap",
+        "r3_a1_http_flood_none.pcap",
+        "r3_a2_http_flood_random_timing.pcap",
+        "r3_a3_http_flood_slow_timing.pcap",
+        "r59_a1_T1499_http_flood_none.pcap",
+        "ui_r27_a1_T1499_http_flood_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1489",
+      "name": "Service Stop",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1490",
+      "name": "Inhibit System Recovery",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1491",
+      "name": "Defacement",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1499_http_flood",
+      "family_id": "web_impact_flood",
+      "status": "tested",
+      "n_pcaps": 8,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.7439473684210527,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "live_http_flood_none.pcap",
+        "live_http_flood_random_timing.pcap",
+        "r27_a1_T1499_http_flood_none.pcap",
+        "r3_a1_http_flood_none.pcap",
+        "r3_a2_http_flood_random_timing.pcap",
+        "r3_a3_http_flood_slow_timing.pcap",
+        "r59_a1_T1499_http_flood_none.pcap",
+        "ui_r27_a1_T1499_http_flood_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1495",
+      "name": "Firmware Corruption",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1496",
+      "name": "Resource Hijacking",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1497",
+      "name": "Virtualization/Sandbox Evasion",
+      "tactics": [
+        "Stealth",
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1498",
+      "name": "Network Denial of Service",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1498_network_dos",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 3,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r26_a1_T1498_network_dos_none.pcap",
+        "r58_a1_T1498_network_dos_none.pcap",
+        "ui_r26_a1_T1498_network_dos_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1499",
+      "name": "Endpoint Denial of Service",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1499_slowloris",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "live_slow_loris_none.pcap",
+        "r28_a1_T1499_slowloris_none.pcap",
+        "r60_a1_T1499_slowloris_none.pcap",
+        "ui_r28_a1_T1499_slowloris_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1505",
+      "name": "Server Software Component",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1518",
+      "name": "Software Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1525",
+      "name": "Implant Internal Image",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1526",
+      "name": "Cloud Service Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1528",
+      "name": "Steal Application Access Token",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1529",
+      "name": "System Shutdown/Reboot",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1530",
+      "name": "Data from Cloud Storage",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1041_exfil_c2",
+      "family_id": "exfil_transfer",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r22_a1_T1041_exfil_c2_none.pcap",
+        "r54_a1_T1041_exfil_c2_none.pcap",
+        "r86_a1_T1041_exfil_c2_none.pcap",
+        "ui_r22_a1_T1041_exfil_c2_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1531",
+      "name": "Account Access Removal",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1534",
+      "name": "Internal Spearphishing",
+      "tactics": [
+        "Lateral Movement"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1535",
+      "name": "Unused/Unsupported Cloud Regions",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1537",
+      "name": "Transfer Data to Cloud Account",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1538",
+      "name": "Cloud Service Dashboard",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1539",
+      "name": "Steal Web Session Cookie",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1542",
+      "name": "Pre-OS Boot",
+      "tactics": [
+        "Stealth",
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1543",
+      "name": "Create or Modify System Process",
+      "tactics": [
+        "Persistence",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1546",
+      "name": "Event Triggered Execution",
+      "tactics": [
+        "Privilege Escalation",
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1547",
+      "name": "Boot or Logon Autostart Execution",
+      "tactics": [
+        "Persistence",
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1548",
+      "name": "Abuse Elevation Control Mechanism",
+      "tactics": [
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1550",
+      "name": "Use Alternate Authentication Material",
+      "tactics": [
+        "Lateral Movement"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1552",
+      "name": "Unsecured Credentials",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1110_ssh_bruteforce",
+      "family_id": "credential_access_network",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.9555555555555555,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "live_ssh_bruteforce_none.pcap",
+        "r1_a1_ssh_bruteforce_none.pcap",
+        "r1_a1_T1110_ssh_bruteforce_none.pcap",
+        "r1_a2_ssh_bruteforce_random_timing.pcap",
+        "r1_a3_ssh_bruteforce_slow_timing.pcap",
+        "r37_a1_T1110_ssh_bruteforce_none.pcap",
+        "r5_a1_T1110_ssh_bruteforce_none.pcap",
+        "r69_a1_T1110_ssh_bruteforce_none.pcap",
+        "ui_r5_a1_T1110_ssh_bruteforce_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1553",
+      "name": "Subvert Trust Controls",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1554",
+      "name": "Compromise Host Software Binary",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1555",
+      "name": "Credentials from Password Stores",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1556",
+      "name": "Modify Authentication Process",
+      "tactics": [
+        "Defense Impairment",
+        "Persistence",
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1557",
+      "name": "Adversary-in-the-Middle",
+      "tactics": [
+        "Credential Access",
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1558",
+      "name": "Steal or Forge Kerberos Tickets",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1110_ssh_bruteforce",
+      "family_id": "credential_access_network",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.9555555555555555,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "live_ssh_bruteforce_none.pcap",
+        "r1_a1_ssh_bruteforce_none.pcap",
+        "r1_a1_T1110_ssh_bruteforce_none.pcap",
+        "r1_a2_ssh_bruteforce_random_timing.pcap",
+        "r1_a3_ssh_bruteforce_slow_timing.pcap",
+        "r37_a1_T1110_ssh_bruteforce_none.pcap",
+        "r5_a1_T1110_ssh_bruteforce_none.pcap",
+        "r69_a1_T1110_ssh_bruteforce_none.pcap",
+        "ui_r5_a1_T1110_ssh_bruteforce_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1559",
+      "name": "Inter-Process Communication",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1560",
+      "name": "Archive Collected Data",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1561",
+      "name": "Disk Wipe",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1563",
+      "name": "Remote Service Session Hijacking",
+      "tactics": [
+        "Lateral Movement"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1564",
+      "name": "Hide Artifacts",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1565",
+      "name": "Data Manipulation",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1566",
+      "name": "Phishing",
+      "tactics": [
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1567",
+      "name": "Exfiltration Over Web Service",
+      "tactics": [
+        "Exfiltration"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1041_exfil_c2",
+      "family_id": "exfil_transfer",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r22_a1_T1041_exfil_c2_none.pcap",
+        "r54_a1_T1041_exfil_c2_none.pcap",
+        "r86_a1_T1041_exfil_c2_none.pcap",
+        "ui_r22_a1_T1041_exfil_c2_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1568",
+      "name": "Dynamic Resolution",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1568_dynamic_resolution",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 3,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.39166666666666666,
+      "best_f1": 0.4,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r30_a1_T1568_dynamic_resolution_none.pcap",
+        "r62_a1_T1568_dynamic_resolution_none.pcap",
+        "ui_r30_a1_T1568_dynamic_resolution_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1569",
+      "name": "System Services",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1570",
+      "name": "Lateral Tool Transfer",
+      "tactics": [
+        "Lateral Movement"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1570_lateral_transfer",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 3,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r32_a1_T1570_lateral_transfer_none.pcap",
+        "r64_a1_T1570_lateral_transfer_none.pcap",
+        "ui_r32_a1_T1570_lateral_transfer_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1571",
+      "name": "Non-Standard Port",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1571_non_standard_port",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r16_a1_T1571_non_standard_port_none.pcap",
+        "r48_a1_T1571_non_standard_port_none.pcap",
+        "r80_a1_T1571_non_standard_port_none.pcap",
+        "ui_r16_a1_T1571_non_standard_port_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1572",
+      "name": "Protocol Tunneling",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1572_protocol_tunnel",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r17_a1_T1572_protocol_tunnel_none.pcap",
+        "r49_a1_T1572_protocol_tunnel_none.pcap",
+        "r81_a1_T1572_protocol_tunnel_none.pcap",
+        "ui_r17_a1_T1572_protocol_tunnel_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1573",
+      "name": "Encrypted Channel",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1573_encrypted_channel",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r18_a1_T1573_encrypted_channel_none.pcap",
+        "r50_a1_T1573_encrypted_channel_none.pcap",
+        "r82_a1_T1573_encrypted_channel_none.pcap",
+        "ui_r18_a1_T1573_encrypted_channel_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1574",
+      "name": "Hijack Execution Flow",
+      "tactics": [
+        "Stealth",
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1578",
+      "name": "Modify Cloud Compute Infrastructure",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1580",
+      "name": "Cloud Infrastructure Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1583",
+      "name": "Acquire Infrastructure",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1584",
+      "name": "Compromise Infrastructure",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1585",
+      "name": "Establish Accounts",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1586",
+      "name": "Compromise Accounts",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1587",
+      "name": "Develop Capabilities",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1588",
+      "name": "Obtain Capabilities",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1589",
+      "name": "Gather Victim Identity Information",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1590",
+      "name": "Gather Victim Network Information",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": "network_recon_scan",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1591",
+      "name": "Gather Victim Org Information",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1592",
+      "name": "Gather Victim Host Information",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": "network_recon_scan",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1593",
+      "name": "Search Open Websites/Domains",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": "network_recon_scan",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1594",
+      "name": "Search Victim-Owned Websites",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": "network_recon_scan",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1595",
+      "name": "Active Scanning",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_distinct",
+      "mapped_class_id": "T1595_active_scan",
+      "family_id": null,
+      "status": "tested",
+      "n_pcaps": 5,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 0.8744186046511627,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r2_a1_T1595_active_scan_none.pcap",
+        "r2_a2_T1595_active_scan_random_timing.pcap",
+        "r34_a1_T1595_active_scan_none.pcap",
+        "r66_a1_T1595_active_scan_none.pcap",
+        "ui_r2_a1_T1595_active_scan_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1596",
+      "name": "Search Open Technical Databases",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": "network_recon_scan",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1597",
+      "name": "Search Closed Sources",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": "network_recon_scan",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1598",
+      "name": "Phishing for Information",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1046_service_scan",
+      "family_id": "network_recon_scan",
+      "status": "tested",
+      "n_pcaps": 9,
+      "detected": false,
+      "all_detected": false,
+      "det_rate": 0.8888888888888888,
+      "mean_f1": 0.873015873015873,
+      "best_f1": 1.0,
+      "missed_pcaps": [
+        "live_port_scan_sequential_none.pcap"
+      ],
+      "passed_pcaps": [
+        "live_port_scan_sequential_randomize_port_order.pcap",
+        "r1_a1_T1046_service_scan_none.pcap",
+        "r2_a1_port_scan_sequential_none.pcap",
+        "r2_a2_port_scan_sequential_random_timing.pcap",
+        "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "r33_a1_T1046_service_scan_none.pcap",
+        "r65_a1_T1046_service_scan_none.pcap",
+        "ui_r1_a1_T1046_service_scan_none.pcap"
+      ],
+      "missed_details": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "f1": 0.0,
+          "max_p_attack": 0.007900314405560493
+        }
+      ]
+    },
+    {
+      "technique_id": "T1599",
+      "name": "Network Boundary Bridging",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1600",
+      "name": "Weaken Encryption",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1601",
+      "name": "Modify System Image",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1602",
+      "name": "Data from Configuration Repository",
+      "tactics": [
+        "Collection"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1606",
+      "name": "Forge Web Credentials",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1608",
+      "name": "Stage Capabilities",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1609",
+      "name": "Container Administration Command",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1610",
+      "name": "Deploy Container",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1611",
+      "name": "Escape to Host",
+      "tactics": [
+        "Privilege Escalation"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1612",
+      "name": "Build Image on Host",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1613",
+      "name": "Container and Resource Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1614",
+      "name": "System Location Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1615",
+      "name": "Group Policy Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1619",
+      "name": "Cloud Storage Object Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1620",
+      "name": "Reflective Code Loading",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1621",
+      "name": "Multi-Factor Authentication Request Generation",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1622",
+      "name": "Debugger Evasion",
+      "tactics": [
+        "Stealth",
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1647",
+      "name": "Plist File Modification",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1648",
+      "name": "Serverless Execution",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1649",
+      "name": "Steal or Forge Authentication Certificates",
+      "tactics": [
+        "Credential Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1650",
+      "name": "Acquire Access",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1651",
+      "name": "Cloud Administration Command",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1652",
+      "name": "Device Driver Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1653",
+      "name": "Power Settings",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1654",
+      "name": "Log Enumeration",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1657",
+      "name": "Financial Theft",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1659",
+      "name": "Content Injection",
+      "tactics": [
+        "Initial Access",
+        "Command And Control"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1665",
+      "name": "Hide Infrastructure",
+      "tactics": [
+        "Command And Control"
+      ],
+      "bucket": "network_family",
+      "mapped_class_id": "T1071_http_beacon",
+      "family_id": "c2_standard_protocol",
+      "status": "tested",
+      "n_pcaps": 4,
+      "detected": true,
+      "all_detected": true,
+      "det_rate": 1.0,
+      "mean_f1": 1.0,
+      "best_f1": 1.0,
+      "missed_pcaps": [],
+      "passed_pcaps": [
+        "r14_a1_T1071_http_beacon_none.pcap",
+        "r46_a1_T1071_http_beacon_none.pcap",
+        "r78_a1_T1071_http_beacon_none.pcap",
+        "ui_r14_a1_T1071_http_beacon_none.pcap"
+      ],
+      "missed_details": []
+    },
+    {
+      "technique_id": "T1666",
+      "name": "Modify Cloud Resource Hierarchy",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1667",
+      "name": "Email Bombing",
+      "tactics": [
+        "Impact"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1668",
+      "name": "Exclusive Control",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1669",
+      "name": "Wi-Fi Networks",
+      "tactics": [
+        "Initial Access"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1671",
+      "name": "Cloud Application Integration",
+      "tactics": [
+        "Persistence"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1673",
+      "name": "Virtual Machine Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1674",
+      "name": "Input Injection",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1675",
+      "name": "ESXi Administration Command",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1677",
+      "name": "Poisoned Pipeline Execution",
+      "tactics": [
+        "Execution"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1678",
+      "name": "Delay Execution",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1679",
+      "name": "Selective Exclusion",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1680",
+      "name": "Local Storage Discovery",
+      "tactics": [
+        "Discovery"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1681",
+      "name": "Search Threat Vendor Data",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1682",
+      "name": "Query Public AI Services",
+      "tactics": [
+        "Reconnaissance"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1683",
+      "name": "Generate Content",
+      "tactics": [
+        "Resource Development"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1684",
+      "name": "Social Engineering",
+      "tactics": [
+        "Stealth"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1685",
+      "name": "Disable or Modify Tools",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1686",
+      "name": "Disable or Modify System Firewall",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1687",
+      "name": "Exploitation for Defense Impairment",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1688",
+      "name": "Safe Mode Boot",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1689",
+      "name": "Downgrade Attack",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    },
+    {
+      "technique_id": "T1690",
+      "name": "Prevent Command History Logging",
+      "tactics": [
+        "Defense Impairment"
+      ],
+      "bucket": "host_only",
+      "mapped_class_id": null,
+      "family_id": null,
+      "status": "host_only",
+      "reason": "No network-observable traffic signature in catalog",
+      "detected": null
+    }
+  ],
+  "pcap_by_class": {
+    "T1018_remote_discovery": [
+      {
+        "pcap": "r35_a1_T1018_remote_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5739110378641634
+      },
+      {
+        "pcap": "r3_a1_T1018_remote_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5737771567702293
+      },
+      {
+        "pcap": "r67_a1_T1018_remote_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5738517861161381
+      },
+      {
+        "pcap": "ui_r3_a1_T1018_remote_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5738204994983971
+      }
+    ],
+    "T1020_automated_exfil": [
+      {
+        "pcap": "r25_a1_T1020_automated_exfil_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732135777594521
+      },
+      {
+        "pcap": "r57_a1_T1020_automated_exfil_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732140917610377
+      },
+      {
+        "pcap": "r89_a1_T1020_automated_exfil_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732151111541316
+      },
+      {
+        "pcap": "ui_r25_a1_T1020_automated_exfil_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732131698820739
+      }
+    ],
+    "T1021_remote_services": [
+      {
+        "pcap": "r10_a1_T1021_remote_services_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733689097594469
+      },
+      {
+        "pcap": "r42_a1_T1021_remote_services_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732310003507882
+      },
+      {
+        "pcap": "r74_a1_T1021_remote_services_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573232468869537
+      },
+      {
+        "pcap": "ui_r10_a1_T1021_remote_services_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732418918982147
+      }
+    ],
+    "T1030_exfil_size_limit": [
+      {
+        "pcap": "r24_a1_T1030_exfil_size_limit_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732134393975138
+      },
+      {
+        "pcap": "r56_a1_T1030_exfil_size_limit_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732118671573698
+      },
+      {
+        "pcap": "r88_a1_T1030_exfil_size_limit_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732124996976926
+      },
+      {
+        "pcap": "ui_r24_a1_T1030_exfil_size_limit_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732125315349549
+      }
+    ],
+    "T1040_network_sniffing": [
+      {
+        "pcap": "r36_a1_T1040_network_sniffing_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573952399874106
+      },
+      {
+        "pcap": "r4_a1_T1040_network_sniffing_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5739524034783243
+      },
+      {
+        "pcap": "r68_a1_T1040_network_sniffing_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732582878880202
+      },
+      {
+        "pcap": "ui_r4_a1_T1040_network_sniffing_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732710454193874
+      }
+    ],
+    "T1041_exfil_c2": [
+      {
+        "pcap": "r22_a1_T1041_exfil_c2_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732155768992379
+      },
+      {
+        "pcap": "r54_a1_T1041_exfil_c2_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732154351333155
+      },
+      {
+        "pcap": "r86_a1_T1041_exfil_c2_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732146183773875
+      },
+      {
+        "pcap": "ui_r22_a1_T1041_exfil_c2_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732155522704124
+      }
+    ],
+    "T1046_service_scan": [
+      {
+        "pcap": "live_port_scan_sequential_none.pcap",
+        "detected": false,
+        "f1": 0.0,
+        "max_p_attack": 0.007900314405560493
+      },
+      {
+        "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733451175130904
+      },
+      {
+        "pcap": "r1_a1_T1046_service_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.57325121500995
+      },
+      {
+        "pcap": "r2_a1_port_scan_sequential_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573266562973149
+      },
+      {
+        "pcap": "r2_a2_port_scan_sequential_random_timing.pcap",
+        "detected": true,
+        "f1": 0.8571428571428571,
+        "max_p_attack": 0.5732252364046871
+      },
+      {
+        "pcap": "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732668813457712
+      },
+      {
+        "pcap": "r33_a1_T1046_service_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732858189102262
+      },
+      {
+        "pcap": "r65_a1_T1046_service_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733023897046223
+      },
+      {
+        "pcap": "ui_r1_a1_T1046_service_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732376004755496
+      }
+    ],
+    "T1048_exfil_alt_protocol": [
+      {
+        "pcap": "r23_a1_T1048_exfil_alt_protocol_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5736292128171772
+      },
+      {
+        "pcap": "r55_a1_T1048_exfil_alt_protocol_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5739078048802911
+      },
+      {
+        "pcap": "r87_a1_T1048_exfil_alt_protocol_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5737008979171514
+      },
+      {
+        "pcap": "ui_r23_a1_T1048_exfil_alt_protocol_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5735428421292453
+      }
+    ],
+    "T1049_connections_discovery": [
+      {
+        "pcap": "r13_a1_T1049_connections_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734307881817221
+      },
+      {
+        "pcap": "r45_a1_T1049_connections_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733430985501036
+      },
+      {
+        "pcap": "r77_a1_T1049_connections_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733386193076148
+      },
+      {
+        "pcap": "ui_r13_a1_T1049_connections_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733253295533358
+      }
+    ],
+    "T1071_dns_tunnel": [
+      {
+        "pcap": "r15_a1_T1071_dns_tunnel_none.pcap",
+        "detected": true,
+        "f1": 0.5,
+        "max_p_attack": 0.5739459471218288
+      },
+      {
+        "pcap": "r47_a1_T1071_dns_tunnel_none.pcap",
+        "detected": true,
+        "f1": 0.5454545454545454,
+        "max_p_attack": 0.5739424330089241
+      },
+      {
+        "pcap": "r79_a1_T1071_dns_tunnel_none.pcap",
+        "detected": true,
+        "f1": 0.5,
+        "max_p_attack": 0.5739427385665475
+      },
+      {
+        "pcap": "ui_r15_a1_T1071_dns_tunnel_none.pcap",
+        "detected": true,
+        "f1": 0.5,
+        "max_p_attack": 0.573947164947167
+      }
+    ],
+    "T1071_http_beacon": [
+      {
+        "pcap": "r14_a1_T1071_http_beacon_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732127870339899
+      },
+      {
+        "pcap": "r46_a1_T1071_http_beacon_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732120359549299
+      },
+      {
+        "pcap": "r78_a1_T1071_http_beacon_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573212130065076
+      },
+      {
+        "pcap": "ui_r14_a1_T1071_http_beacon_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732148114033043
+      }
+    ],
+    "T1090_proxy": [
+      {
+        "pcap": "r29_a1_T1090_proxy_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732125573651865
+      },
+      {
+        "pcap": "r61_a1_T1090_proxy_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732132523786276
+      },
+      {
+        "pcap": "ui_r29_a1_T1090_proxy_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732132155355065
+      }
+    ],
+    "T1095_non_app_protocol": [
+      {
+        "pcap": "r19_a1_T1095_non_app_protocol_none.pcap",
+        "detected": true,
+        "f1": 0.7499999999999999,
+        "max_p_attack": 0.573911882052198
+      },
+      {
+        "pcap": "r51_a1_T1095_non_app_protocol_none.pcap",
+        "detected": true,
+        "f1": 0.8571428571428571,
+        "max_p_attack": 0.5739215517695992
+      },
+      {
+        "pcap": "r83_a1_T1095_non_app_protocol_none.pcap",
+        "detected": true,
+        "f1": 0.8571428571428571,
+        "max_p_attack": 0.5739247547183185
+      },
+      {
+        "pcap": "ui_r19_a1_T1095_non_app_protocol_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5739141246769577
+      }
+    ],
+    "T1102_web_service": [
+      {
+        "pcap": "r20_a1_T1102_web_service_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732160500530153
+      },
+      {
+        "pcap": "r52_a1_T1102_web_service_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732121833274141
+      },
+      {
+        "pcap": "r84_a1_T1102_web_service_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732119780872017
+      },
+      {
+        "pcap": "ui_r20_a1_T1102_web_service_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732119903014973
+      }
+    ],
+    "T1104_multistage_channel": [
+      {
+        "pcap": "r21_a1_T1104_multistage_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5737427629157901
+      },
+      {
+        "pcap": "r53_a1_T1104_multistage_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5737329758610575
+      },
+      {
+        "pcap": "r85_a1_T1104_multistage_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5737612849939614
+      },
+      {
+        "pcap": "ui_r21_a1_T1104_multistage_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573746759193018
+      }
+    ],
+    "T1110_ssh_bruteforce": [
+      {
+        "pcap": "live_ssh_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5731673304317518
+      },
+      {
+        "pcap": "r1_a1_ssh_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732612759852781
+      },
+      {
+        "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732595862075686
+      },
+      {
+        "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733070934098213
+      },
+      {
+        "pcap": "r1_a3_ssh_bruteforce_slow_timing.pcap",
+        "detected": true,
+        "f1": 0.6,
+        "max_p_attack": 0.5731591989146545
+      },
+      {
+        "pcap": "r37_a1_T1110_ssh_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573287686696276
+      },
+      {
+        "pcap": "r5_a1_T1110_ssh_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732071672566235
+      },
+      {
+        "pcap": "r69_a1_T1110_ssh_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732707098266109
+      },
+      {
+        "pcap": "ui_r5_a1_T1110_ssh_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732238417724147
+      }
+    ],
+    "T1110_web_bruteforce": [
+      {
+        "pcap": "r38_a1_T1110_web_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732122728321701
+      },
+      {
+        "pcap": "r6_a1_T1110_web_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732128156675025
+      },
+      {
+        "pcap": "r70_a1_T1110_web_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732117241900414
+      },
+      {
+        "pcap": "ui_r6_a1_T1110_web_bruteforce_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732114488678053
+      }
+    ],
+    "T1133_external_remote": [
+      {
+        "pcap": "r40_a1_T1133_external_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732563408091664
+      },
+      {
+        "pcap": "r72_a1_T1133_external_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732489661779254
+      },
+      {
+        "pcap": "r8_a1_T1133_external_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732704419130459
+      },
+      {
+        "pcap": "ui_r8_a1_T1133_external_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732671903073787
+      }
+    ],
+    "T1135_share_discovery": [
+      {
+        "pcap": "r12_a1_T1135_share_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734373766928911
+      },
+      {
+        "pcap": "r44_a1_T1135_share_discovery_none.pcap",
+        "detected": false,
+        "f1": 0.0,
+        "max_p_attack": 0.008076250553131104
+      },
+      {
+        "pcap": "r76_a1_T1135_share_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734498765226453
+      },
+      {
+        "pcap": "ui_r12_a1_T1135_share_discovery_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732410669326782
+      }
+    ],
+    "T1187_password_spray": [
+      {
+        "pcap": "r39_a1_T1187_password_spray_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732601230358705
+      },
+      {
+        "pcap": "r71_a1_T1187_password_spray_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732366447569802
+      },
+      {
+        "pcap": "r7_a1_T1187_password_spray_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732374398875981
+      },
+      {
+        "pcap": "ui_r7_a1_T1187_password_spray_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732645508181303
+      }
+    ],
+    "T1190_web_exploit_probe": [
+      {
+        "pcap": "r41_a1_T1190_web_exploit_probe_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732149011082946
+      },
+      {
+        "pcap": "r73_a1_T1190_web_exploit_probe_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732187454076484
+      },
+      {
+        "pcap": "r9_a1_T1190_web_exploit_probe_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732186402846128
+      },
+      {
+        "pcap": "ui_r9_a1_T1190_web_exploit_probe_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732249526726082
+      }
+    ],
+    "T1205_traffic_signaling": [
+      {
+        "pcap": "r31_a1_T1205_traffic_signaling_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733480247156694
+      },
+      {
+        "pcap": "r63_a1_T1205_traffic_signaling_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732287521194667
+      },
+      {
+        "pcap": "ui_r31_a1_T1205_traffic_signaling_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733997814916074
+      }
+    ],
+    "T1210_exploit_remote": [
+      {
+        "pcap": "r11_a1_T1210_exploit_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732223255978897
+      },
+      {
+        "pcap": "r43_a1_T1210_exploit_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732232849206775
+      },
+      {
+        "pcap": "r75_a1_T1210_exploit_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732203572941944
+      },
+      {
+        "pcap": "ui_r11_a1_T1210_exploit_remote_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732358177891
+      }
+    ],
+    "T1498_network_dos": [
+      {
+        "pcap": "r26_a1_T1498_network_dos_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732297286624088
+      },
+      {
+        "pcap": "r58_a1_T1498_network_dos_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573245705361478
+      },
+      {
+        "pcap": "ui_r26_a1_T1498_network_dos_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573226256398484
+      }
+    ],
+    "T1499_http_flood": [
+      {
+        "pcap": "live_http_flood_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573214230122976
+      },
+      {
+        "pcap": "live_http_flood_random_timing.pcap",
+        "detected": true,
+        "f1": 0.3157894736842105,
+        "max_p_attack": 0.573214551298879
+      },
+      {
+        "pcap": "r27_a1_T1499_http_flood_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573213246371597
+      },
+      {
+        "pcap": "r3_a1_http_flood_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732144323596731
+      },
+      {
+        "pcap": "r3_a2_http_flood_random_timing.pcap",
+        "detected": true,
+        "f1": 0.3157894736842105,
+        "max_p_attack": 0.5732145420880987
+      },
+      {
+        "pcap": "r3_a3_http_flood_slow_timing.pcap",
+        "detected": true,
+        "f1": 0.32,
+        "max_p_attack": 0.5732146121701225
+      },
+      {
+        "pcap": "r59_a1_T1499_http_flood_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573211601045914
+      },
+      {
+        "pcap": "ui_r27_a1_T1499_http_flood_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732137661799788
+      }
+    ],
+    "T1499_slowloris": [
+      {
+        "pcap": "live_slow_loris_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5736557374615222
+      },
+      {
+        "pcap": "r28_a1_T1499_slowloris_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5736705083493143
+      },
+      {
+        "pcap": "r60_a1_T1499_slowloris_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5736493828240782
+      },
+      {
+        "pcap": "ui_r28_a1_T1499_slowloris_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5736551724001765
+      }
+    ],
+    "T1568_dynamic_resolution": [
+      {
+        "pcap": "r30_a1_T1568_dynamic_resolution_none.pcap",
+        "detected": true,
+        "f1": 0.4,
+        "max_p_attack": 0.5739446836430578
+      },
+      {
+        "pcap": "r62_a1_T1568_dynamic_resolution_none.pcap",
+        "detected": true,
+        "f1": 0.4,
+        "max_p_attack": 0.5739514115173369
+      },
+      {
+        "pcap": "ui_r30_a1_T1568_dynamic_resolution_none.pcap",
+        "detected": true,
+        "f1": 0.375,
+        "max_p_attack": 0.5739556424692273
+      }
+    ],
+    "T1570_lateral_transfer": [
+      {
+        "pcap": "r32_a1_T1570_lateral_transfer_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732177494419738
+      },
+      {
+        "pcap": "r64_a1_T1570_lateral_transfer_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732172586675733
+      },
+      {
+        "pcap": "ui_r32_a1_T1570_lateral_transfer_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732182504283264
+      }
+    ],
+    "T1571_non_standard_port": [
+      {
+        "pcap": "r16_a1_T1571_non_standard_port_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734128792211413
+      },
+      {
+        "pcap": "r48_a1_T1571_non_standard_port_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734305282775313
+      },
+      {
+        "pcap": "r80_a1_T1571_non_standard_port_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732305267965421
+      },
+      {
+        "pcap": "ui_r16_a1_T1571_non_standard_port_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732469205837696
+      }
+    ],
+    "T1572_protocol_tunnel": [
+      {
+        "pcap": "r17_a1_T1572_protocol_tunnel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732143504638224
+      },
+      {
+        "pcap": "r49_a1_T1572_protocol_tunnel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732119750836864
+      },
+      {
+        "pcap": "r81_a1_T1572_protocol_tunnel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732114550750702
+      },
+      {
+        "pcap": "ui_r17_a1_T1572_protocol_tunnel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732118639536201
+      }
+    ],
+    "T1573_encrypted_channel": [
+      {
+        "pcap": "r18_a1_T1573_encrypted_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5732310848496854
+      },
+      {
+        "pcap": "r50_a1_T1573_encrypted_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734284570533782
+      },
+      {
+        "pcap": "r82_a1_T1573_encrypted_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734045678935945
+      },
+      {
+        "pcap": "ui_r18_a1_T1573_encrypted_channel_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734357187524437
+      }
+    ],
+    "T1595_active_scan": [
+      {
+        "pcap": "r2_a1_T1595_active_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734607780817895
+      },
+      {
+        "pcap": "r2_a2_T1595_active_scan_random_timing.pcap",
+        "detected": true,
+        "f1": 0.3720930232558139,
+        "max_p_attack": 0.596235057413578
+      },
+      {
+        "pcap": "r34_a1_T1595_active_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5733333917893468
+      },
+      {
+        "pcap": "r66_a1_T1595_active_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.573499751696363
+      },
+      {
+        "pcap": "ui_r2_a1_T1595_active_scan_none.pcap",
+        "detected": true,
+        "f1": 1.0,
+        "max_p_attack": 0.5734778564702719
+      }
+    ]
+  }
+}

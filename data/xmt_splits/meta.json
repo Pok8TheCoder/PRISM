@@ -1,0 +1,45 @@
+{
+  "source": "prism_lab_pcaps",
+  "pcap_dir": "D:\\Cursor\\PRISM\\data\\raw\\adversarial",
+  "schema": "ary242_30s",
+  "splits": {
+    "train": {
+      "windows": 181,
+      "pcaps": 98,
+      "attack_pct": 1.0,
+      "mitre_stages": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6
+      ]
+    },
+    "val": {
+      "windows": 24,
+      "pcaps": 21,
+      "attack_pct": 1.0,
+      "mitre_stages": [
+        0,
+        1,
+        2,
+        3,
+        5
+      ]
+    },
+    "test": {
+      "windows": 45,
+      "pcaps": 22,
+      "attack_pct": 1.0,
+      "mitre_stages": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6
+      ]
+    }
+  }
+}

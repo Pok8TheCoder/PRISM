@@ -1,0 +1,40 @@
+{
+  "context": 100,
+  "horizon": 200,
+  "ary_lookback": 20,
+  "feature_idx": 3,
+  "feature_name": "num_unique_dst_ports",
+  "target_len": 998,
+  "metrics": [
+    {
+      "variant": "ary_base",
+      "mse": 2079.4873046875,
+      "mae": 18.319421768188477,
+      "n_covered": 800
+    },
+    {
+      "variant": "ary_V8",
+      "mse": 56251.1796875,
+      "mae": 138.6190948486328,
+      "n_covered": 800
+    },
+    {
+      "variant": "ary_V10",
+      "mse": 56249.328125,
+      "mae": 138.61886596679688,
+      "n_covered": 800
+    },
+    {
+      "variant": "timesfm",
+      "mse": 1939.7021484375,
+      "mae": 17.511987686157227,
+      "n_covered": 800
+    },
+    {
+      "variant": "timesfm_ram",
+      "mse": 54863.61328125,
+      "mae": 136.74098205566406,
+      "n_covered": 800
+    }
+  ]
+}

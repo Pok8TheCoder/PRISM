@@ -49,7 +49,12 @@ services:
       - prism-lab
     environment:
       TARGET_HOST: target-server
-      BENIGN_INTERVAL: "4.0"
+      # ~4 concurrent workers x ~1 req/sec each targets ~100-150 flows per
+      # 30s window, matching ARY.01's CIC-IDS-2018 training-distribution
+      # benign baseline (median ~98, mean ~145) -- see benign_traffic.py.
+      # Override via host env for scaled IPS runs (e.g. BENIGN_WORKERS=10).
+      BENIGN_INTERVAL: "${BENIGN_INTERVAL:-1.0}"
+      BENIGN_WORKERS: "${BENIGN_WORKERS:-4}"
     depends_on:
       target-server:
         condition: service_started
@@ -60,7 +65,32 @@ services:
           memory: 128M
     restart: unless-stopped
 
+  redteam:
+    build:
+      context: ./redteam
+    container_name: redteam
+    hostname: redteam
+    networks:
+      - prism-lab
+    volumes:
+      - lab-events:/events
+    environment:
+      TARGET_HOST: target-server
+    depends_on:
+      target-server:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    restart: unless-stopped
+    command: ["sleep", "infinity"]
+
 networks:
   prism-lab:
     driver: bridge
     internal: true
+
+volumes:
+  lab-events:

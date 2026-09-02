@@ -1,0 +1,3 @@
+{"class_id": "T1491_web_defacement", "stage": "recon", "success": true, "ts": 1788282194.06192, "evidence": "status=200", "round_id": "e436e975422b"}
+{"class_id": "T1491_web_defacement", "stage": "exploit", "success": true, "ts": 1788282198.4892197, "evidence": "status=200 user=guest_64dff3c9", "round_id": "e436e975422b"}
+{"class_id": "T1491_web_defacement", "stage": "post_exploit", "success": true, "ts": 1788282198.9380338, "evidence": "marker_found=True", "round_id": "e436e975422b"}

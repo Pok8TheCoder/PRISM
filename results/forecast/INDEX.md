@@ -3,18 +3,33 @@
 Each round of forecasting experiments lives in its own numbered folder so old
 and new results never get mixed up. **Higher number = more recent.**
 
+> **Note:** Rounds v1–v7 were archived to `archive/2026-09-01-cleanup/results/forecast-v1-v7/`
+> during the Sep 2026 workspace cleanup. Only v8+ remain in this folder.
+
 | Folder | What it tested | Models | Script that produced it |
 |---|---|---|---|
-| `v1_onestep_ae_rf/` | One-step forecasting: given the **true** previous state, predict the next one. | AE-MLP, Random Forest | `scripts/train_forecast_models.py` (metrics) + `scripts/plot_forecast.py` (plots) |
-| `v2_recursive_ae_rf/` | Recursive rollout: feed the model's **own prediction** back in as the next input, all the way through a whole capture, no ground truth after step 0. First look at whether RF/AE-MLP can sustain multi-step forecasts. | AE-MLP, Random Forest | `scripts/test_recursive_rollout.py` |
-| `v3_recursive_5way/` | Same recursive rollout protocol, expanded to 5 candidates after testing the "RF flatlines, does XGBoost too?" question and prototyping a bounded-delta hybrid. Warmup changed to first 3 real states. | AE-MLP, Random Forest, **XGBoost**, **Hybrid** (windowed input + bounded delta, but *not* recurrent), **Holt damped-trend** (no training) | `scripts/test_recursive_rollout_v2.py` |
-| `v4_recursive_temporal/` | Same protocol again, after replacing the flat-window "Hybrid" with a genuinely **recurrent** (GRU) temporal forecaster — the first candidate here that actually models order/sequence instead of only seeing a concatenated snapshot. | AE-MLP, Random Forest, XGBoost, Hybrid (non-recurrent), **Temporal-GRU** (recurrent + bounded delta), Holt damped-trend | `scripts/test_recursive_rollout_v3.py` |
-| `v5_adaptive_memory/` | Prototype of **RAM.01** (Receding-horizon Adaptive Memory): the Temporal-GRU + test-time weight adaptation every horizon-chunk + a surprise-triggered episodic memory bank that recognizes recurring attack-stage shapes across *different* captures. Context=20, horizon=20. Memory seeded from TRAIN captures only, tested cold on held-out TEST captures. | frozen / adaptive / adaptive+memory | `scripts/adaptive_memory_forecaster.py` |
-| `v6_ram01_killchain/` | RAM.01 (v2) vs frozen Temporal-Y (v2) vs frozen Temporal-A (amt), all retrained with **context=60 / horizon=40**, run across a synthetic ~1000-step session with 3 real attacks (scan, http flood, DoS) spliced into benign background traffic. | Temporal-Y (frozen), Temporal-A (frozen), **RAM.01** | `scripts/ram01_kill_chain_eval.py` (models trained by `train_temporal_forecaster_ctx60.py`) |
-| `v7_transformer_showdown/` | The "GRU vs Transformer" debate settled with real numbers: a genuine self-attention **Transformer forecaster (TFT.01)**, same context=60/horizon=40 protocol and same data as Temporal-Y, plus RAM.01's memory+TTT layer wired onto it unmodified (**RAMT.01**, no new memory/TTT code — `EpisodicMemoryBank`/`OnlineAdaptive` are already model-agnostic). Same synthetic kill-chain timeline as v6, v2 schema only (single-schema comparison, apples-to-apples). | Temporal-Y (frozen GRU), **TFT.01** (frozen Transformer), RAM.01 (GRU+memory), **RAMT.01** (Transformer+memory) | `scripts/transformer_showdown_kill_chain_eval.py` (Transformer trained by `train_transformer_forecaster.py`) |
-| `v8_ram_aryan_killchain/` | Same RAM-A.01 protocol applied to **Aryan's actual pushed checkpoint** (`weights/transformer/world_model_best.pt`, d_state=242, 3.8M params, trained on his own CIC-IDS-2018 sample) — his real weights loaded directly and reproduced his reported val metrics, **no retraining**. Kill-chain built from his own held-out val/test splits (Initial Access from val, Lateral Movement from test, Impact from train — noted as seen-during-training). Run at both 2000-step and 1000-step lengths (`--steps` CLI arg) to check sensitivity to timeline length. | Aryan-WM (frozen), **RAM-A.01** (Aryan-WM + TTT + memory) | `scripts/ram_aryan_killchain_eval.py` (run from the `aryan` branch worktree, output saved into main repo) |
+| `v8_ram_aryan_killchain/` | Same RAM-A.01 protocol applied to **ARY.01** (`world_model_best.pt`, d_state=242, 3.8M params). | ARY.01 frozen, RAM-A.01 | `scripts/ram_aryan_killchain_eval.py` *(archived)* |
+| `v9_ary01_vs_ary02/` | **ARY.02** (`origin/aryan` `de0d27a`, epoch 22, focal+balanced) vs **ARY.01** (epoch 13). Same architecture, different training. Player now names MITRE stages, attributes features, and can ingest CSV/PCAP/lab live. | ARY.01, ARY.02, RAM-A.01, RAM-A.02 | dashboard Forecast Player + `docs/ARY01_VS_ARY02.md` |
 
-## Current latest: `v8_ram_aryan_killchain/`
+### Archived rounds (v1–v7)
+
+| Folder | Summary |
+|---|---|
+| `v1_onestep_ae_rf/` | One-step AE-MLP / RF forecasting |
+| `v2_recursive_ae_rf/` | First recursive rollout |
+| `v3_recursive_5way/` | + XGBoost, Hybrid, Holt |
+| `v4_recursive_temporal/` | + Temporal-GRU |
+| `v5_adaptive_memory/` | RAM.01 prototype (ctx=20) |
+| `v6_ram01_killchain/` | RAM.01 kill-chain (ctx=60) |
+| `v7_transformer_showdown/` | GRU vs Transformer + RAMT.01 |
+
+See `archive/2026-09-01-cleanup/results/forecast-v1-v7/` for plots and JSON.
+
+## Current latest: `v9_ary01_vs_ary02/`
+
+ARY.02 is a retrain, not a new net: +recall / +MITRE F1, worse precision/FPR. See `docs/ARY01_VS_ARY02.md`.
+
+## Previous: `v8_ram_aryan_killchain/`
 
 ### Headline result
 Loaded Aryan's real trained Transformer World Model checkpoint directly (verified it reproduces his reported val score first) and ran it — frozen vs RAM-A.01 wrapped around it — across two synthetic kill-chain timelines built from his own held-out data. Memory/TTT made **no meaningful difference** either time (2000-step: 469.60 → 469.78, +0.02%; 1000-step: 1.7362 → 1.7529, +1.0%), consistent with `v7`'s finding that RAM helps smaller/weaker backbones more than already-strong ones — his 3.8M-param model is ~100x bigger than TFT.01/Temporal-Y and already fits this small dataset (~2800 windows total) very tightly, leaving little room for a lightweight online-adaptation layer to add value.

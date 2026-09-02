@@ -1,0 +1,102 @@
+{
+  "context": 100,
+  "horizon": 200,
+  "ary_lookback": 20,
+  "gate_ram_on_attack": true,
+  "attack_gate": 0.5,
+  "feature_idx": 3,
+  "feature_name": "num_unique_dst_ports",
+  "target_len": 998,
+  "metrics": [
+    {
+      "variant": "ary_base",
+      "mse": 2079.4873046875,
+      "mae": 18.319421768188477,
+      "n_covered": 800,
+      "gate_stats": {
+        "chunks": 4,
+        "chunks_attack_pred": 1,
+        "blends_applied": 0,
+        "memory_writes": 0
+      }
+    },
+    {
+      "variant": "ary_V8",
+      "mse": 56251.1796875,
+      "mae": 138.6190948486328,
+      "n_covered": 800,
+      "gate_stats": {
+        "chunks": 4,
+        "chunks_attack_pred": 1,
+        "blends_applied": 2,
+        "memory_writes": 4
+      }
+    },
+    {
+      "variant": "ary_V10",
+      "mse": 56249.453125,
+      "mae": 138.61856079101562,
+      "n_covered": 800,
+      "gate_stats": {
+        "chunks": 4,
+        "chunks_attack_pred": 0,
+        "blends_applied": 2,
+        "memory_writes": 4
+      }
+    },
+    {
+      "variant": "timesfm",
+      "mse": 1939.7021484375,
+      "mae": 17.511987686157227,
+      "n_covered": 800
+    },
+    {
+      "variant": "timesfm_ram",
+      "mse": 54863.61328125,
+      "mae": 136.74098205566406,
+      "n_covered": 800,
+      "gate_stats": {
+        "chunks": 4,
+        "chunks_attack_pred": 0,
+        "blends_applied": 2,
+        "memory_writes": 4
+      }
+    },
+    {
+      "variant": "ary_V8_gated",
+      "mse": 2079.4873046875,
+      "mae": 18.319421768188477,
+      "n_covered": 800,
+      "gate_stats": {
+        "chunks": 4,
+        "chunks_attack_pred": 1,
+        "blends_applied": 0,
+        "memory_writes": 1
+      }
+    },
+    {
+      "variant": "ary_V10_gated",
+      "mse": 2079.556884765625,
+      "mae": 18.321353912353516,
+      "n_covered": 800,
+      "gate_stats": {
+        "chunks": 4,
+        "chunks_attack_pred": 0,
+        "blends_applied": 0,
+        "memory_writes": 0
+      }
+    },
+    {
+      "variant": "timesfm_ram_gated",
+      "mse": 1939.7021484375,
+      "mae": 17.511987686157227,
+      "n_covered": 800,
+      "gate_stats": {
+        "chunks": 4,
+        "chunks_attack_pred": 1,
+        "blends_applied": 0,
+        "memory_writes": 1
+      }
+    }
+  ]
+}

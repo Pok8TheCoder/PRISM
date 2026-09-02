@@ -1,0 +1,730 @@
+{
+  "checkpoint": "D:\\Cursor\\PRISM\\models\\checkpoints\\ary5s_v01.pt",
+  "threshold": 0.5,
+  "tests": {
+    "cic_benign_only": {
+      "n_windows": 200,
+      "false_alarms": 0,
+      "false_alarm_rate": 0.0,
+      "max_p_attack": 0.009210607036948204,
+      "mean_p_attack": 0.0053497120183659715,
+      "any_alarm": false
+    },
+    "post_attack_benign_replay": {
+      "n_windows": 80,
+      "false_alarms": 0,
+      "false_alarm_rate": 0.0,
+      "max_p_attack": 0.009210607036948204,
+      "mean_p_attack": 0.0057829453783924695,
+      "any_alarm": false,
+      "priming_pcap": "live_http_flood_none.pcap"
+    },
+    "lab_pcaps": {
+      "n_pcaps": 141,
+      "warmup_false_alarm_pcaps": 0,
+      "warmup_harm_cases": [],
+      "attack_missed_pcaps": 2,
+      "attack_miss_cases": [
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "class_id": "T1046_service_scan",
+          "evasion": "none",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": false,
+          "attack_f1": 0.0,
+          "attack_max_p": 0.007900314405560493,
+          "attack_miss_windows": 1,
+          "attack_n_windows": 1
+        },
+        {
+          "pcap": "r44_a1_T1135_share_discovery_none.pcap",
+          "class_id": "T1135_share_discovery",
+          "evasion": "none",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": false,
+          "attack_f1": 0.0,
+          "attack_max_p": 0.008076250553131104,
+          "attack_miss_windows": 1,
+          "attack_n_windows": 1
+        }
+      ],
+      "benign_pcap_count": 0,
+      "benign_pcaps": [],
+      "evasion_pcaps": [
+        {
+          "pcap": "live_http_flood_random_timing.pcap",
+          "class_id": "T1499_http_flood",
+          "evasion": "timing",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 0.3157894736842105,
+          "attack_max_p": 0.573214551298879,
+          "attack_miss_windows": 13,
+          "attack_n_windows": 16
+        },
+        {
+          "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+          "class_id": "T1046_service_scan",
+          "evasion": "order",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 1.0,
+          "attack_max_p": 0.5733451175130904,
+          "attack_miss_windows": 0,
+          "attack_n_windows": 1
+        },
+        {
+          "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+          "class_id": "T1110_ssh_bruteforce",
+          "evasion": "timing",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 1.0,
+          "attack_max_p": 0.5733070934098213,
+          "attack_miss_windows": 0,
+          "attack_n_windows": 2
+        },
+        {
+          "pcap": "r1_a3_ssh_bruteforce_slow_timing.pcap",
+          "class_id": "T1110_ssh_bruteforce",
+          "evasion": "timing",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 0.6,
+          "attack_max_p": 0.5731591989146545,
+          "attack_miss_windows": 4,
+          "attack_n_windows": 7
+        },
+        {
+          "pcap": "r2_a2_port_scan_sequential_random_timing.pcap",
+          "class_id": "T1046_service_scan",
+          "evasion": "timing",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 0.8571428571428571,
+          "attack_max_p": 0.5732252364046871,
+          "attack_miss_windows": 1,
+          "attack_n_windows": 4
+        },
+        {
+          "pcap": "r2_a2_T1595_active_scan_random_timing.pcap",
+          "class_id": "T1595_active_scan",
+          "evasion": "timing",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 0.3720930232558139,
+          "attack_max_p": 0.596235057413578,
+          "attack_miss_windows": 27,
+          "attack_n_windows": 35
+        },
+        {
+          "pcap": "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+          "class_id": "T1046_service_scan",
+          "evasion": "order",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 1.0,
+          "attack_max_p": 0.5732668813457712,
+          "attack_miss_windows": 0,
+          "attack_n_windows": 1
+        },
+        {
+          "pcap": "r3_a2_http_flood_random_timing.pcap",
+          "class_id": "T1499_http_flood",
+          "evasion": "timing",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 0.3157894736842105,
+          "attack_max_p": 0.5732145420880987,
+          "attack_miss_windows": 13,
+          "attack_n_windows": 16
+        },
+        {
+          "pcap": "r3_a3_http_flood_slow_timing.pcap",
+          "class_id": "T1499_http_flood",
+          "evasion": "timing",
+          "warmup_false_alarms": 0,
+          "warmup_max_p": 0.009210607036948204,
+          "attack_detected": true,
+          "attack_f1": 0.32,
+          "attack_max_p": 0.5732146121701225,
+          "attack_miss_windows": 17,
+          "attack_n_windows": 21
+        }
+      ],
+      "summary": {
+        "det_rate": 0.9858156028368794,
+        "warmup_harm_rate": 0.0
+      }
+    },
+    "live_lab_rounds": {
+      "n": 9,
+      "rows": [
+        {
+          "id": "cred_theft/none",
+          "evasion": "none",
+          "detected": true,
+          "f1": 1.0,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5810163222625851
+        },
+        {
+          "id": "cred_theft/random_timing",
+          "evasion": "random_timing",
+          "detected": true,
+          "f1": 0.6666666666666666,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5833569913730025
+        },
+        {
+          "id": "cred_theft/slow_timing",
+          "evasion": "slow_timing",
+          "detected": true,
+          "f1": 0.6666666666666666,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5865281765162944
+        },
+        {
+          "id": "defacement/none",
+          "evasion": "none",
+          "detected": true,
+          "f1": 1.0,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5827467010915279
+        },
+        {
+          "id": "defacement/random_timing",
+          "evasion": "random_timing",
+          "detected": true,
+          "f1": 0.6666666666666666,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5864479402080178
+        },
+        {
+          "id": "defacement/slow_timing",
+          "evasion": "slow_timing",
+          "detected": true,
+          "f1": 0.5714285714285715,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5855830143019557
+        },
+        {
+          "id": "key_theft/none",
+          "evasion": "none",
+          "detected": true,
+          "f1": 1.0,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5872250977903604
+        },
+        {
+          "id": "key_theft/random_timing",
+          "evasion": "random_timing",
+          "detected": true,
+          "f1": 0.6666666666666666,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5867386212199925
+        },
+        {
+          "id": "key_theft/slow_timing",
+          "evasion": "slow_timing",
+          "detected": true,
+          "f1": 0.5714285714285715,
+          "harm": 0,
+          "warmup_false_alarms": 0,
+          "max_p_attack": 0.5887910025194287
+        }
+      ],
+      "missed": [],
+      "warmup_harm": []
+    },
+    "label_poisoning": [
+      {
+        "pcap": "live_http_flood_none.pcap",
+        "true_detected_with_labels": false,
+        "max_p_attack": 0.0032142301229760055,
+        "f1_vs_truth": 0.0
+      },
+      {
+        "pcap": "live_http_flood_random_timing.pcap",
+        "true_detected_with_labels": false,
+        "max_p_attack": 0.011897594078133504,
+        "f1_vs_truth": 0.0
+      },
+      {
+        "pcap": "r1_a3_ssh_bruteforce_slow_timing.pcap",
+        "true_detected_with_labels": false,
+        "max_p_attack": 0.005558525475983818,
+        "f1_vs_truth": 0.0
+      },
+      {
+        "pcap": "live_port_scan_sequential_none.pcap",
+        "true_detected_with_labels": false,
+        "max_p_attack": 0.007900314405560493,
+        "f1_vs_truth": 0.0
+      },
+      {
+        "pcap": "r44_a1_T1135_share_discovery_none.pcap",
+        "true_detected_with_labels": false,
+        "max_p_attack": 0.008076250553131104,
+        "f1_vs_truth": 0.0
+      }
+    ],
+    "live_realistic": {
+      "n_attack_pcaps": 138,
+      "oracle_miss": 2,
+      "live_miss": 138,
+      "regressions": [
+        {
+          "pcap": "live_http_flood_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573214230122976,
+          "live_max_p": 0.0074749537743628025
+        },
+        {
+          "pcap": "live_http_flood_random_timing.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573214551298879,
+          "live_max_p": 0.019293395802378654
+        },
+        {
+          "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5733451175130904,
+          "live_max_p": 0.00777934305369854
+        },
+        {
+          "pcap": "live_slow_loris_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5736557374615222,
+          "live_max_p": 0.008501715026795864
+        },
+        {
+          "pcap": "live_ssh_bruteforce_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5731673304317518,
+          "live_max_p": 0.007365884725004435
+        },
+        {
+          "pcap": "r10_a1_T1021_remote_services_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5733689097594469,
+          "live_max_p": 0.00783467385917902
+        },
+        {
+          "pcap": "r11_a1_T1210_exploit_remote_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732223255978897,
+          "live_max_p": 0.007493780460208654
+        },
+        {
+          "pcap": "r12_a1_T1135_share_discovery_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5734373766928911,
+          "live_max_p": 0.007993899285793304
+        },
+        {
+          "pcap": "r13_a1_T1049_connections_discovery_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5734307881817221,
+          "live_max_p": 0.00797857716679573
+        },
+        {
+          "pcap": "r14_a1_T1071_http_beacon_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732127870339899,
+          "live_max_p": 0.007471597753465176
+        },
+        {
+          "pcap": "r15_a1_T1071_dns_tunnel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5739459471218288,
+          "live_max_p": 0.009176621213555336
+        },
+        {
+          "pcap": "r16_a1_T1571_non_standard_port_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5734128792211413,
+          "live_max_p": 0.007936928421258926
+        },
+        {
+          "pcap": "r17_a1_T1572_protocol_tunnel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732143504638224,
+          "live_max_p": 0.0074752336367964745
+        },
+        {
+          "pcap": "r18_a1_T1573_encrypted_channel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732310848496854,
+          "live_max_p": 0.0075141508132219315
+        },
+        {
+          "pcap": "r19_a1_T1095_non_app_protocol_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573911882052198,
+          "live_max_p": 0.00909740012139082
+        },
+        {
+          "pcap": "r1_a1_ssh_bruteforce_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732612759852781,
+          "live_max_p": 0.007584362756460905
+        },
+        {
+          "pcap": "r1_a1_T1046_service_scan_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.57325121500995,
+          "live_max_p": 0.00756096513941884
+        },
+        {
+          "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732595862075686,
+          "live_max_p": 0.007580433040857315
+        },
+        {
+          "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5733070934098213,
+          "live_max_p": 0.007690914906561375
+        },
+        {
+          "pcap": "r1_a3_ssh_bruteforce_slow_timing.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5731591989146545,
+          "live_max_p": 0.009013825096189976
+        },
+        {
+          "pcap": "r20_a1_T1102_web_service_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732160500530153,
+          "live_max_p": 0.0074791861698031425
+        },
+        {
+          "pcap": "r21_a1_T1104_multistage_channel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5737427629157901,
+          "live_max_p": 0.008704099804162979
+        },
+        {
+          "pcap": "r22_a1_T1041_exfil_c2_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732155768992379,
+          "live_max_p": 0.007478085812181234
+        },
+        {
+          "pcap": "r23_a1_T1048_exfil_alt_protocol_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5736292128171772,
+          "live_max_p": 0.008440029807388783
+        },
+        {
+          "pcap": "r24_a1_T1030_exfil_size_limit_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732134393975138,
+          "live_max_p": 0.007473114877939224
+        },
+        {
+          "pcap": "r25_a1_T1020_automated_exfil_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732135777594521,
+          "live_max_p": 0.007473436649888754
+        },
+        {
+          "pcap": "r26_a1_T1498_network_dos_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732297286624088,
+          "live_max_p": 0.007510996889322996
+        },
+        {
+          "pcap": "r27_a1_T1499_http_flood_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573213246371597,
+          "live_max_p": 0.00747266598045826
+        },
+        {
+          "pcap": "r28_a1_T1499_slowloris_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5736705083493143,
+          "live_max_p": 0.008536065928637981
+        },
+        {
+          "pcap": "r29_a1_T1090_proxy_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732125573651865,
+          "live_max_p": 0.007471063639968634
+        }
+      ],
+      "live_miss_cases": [
+        {
+          "pcap": "live_http_flood_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573214230122976,
+          "live_max_p": 0.0074749537743628025
+        },
+        {
+          "pcap": "live_http_flood_random_timing.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573214551298879,
+          "live_max_p": 0.019293395802378654
+        },
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "oracle_detected": false,
+          "live_detected": false,
+          "oracle_max_p": 0.007900314405560493,
+          "live_max_p": 0.007900314405560493
+        },
+        {
+          "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5733451175130904,
+          "live_max_p": 0.00777934305369854
+        },
+        {
+          "pcap": "live_slow_loris_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5736557374615222,
+          "live_max_p": 0.008501715026795864
+        },
+        {
+          "pcap": "live_ssh_bruteforce_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5731673304317518,
+          "live_max_p": 0.007365884725004435
+        },
+        {
+          "pcap": "r10_a1_T1021_remote_services_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5733689097594469,
+          "live_max_p": 0.00783467385917902
+        },
+        {
+          "pcap": "r11_a1_T1210_exploit_remote_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732223255978897,
+          "live_max_p": 0.007493780460208654
+        },
+        {
+          "pcap": "r12_a1_T1135_share_discovery_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5734373766928911,
+          "live_max_p": 0.007993899285793304
+        },
+        {
+          "pcap": "r13_a1_T1049_connections_discovery_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5734307881817221,
+          "live_max_p": 0.00797857716679573
+        },
+        {
+          "pcap": "r14_a1_T1071_http_beacon_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732127870339899,
+          "live_max_p": 0.007471597753465176
+        },
+        {
+          "pcap": "r15_a1_T1071_dns_tunnel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5739459471218288,
+          "live_max_p": 0.009176621213555336
+        },
+        {
+          "pcap": "r16_a1_T1571_non_standard_port_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5734128792211413,
+          "live_max_p": 0.007936928421258926
+        },
+        {
+          "pcap": "r17_a1_T1572_protocol_tunnel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732143504638224,
+          "live_max_p": 0.0074752336367964745
+        },
+        {
+          "pcap": "r18_a1_T1573_encrypted_channel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732310848496854,
+          "live_max_p": 0.0075141508132219315
+        },
+        {
+          "pcap": "r19_a1_T1095_non_app_protocol_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573911882052198,
+          "live_max_p": 0.00909740012139082
+        },
+        {
+          "pcap": "r1_a1_ssh_bruteforce_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732612759852781,
+          "live_max_p": 0.007584362756460905
+        },
+        {
+          "pcap": "r1_a1_T1046_service_scan_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.57325121500995,
+          "live_max_p": 0.00756096513941884
+        },
+        {
+          "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732595862075686,
+          "live_max_p": 0.007580433040857315
+        },
+        {
+          "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5733070934098213,
+          "live_max_p": 0.007690914906561375
+        },
+        {
+          "pcap": "r1_a3_ssh_bruteforce_slow_timing.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5731591989146545,
+          "live_max_p": 0.009013825096189976
+        },
+        {
+          "pcap": "r20_a1_T1102_web_service_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732160500530153,
+          "live_max_p": 0.0074791861698031425
+        },
+        {
+          "pcap": "r21_a1_T1104_multistage_channel_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5737427629157901,
+          "live_max_p": 0.008704099804162979
+        },
+        {
+          "pcap": "r22_a1_T1041_exfil_c2_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732155768992379,
+          "live_max_p": 0.007478085812181234
+        },
+        {
+          "pcap": "r23_a1_T1048_exfil_alt_protocol_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5736292128171772,
+          "live_max_p": 0.008440029807388783
+        },
+        {
+          "pcap": "r24_a1_T1030_exfil_size_limit_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732134393975138,
+          "live_max_p": 0.007473114877939224
+        },
+        {
+          "pcap": "r25_a1_T1020_automated_exfil_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732135777594521,
+          "live_max_p": 0.007473436649888754
+        },
+        {
+          "pcap": "r26_a1_T1498_network_dos_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5732297286624088,
+          "live_max_p": 0.007510996889322996
+        },
+        {
+          "pcap": "r27_a1_T1499_http_flood_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.573213246371597,
+          "live_max_p": 0.00747266598045826
+        },
+        {
+          "pcap": "r28_a1_T1499_slowloris_none.pcap",
+          "oracle_detected": true,
+          "live_detected": false,
+          "oracle_max_p": 0.5736705083493143,
+          "live_max_p": 0.008536065928637981
+        }
+      ]
+    }
+  },
+  "verdict": {
+    "attack_evasion_easy_oracle_eval": true,
+    "attack_evasion_easy_live_realistic": true,
+    "benign_false_alarm_easy": false,
+    "live_realistic_det_rate": 0.0,
+    "notes": [
+      "oracle eval passes true_bin into step() \u2014 inflates detection via memory label writes",
+      "live-realistic passes true_bin=None \u2014 only suspicious_thresh (0.01) gates dynamic memory"
+    ]
+  }
+}

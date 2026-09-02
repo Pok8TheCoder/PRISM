@@ -3,11 +3,13 @@ timeline while Aryan's real model (frozen and/or RAM-A.01) forecasts ahead
 of a moving "now" line, self-healing as ground truth arrives.
 
 Backed by `src/ui/forecast_sessions.py`. See
-`docs/WORKSPACE_AND_ARYAN_BRANCH.md` and `results/forecast/v8_ram_aryan_killchain/`
+`docs/ARY01_VS_ARY02.md` and `results/forecast/v8_ram_aryan_killchain/`
 for the research this visualizes.
 """
 
 from __future__ import annotations
+
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -59,13 +61,15 @@ def _init_state():
     defaults = {
         "fp_timeline_len": 1000,
         "fp_feature_idx": None,
-        "fp_slot1": "aryan_frozen",
-        "fp_slot2": "ram_a01",
-        "fp_slot3": "none",
+        "fp_slot1": "ary_01",
+        "fp_slot2": "ary_02",
+        "fp_slot3": "xmt_01" if (fs.CKPT_XMT01.exists()) else "none",
         "fp_playhead": None,
         "fp_playing": False,
         "fp_speed": 8,       # steps / second
         "fp_accum": 0.0,     # fractional step accumulator for smooth low speeds
+        "fp_source": "synthetic",
+        "fp_upload_name": None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -73,8 +77,12 @@ def _init_state():
 
 
 @st.cache_resource(show_spinner=False)
-def _get_recording(model_choice: str, timeline_len: int) -> fs.Recording:
-    return fs.build_recording(model_choice, timeline_len)
+def _get_recording(model_choice: str, timeline_len: int, source: str, upload_key: str,
+                   _build_version: int = fs.RECORDING_BUILD_VERSION) -> fs.Recording:
+    upload_path = None
+    if source == "upload" and upload_key:
+        upload_path = upload_key
+    return fs.build_recording(model_choice, timeline_len, source=source, uploaded_path=upload_path)
 
 
 @st.cache_data(show_spinner=False)
@@ -91,9 +99,23 @@ def _render_top_controls():
         "filled up to the playhead; future attacks show as a faint dashed line at their start. "
         "**Model slots:** solid blue/red = model signals on **revealed** real data; pale "
         "cyan/orange = the model's own **forecast** cone ahead of now (no ground truth used). "
-        "**Yellow** = RAM-A.01 memory writes (revealed steps only)."
+        "**Yellow** = RAM memory writes (revealed steps only). "
+        "ARY.01 = CIC epoch 13. ARY.02 = CIC retrain epoch 22. "
+        "XMT.01 = same 242-d features, trained on PRISM lab PCAPs (slot 3)."
     )
-    c1, c2 = st.columns([1, 1])
+    src, c1, c2 = st.columns([1.2, 1, 1])
+    with src:
+        st.selectbox(
+            "Traffic source",
+            ["synthetic", "xmt_lab", "upload", "live"],
+            format_func=lambda k: {
+                "synthetic": "Synthetic CIC kill-chain",
+                "xmt_lab": "XMT lab test timeline",
+                "upload": "Uploaded PCAP / CIC CSV",
+                "live": "Lab live captures",
+            }[k],
+            key="fp_source",
+        )
     with c1:
         st.selectbox("Timeline length (steps)", TIMELINE_CHOICES, key="fp_timeline_len")
     with c2:
@@ -102,6 +124,18 @@ def _render_top_controls():
             st.session_state.fp_feature_idx = feat_opts[0]
         st.selectbox("Feature to plot (top-variance raw dims)", feat_opts,
                      format_func=lambda i: f"feature[{i}]", key="fp_feature_idx")
+
+    if st.session_state.fp_source == "upload":
+        up = st.file_uploader("PCAP or CIC CSV", type=["pcap", "pcapng", "csv"], key="fp_upload")
+        if up is not None:
+            dest = Path("data") / "raw" / "player_uploads"
+            dest.mkdir(parents=True, exist_ok=True)
+            saved = dest / up.name
+            saved.write_bytes(up.getvalue())
+            st.session_state.fp_upload_name = str(saved)
+            st.caption(f"Using {saved}")
+    elif st.session_state.fp_source == "live":
+        st.caption("Newest lab pcaps under data/raw/adversarial are windowed into 242-d states. Run an attack if this is empty.")
 
     s1, s2, s3 = st.columns(3)
     choices = list(fs.MODEL_CHOICES.keys())
@@ -128,23 +162,110 @@ def _intrusion_mask(probs: np.ndarray) -> np.ndarray:
     return np.nan_to_num(probs, nan=0.0) > fs.INTRUSION_PROB_THRESH
 
 
-def _mask_regions(mask: np.ndarray, lo: int, hi: int, fill: str, layer: str = "below",
-                  edge: str | None = None) -> list[dict]:
-    """Collapses a boolean mask into contiguous-run rectangles instead of one
-    shape per flagged index -- far fewer shapes to build/serialize/diff each
-    frame, which is most of what made playback feel janky."""
+def _mask_runs(mask: np.ndarray, lo: int, hi: int) -> list[tuple[int, int]]:
     idxs = np.nonzero(mask[lo:hi])[0] + lo
     if len(idxs) == 0:
         return []
-    runs = []
-    start = prev = idxs[0]
+    runs: list[tuple[int, int]] = []
+    start = prev = int(idxs[0])
     for i in idxs[1:]:
+        i = int(i)
         if i == prev + 1:
             prev = i
             continue
         runs.append((start, prev))
         start = prev = i
     runs.append((start, prev))
+    return runs
+
+
+def _attack_label_for_run(rec: fs.Recording, playhead: int, a: int, b: int, *, future: bool):
+    best_attack, best_conf = "Unknown", 0.0
+    max_p = 0.0
+    tech = None
+    for s in range(a, b + 1):
+        if future or s > playhead:
+            mitre = rec.prospective_mitre_prob[s] if 0 <= s < rec.n_steps else None
+            p_intr = rec.prospective_intrusion_prob[s] if 0 <= s < rec.n_steps else float("nan")
+        else:
+            mitre = rec.retro_mitre_prob[s]
+            p_intr = rec.retro_intrusion_prob[s]
+        if mitre is not None and not np.all(np.isnan(mitre)):
+            attack, conf = fs.attack_label_from_probs(mitre)
+            if attack != "Benign" and conf >= best_conf:
+                best_attack, best_conf = attack, conf
+            elif best_attack == "Unknown":
+                best_attack, best_conf = attack, conf
+        if np.isfinite(p_intr):
+            max_p = max(max_p, float(p_intr))
+        if rec.technique_by_step and 0 <= s < len(rec.technique_by_step):
+            tech = rec.technique_by_step[s] or tech
+    if tech:
+        best_attack = tech.split(" (p=")[0]
+    return best_attack, best_conf, max_p
+
+
+def _intrusion_band_labels(rec: fs.Recording, playhead: int, lo: int, hi: int,
+                           past_intr: np.ndarray, future_intr: np.ndarray):
+    annotations: list[dict] = []
+    caption_bits: list[str] = []
+    for runs, future, color in (
+        (_mask_runs(past_intr, lo, hi), False, "#ff7b72"),
+        (_mask_runs(future_intr, lo, hi), True, "#ffa657"),
+    ):
+        for a, b in runs:
+            attack, conf, p_intr = _attack_label_for_run(rec, playhead, a, b, future=future)
+            prefix = "Forecast " if future else ""
+            text = prefix + attack
+            if np.isfinite(conf) and attack != "Benign":
+                text += f" {conf:.0%}"
+            elif np.isfinite(p_intr):
+                text += f" · {p_intr:.0%}"
+            annotations.append(dict(
+                x=(a + b) / 2, y=1.04, yref="paper", text=text, showarrow=False,
+                font=dict(size=10, color=color),
+                bgcolor="rgba(13,17,23,0.9)", borderpad=3, xanchor="center", yanchor="bottom",
+            ))
+            tag = "forecast" if future else "detected"
+            cap = f"steps {a}–{b}: **{attack}** ({tag}"
+            if np.isfinite(conf) and attack != "Benign":
+                cap += f", {conf:.0%}"
+            if np.isfinite(p_intr):
+                cap += f", attack {p_intr:.0%}"
+            cap += ")"
+            caption_bits.append(cap)
+    return annotations, caption_bits
+
+
+def _live_playhead_attack(rec: fs.Recording, playhead: int) -> dict | None:
+    """Badge at the playhead: what attack the model is calling right now."""
+    if not (0 <= playhead < rec.n_steps):
+        return None
+    p = rec.retro_intrusion_prob[playhead]
+    if not (np.isfinite(p) and p > fs.INTRUSION_PROB_THRESH):
+        return None
+    attack, conf = fs.predicted_attack(rec, playhead)
+    text = f"LIVE: {attack}"
+    if np.isfinite(conf):
+        text += f" {conf:.0%}"
+    text += f" · attack {p:.0%}"
+    return dict(
+        x=playhead, y=1.14, yref="paper", text=text, showarrow=True,
+        arrowhead=2, arrowsize=0.8, arrowwidth=1.2, arrowcolor="#3fb950",
+        ax=0, ay=-28, font=dict(size=11, color="#3fb950"),
+        bgcolor="rgba(13,17,23,0.95)", bordercolor="#3fb950", borderwidth=1, borderpad=4,
+        xanchor="center", yanchor="bottom",
+    )
+
+
+def _mask_regions(mask: np.ndarray, lo: int, hi: int, fill: str, layer: str = "below",
+                  edge: str | None = None) -> list[dict]:
+    """Collapses a boolean mask into contiguous-run rectangles instead of one
+    shape per flagged index -- far fewer shapes to build/serialize/diff each
+    frame, which is most of what made playback feel janky."""
+    runs = _mask_runs(mask, lo, hi)
+    if not runs:
+        return []
     line = dict(width=0)
     if edge:
         line = dict(color=edge, width=1)
@@ -170,6 +291,7 @@ def _render_overview(recordings: list[tuple[int, fs.Recording]], feature_idx: in
     y = np.where(x <= playhead, y_full, np.nan)  # hide the future -- this is playback, not a spoiler
 
     shapes = []
+    annotations: list[dict] = []
     for lbl, a, b in base_rec.segments:
         if lbl == "Benign":
             continue
@@ -181,6 +303,11 @@ def _render_overview(recordings: list[tuple[int, fs.Recording]], feature_idx: in
                 line=dict(color=GT_ATTACK_PAST_EDGE, width=1),
                 layer="below",
             ))
+            annotations.append(dict(
+                x=(a + fill_end - 1) / 2, y=1.03, yref="paper", text=lbl,
+                showarrow=False, font=dict(size=10, color="#ff7b72"),
+                bgcolor="rgba(13,17,23,0.85)", borderpad=2, xanchor="center", yanchor="bottom",
+            ))
         if a > playhead:
             shapes.append(dict(
                 type="line", xref="x", yref="paper", x0=a, x1=a, y0=0, y1=1,
@@ -189,6 +316,16 @@ def _render_overview(recordings: list[tuple[int, fs.Recording]], feature_idx: in
             ))
     shapes.append(_now_line(playhead))
 
+    gt_now = fs.ground_truth_attack(base_rec, playhead)
+    if gt_now:
+        annotations.append(dict(
+            x=playhead, y=1.12, yref="paper", text=f"LIVE: {gt_now}",
+            showarrow=True, arrowhead=2, ax=0, ay=-24,
+            font=dict(size=11, color="#58a6ff"),
+            bgcolor="rgba(13,17,23,0.95)", bordercolor="#58a6ff", borderwidth=1, borderpad=3,
+            xanchor="center", yanchor="bottom",
+        ))
+
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=y, mode="lines", name="ground truth",
                               line=dict(color="#58a6ff", width=1.1), hoverinfo="skip"))
@@ -196,14 +333,14 @@ def _render_overview(recordings: list[tuple[int, fs.Recording]], feature_idx: in
         **CHART_LAYOUT_BASE,
         height=190, margin=dict(l=40, r=10, t=34, b=25),
         title=dict(text=f"Ground truth — full replay — feature[{feature_idx}]", font=dict(size=14)),
-        showlegend=False, shapes=shapes,
+        showlegend=False, shapes=shapes, annotations=annotations,
     )
     fig.update_xaxes(range=[0, max(1, n_steps - 1)], gridcolor="#21262d")
     fig.update_yaxes(gridcolor="#21262d")
     st.plotly_chart(fig, use_container_width=True, key="fp_overview_chart")
     st.caption(
-        "Filled red = ground-truth attack already passed (labels, not prediction). "
-        "Dashed red line = upcoming attack start (hint only). Dotted white = playhead."
+        "Filled red = real attack in timeline (SSH-Bruteforce, Infilteration, DoS-Hulk, …). "
+        "Dashed red line = upcoming attack. Blue ▶ = attack active at playhead."
     )
 
 
@@ -259,6 +396,11 @@ def _render_model_row(rec: fs.Recording, feature_idx: int, playhead: int, slot_i
     fig.add_trace(go.Scatter(x=x, y=pred_y, mode="lines", name="forecast",
                               line=dict(color=color, width=1.8, dash="dash"), hoverinfo="skip"))
 
+    band_ann, band_caps = _intrusion_band_labels(rec, playhead, lo, hi, past_intr, future_intr)
+    live = _live_playhead_attack(rec, playhead)
+    if live:
+        band_ann.append(live)
+
     fig.update_layout(
         **CHART_LAYOUT_BASE,
         height=250, margin=dict(l=40, r=10, t=34, b=55),
@@ -266,16 +408,32 @@ def _render_model_row(rec: fs.Recording, feature_idx: int, playhead: int, slot_i
         showlegend=True,
         legend=dict(orientation="h", y=-0.28, x=0, yanchor="top"),
         shapes=shapes,
+        annotations=band_ann,
     )
     fig.update_xaxes(range=[lo, hi], gridcolor="#21262d", title="step (dotted line = now)")
     fig.update_yaxes(gridcolor="#21262d")
     st.plotly_chart(fig, use_container_width=True, key=f"fp_chart_slot{slot_idx}")
-    st.caption(
-        "Solid blue/red = model on revealed real data. Pale cyan/orange = model forecast ahead of now "
-        "(infiltration head run on the model's own rolled-out states, not ground truth). "
-        + ("Yellow = RAM memory writes so far. " if rec.has_memory else "")
+    cap = (
+        "Red = model detecting a named attack on revealed traffic; orange = forecast ahead. "
+        "Green ▶ at playhead = live call as playback reaches that step. "
+        + ("Yellow = RAM memory writes. " if rec.has_memory else "")
         + "Dashed line = forecast trajectory."
     )
+    if band_caps:
+        cap += "  **In view:** " + " · ".join(band_caps)
+    st.caption(cap)
+    attack, conf = fs.predicted_attack(rec, playhead)
+    fut, fut_p = fs.predicted_attack(rec, playhead, future=True)
+    gt = fs.ground_truth_attack(rec, playhead)
+    live_line = f"At playhead — Model: **{attack}**"
+    if np.isfinite(conf):
+        live_line += f" ({conf:.0%})"
+    live_line += f"  ·  Forecast: **{fut}**"
+    if np.isfinite(fut_p):
+        live_line += f" ({fut_p:.0%})"
+    if gt:
+        live_line += f"  ·  True attack in timeline: **{gt}**"
+    st.caption(live_line)
 
 
 def _tick(max_step: int):
@@ -332,6 +490,38 @@ def _render_player_body(recordings: list[tuple[int, fs.Recording]], n_steps: int
     for slot_idx, rec in recordings:
         _render_model_row(rec, feature_idx, playhead, slot_idx)
 
+    _render_labels_and_shap(recordings, playhead)
+
+
+def _render_labels_and_shap(recordings: list[tuple[int, fs.Recording]], playhead: int):
+    st.divider()
+    st.subheader("Suspicion / attack label")
+    for slot_idx, rec in recordings:
+        st.markdown(f"**Slot {slot_idx} — {rec.display_name}**")
+        st.write(rec.suspicion_text(playhead))
+
+    rec = recordings[0][1]
+    st.subheader("Feature attribution at playhead")
+    st.caption("Integrated Gradients on P(attack) for the last 20 real steps. Optional Kernel SHAP is slower.")
+    win = rec.window_at(playhead)
+    if win is None or rec.adapter is None:
+        st.info("Need at least 20 revealed steps before attribution.")
+        return
+    if st.session_state.fp_playing:
+        st.caption("Pause playback to run Integrated Gradients / SHAP.")
+        return
+    from src.explain.aryan_attribution import integrated_gradients_infiltration, shap_infiltration
+    ig = integrated_gradients_infiltration(rec.adapter, win)
+    ig_df = pd.DataFrame(ig, columns=["feature", "score"]).set_index("feature")
+    st.bar_chart(ig_df, height=220)
+    if st.button("Compute SHAP at playhead (slow)", key="fp_shap"):
+        bg = rec.full_actual[: min(64, rec.n_steps)]
+        shap_rows = shap_infiltration(rec.adapter, win, bg)
+        if shap_rows:
+            st.bar_chart(pd.DataFrame(shap_rows, columns=["feature", "score"]).set_index("feature"), height=220)
+        else:
+            st.warning("SHAP unavailable (package missing or explainer failed). IG above is the fallback.")
+
 
 try:
     _render_player_fragment = st.fragment(run_every=TICK_SECONDS)(_render_player_body)
@@ -341,6 +531,9 @@ except Exception:
 
 def render_forecast_player():
     _init_state()
+    if st.session_state.get("fp_build_version") != fs.RECORDING_BUILD_VERSION:
+        _get_recording.clear()
+        st.session_state.fp_build_version = fs.RECORDING_BUILD_VERSION
     _render_top_controls()
 
     timeline_len = st.session_state.fp_timeline_len
@@ -351,12 +544,28 @@ def render_forecast_player():
         st.info("Select at least one model slot above to start the player.")
         return
 
+    source = st.session_state.fp_source
+    upload_key = st.session_state.fp_upload_name or ""
+    if source == "upload" and not upload_key:
+        st.info("Upload a PCAP or CIC CSV above to drive the player from a real file.")
+        return
+    if source == "live":
+        from src.adversarial.lab_config import SAVE_DIR
+        newest = max((p.stat().st_mtime for p in SAVE_DIR.glob("*.pcap")), default=0)
+        upload_key = f"live:{newest}"
+
     recordings = []
     for slot_idx, choice in active:
         with st.spinner(f"Preparing slot {slot_idx}: {fs.MODEL_CHOICES[choice]} "
-                         f"({timeline_len}-step timeline, one-time per selection)..."):
-            rec = _get_recording(choice, timeline_len)
+                         f"({source}, {timeline_len}-step, one-time per selection)..."):
+            try:
+                rec = _get_recording(choice, timeline_len, source, upload_key)
+            except Exception as exc:
+                st.error(f"Slot {slot_idx} failed: {exc}")
+                continue
         recordings.append((slot_idx, rec))
+    if not recordings:
+        return
 
     n_steps = min(rec.n_steps for _, rec in recordings)
     if st.session_state.fp_playhead is None or st.session_state.fp_playhead >= n_steps:

@@ -1,0 +1,39 @@
+# Lab-local objective definitions for the live adversarial attack lab
+# (docs: .cursor/plans/live_adversarial_attack_lab_8fc66ac8.plan.md).
+#
+# Kept separate from configs/attack_catalog.yaml / data/mitre_network_catalog.json
+# on purpose: these 3 objective bots exploit real, hand-built bugs in the
+# lab-only Flask target (docker/target/webapp/app.py), not the generic
+# network-distinct catalog used for model training, so they must never be
+# merged into the auto-generated catalog.
+#
+# `recon_bots` are existing raw-socket bots from BOT_REGISTRY, run first to
+# generate realistic recon-stage traffic before the objective bot's own
+# recon->exploit->post-exploit HTTP chain (which is itself also independent
+# recon, but the additional scan/probe noise makes the round look like a
+# real kill chain to the detection models).
+
+objectives:
+  - id: defacement
+    class_id: T1491_web_defacement
+    mitre_tactic: Impact
+    cwe: CWE-862
+    description: "Missing-authorization write access to the homepage via /admin/edit_page."
+    recon_bots: [T1595_active_scan, T1190_web_exploit_probe]
+    evasion_versions: [none, random_timing, slow_timing]
+
+  - id: key_theft
+    class_id: T1552_key_theft
+    mitre_tactic: Credential Access
+    cwe: CWE-22
+    description: "Path traversal read access to config/secret.key via /download."
+    recon_bots: [T1046_service_scan, T1190_web_exploit_probe]
+    evasion_versions: [none, random_timing, slow_timing]
+
+  - id: cred_theft
+    class_id: T1555_sqli_cred_theft
+    mitre_tactic: Credential Access
+    cwe: CWE-89
+    description: "UNION-based SQL injection dump of the users table via /search."
+    recon_bots: [T1595_active_scan, T1046_service_scan]
+    evasion_versions: [none, random_timing, slow_timing]

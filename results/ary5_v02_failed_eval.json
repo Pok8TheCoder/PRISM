@@ -1,0 +1,74 @@
+{
+  "failed_pcaps": {
+    "v01": {
+      "live_port_scan_sequential_none.pcap": {
+        "class_id": "T1046_service_scan",
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.007900314405560493,
+        "n_windows": 21,
+        "attack_start": 20
+      },
+      "r44_a1_T1135_share_discovery_none.pcap": {
+        "class_id": "T1135_share_discovery",
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.008076250553131104,
+        "n_windows": 21,
+        "attack_start": 20
+      }
+    },
+    "v02": {
+      "live_port_scan_sequential_none.pcap": {
+        "class_id": "T1046_service_scan",
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.019039129838347435,
+        "n_windows": 21,
+        "attack_start": 20
+      },
+      "r44_a1_T1135_share_discovery_none.pcap": {
+        "class_id": "T1135_share_discovery",
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.017382489517331123,
+        "n_windows": 21,
+        "attack_start": 20
+      }
+    }
+  },
+  "cic_test": {
+    "v01": {
+      "f1": 0.9846938775510204,
+      "precision": 0.9747474747474747,
+      "recall": 0.9948453608247423,
+      "fpr": 0.0023946360153256703,
+      "n": 2282,
+      "detected": true
+    },
+    "v02": {
+      "f1": 0.9872122762148339,
+      "precision": 0.9796954314720813,
+      "recall": 0.9948453608247423,
+      "fpr": 0.0019157088122605363,
+      "n": 2282,
+      "detected": true
+    }
+  }
+}

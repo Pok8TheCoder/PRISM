@@ -1,0 +1,14 @@
+{
+  "base": "D:\\Cursor\\PRISM\\data\\aryan_splits_5s",
+  "window_sec": 5.0,
+  "lab_pcaps": 138,
+  "failed_oversample": 20,
+  "failed_pcaps": [
+    "live_port_scan_sequential_none.pcap",
+    "r44_a1_T1135_share_discovery_none.pcap"
+  ],
+  "train_windows": 11091,
+  "val_windows": 2298,
+  "test_windows": 2302,
+  "lab_pcap_windows": 367
+}

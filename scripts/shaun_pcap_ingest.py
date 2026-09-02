@@ -83,17 +83,20 @@ def prism_rows_to_cic_dataframe(rows: list[dict]) -> pd.DataFrame:
 def _load_shaun_modules(shaun_root: Path):
     """Import Shaun SchemaAligner + StateBuilder with isolated sys.path."""
     shaun_root = shaun_root.resolve()
+    prism_root = ROOT.resolve()
     prev_cwd = os.getcwd()
+    prev_path = sys.path.copy()
     os.chdir(shaun_root)
     for key in list(sys.modules):
         if key == "src" or key.startswith("src."):
             del sys.modules[key]
-    sys.path.insert(0, str(shaun_root))
+    sys.path = [str(shaun_root)] + [p for p in sys.path if Path(p).resolve() != prism_root]
     try:
         from src.data.schema_aligner import SchemaAligner
         from src.data.state_builder import StateBuilder
     finally:
         os.chdir(prev_cwd)
+        sys.path = prev_path
     return SchemaAligner, StateBuilder
 
 

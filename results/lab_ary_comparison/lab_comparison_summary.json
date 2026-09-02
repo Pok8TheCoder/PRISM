@@ -1,0 +1,416 @@
+[
+  {
+    "pcap": "live_http_flood_none.pcap",
+    "class_id": "T1499_http_flood",
+    "n_windows_30s": 21,
+    "n_windows_5s": 21,
+    "attack_start_30s": 20,
+    "attack_start_5s": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.016749845817685127
+      },
+      "ary30_ramx": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.016749845817685127
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.0074749537743628025
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.573214230122976
+      }
+    }
+  },
+  {
+    "pcap": "live_port_scan_sequential_none.pcap",
+    "class_id": "T1046_service_scan",
+    "n_windows_30s": 21,
+    "n_windows_5s": 21,
+    "attack_start_30s": 20,
+    "attack_start_5s": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.0062018828466534615
+      },
+      "ary30_ramx": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.0062018828466534615
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.007900314405560493
+      },
+      "ary5_ramx": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.007900314405560493
+      }
+    }
+  },
+  {
+    "pcap": "live_slow_loris_none.pcap",
+    "class_id": "T1499_slowloris",
+    "n_windows_30s": 21,
+    "n_windows_5s": 21,
+    "attack_start_30s": 20,
+    "attack_start_5s": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.04893459752202034
+      },
+      "ary30_ramx": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.04893459752202034
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.008501715026795864
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5736557374615222
+      }
+    }
+  },
+  {
+    "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+    "class_id": "T1110_ssh_bruteforce",
+    "n_windows_30s": 21,
+    "n_windows_5s": 21,
+    "attack_start_30s": 20,
+    "attack_start_5s": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.011800474487245083
+      },
+      "ary30_ramx": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.011800474487245083
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.007580433040857315
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5732595862075686
+      }
+    }
+  },
+  {
+    "pcap": "r3_a1_http_flood_none.pcap",
+    "class_id": "T1499_http_flood",
+    "n_windows_30s": 21,
+    "n_windows_5s": 21,
+    "attack_start_30s": 20,
+    "attack_start_5s": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.017591150477528572
+      },
+      "ary30_ramx": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.017591150477528572
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.007475424092262983
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5732144323596731
+      }
+    }
+  },
+  {
+    "pcap": "r27_a1_T1499_http_flood_none.pcap",
+    "class_id": "T1499_http_flood",
+    "n_windows_30s": 21,
+    "n_windows_5s": 21,
+    "attack_start_30s": 20,
+    "attack_start_5s": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.028707612305879593
+      },
+      "ary30_ramx": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.028707612305879593
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.00747266598045826
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.573213246371597
+      }
+    }
+  },
+  {
+    "source": "results\\ram_improve\\live_lab\\cred_theft\\none\\round.json",
+    "objective": "cred_theft",
+    "class_id": "T1555_sqli_cred_theft",
+    "window_sec_trace": 15.0,
+    "n_windows": 24,
+    "attack_start": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.0020785746164619923
+      },
+      "ary30_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5706079983990638
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.05373217537999153
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5810163222625851
+      }
+    }
+  },
+  {
+    "source": "results\\ram_improve\\live_lab\\defacement\\none\\round.json",
+    "objective": "defacement",
+    "class_id": "T1491_web_defacement",
+    "window_sec_trace": 15.0,
+    "n_windows": 24,
+    "attack_start": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.002825808711349964
+      },
+      "ary30_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5707744822511449
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.055328741669654846
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5827467010915279
+      }
+    }
+  },
+  {
+    "source": "results\\ram_improve\\live_lab\\key_theft\\none\\round.json",
+    "objective": "key_theft",
+    "class_id": "T1552_key_theft",
+    "window_sec_trace": 15.0,
+    "n_windows": 24,
+    "attack_start": 20,
+    "scores": {
+      "ary30_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.002446092665195465
+      },
+      "ary30_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5706486230459995
+      },
+      "ary5_base": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "ttd": null,
+        "detected": false,
+        "harm": 0,
+        "max_p_attack": 0.04797746613621712
+      },
+      "ary5_ramx": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.5872250977903604
+      }
+    }
+  }
+]
