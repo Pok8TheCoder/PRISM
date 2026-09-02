@@ -83,8 +83,31 @@ def pcap_to_rows(pcap_path: str | Path) -> list[dict]:
         seqs = [p["seq"] for p in pkts if p["seq"] is not None]
         retrans = max(0, len(seqs) - len(set(seqs))) if seqs else 0
 
+        # CIC-style flow-rate features are undefined (Infinity in the source
+        # CSVs) for zero/near-zero-duration flows -- the CSV loader zeroes
+        # those out (`replace([inf,-inf], 0)` below / `csv_to_matrix`). A
+        # naive `/(dur+1e-9)` epsilon instead turns them into astronomically
+        # large but *finite* numbers (e.g. a single ~64B packet at dur=0 ->
+        # 6.4e10), which silently blow up window aggregates for short/bursty
+        # live captures instead of being cleaned like training data. Zero
+        # them out below the same duration floor so live and CSV-derived
+        # features share the same distribution.
+        dur_ok = dur > 1e-6
+        flow_pkts_s = (len(pkts) / dur) if dur_ok else 0.0
+        fwd_pkts_s = flow_pkts_s * (len(fwd) / max(len(pkts), 1))
+        bwd_pkts_s = flow_pkts_s * (len(bwd) / max(len(pkts), 1))
         row = _empty_row()
         row.update({
+            # A real `pd.Timestamp` (flow start time) so `_assign_windows`
+            # (src/aryan/ingest.py) can bucket by actual elapsed capture
+            # time via its `pd.to_datetime` branch. Without this, live
+            # pcaps have no recognized timestamp column and silently fall
+            # back to bucketing by *row index* (`// 32`), which truncates
+            # every window to an arbitrary first-32-flows slice regardless
+            # of how much real traffic the capture actually contains.
+            "Timestamp": pd.Timestamp(times[0], unit="s"),
+            "Src IP": key[0],
+            "Dst IP": key[2],
             "Dst Port": pkts[0]["dport"],
             "Protocol": 6 if pkts[0]["proto"] == "TCP" else (17 if pkts[0]["proto"] == "UDP" else 0),
             "Flow Duration": dur * 1e6,
@@ -95,11 +118,17 @@ def pcap_to_rows(pcap_path: str | Path) -> list[dict]:
             "Fwd Pkt Len Mean": float(np.mean(fwd_lens)),
             "Bwd Pkt Len Max": max(bwd_lens) if bwd else 0,
             "Bwd Pkt Len Min": min(bwd_lens) if bwd else 0,
+            "Bwd Pkt Len Mean": float(np.mean(bwd_lens)) if bwd else 0.0,
             "Bwd Pkt Len Std": float(np.std(bwd_lens)) if len(bwd) > 1 else 0,
-            "Flow Byts/s": sum(p["len"] for p in pkts) / (dur + 1e-9),
-            "Flow Pkts/s": len(pkts) / (dur + 1e-9),
+            "Flow Byts/s": (sum(p["len"] for p in pkts) / dur) if dur_ok else 0.0,
+            "Flow Pkts/s": flow_pkts_s,
+            "Fwd Pkts/s": fwd_pkts_s,
+            "Bwd Pkts/s": bwd_pkts_s,
             "Flow IAT Mean": float(np.mean(iats)),
             "Flow IAT Std": float(np.std(iats)),
+            "Flow IAT Min": float(np.min(iats)) if len(iats) else 0.0,
+            "Flow IAT Max": float(np.max(iats)) if len(iats) else 0.0,
+            "Down/Up Ratio": float(len(bwd) / max(len(fwd), 1)),
             "SYN Flag Cnt": sum(1 for f in fl if f & 0x02),
             "FIN Flag Cnt": sum(1 for f in fl if f & 0x01),
             "RST Flag Cnt": sum(1 for f in fl if f & 0x04),
