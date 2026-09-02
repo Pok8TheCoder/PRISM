@@ -1,0 +1,525 @@
+{
+  "file_results": {
+    "Tuesday-WorkingHours.pcap_ISCX.csv": {
+      "total_flows": 445909,
+      "ts_sample": [
+        "4/7/2017 8:54",
+        "4/7/2017 8:54",
+        "4/7/2017 8:54"
+      ],
+      "min_ts": "2017-07-04 01:00:00",
+      "max_ts": "2017-07-04 12:59:00",
+      "total_duration_hours": 11.98,
+      "overall_flow_rate_per_sec": 10.34,
+      "attack_periods": {
+        "BENIGN": {
+          "count": 432074,
+          "min_ts": "2017-07-04 01:00:00",
+          "max_ts": "2017-07-04 12:59:00",
+          "duration_min": 719.0,
+          "preceding_10m_benign_flows": 0
+        },
+        "SSH-Patator": {
+          "count": 5897,
+          "min_ts": "2017-07-04 02:09:00",
+          "max_ts": "2017-07-04 03:11:00",
+          "duration_min": 62.0,
+          "preceding_10m_benign_flows": 9591
+        },
+        "FTP-Patator": {
+          "count": 7938,
+          "min_ts": "2017-07-04 09:17:00",
+          "max_ts": "2017-07-04 10:30:00",
+          "duration_min": 73.0,
+          "preceding_10m_benign_flows": 14376
+        }
+      },
+      "window_stats_native": {
+        "10s": {
+          "total_windows": 488,
+          "avg_flows_per_win": 913.75,
+          "min_flows_per_win": 1,
+          "max_flows_per_win": 3685,
+          "pure_benign_windows": 361,
+          "mixed_label_windows": 127,
+          "category_window_counts": {
+            "BENIGN": 488,
+            "SSH-Patator": 63,
+            "FTP-Patator": 64
+          },
+          "sequence_counts": {
+            "5": 0,
+            "10": 0,
+            "20": 0
+          }
+        },
+        "30s": {
+          "total_windows": 488,
+          "avg_flows_per_win": 913.75,
+          "min_flows_per_win": 1,
+          "max_flows_per_win": 3685,
+          "pure_benign_windows": 361,
+          "mixed_label_windows": 127,
+          "category_window_counts": {
+            "BENIGN": 488,
+            "SSH-Patator": 63,
+            "FTP-Patator": 64
+          },
+          "sequence_counts": {
+            "5": 0,
+            "10": 0,
+            "20": 0
+          }
+        },
+        "60s": {
+          "total_windows": 488,
+          "avg_flows_per_win": 913.75,
+          "min_flows_per_win": 1,
+          "max_flows_per_win": 3685,
+          "pure_benign_windows": 361,
+          "mixed_label_windows": 127,
+          "category_window_counts": {
+            "BENIGN": 488,
+            "SSH-Patator": 63,
+            "FTP-Patator": 64
+          },
+          "sequence_counts": {
+            "5": 480,
+            "10": 470,
+            "20": 450
+          }
+        }
+      },
+      "window_stats_interpolated": {
+        "10s": {
+          "total_windows": 2923,
+          "avg_flows_per_win": 152.55,
+          "min_flows_per_win": 1,
+          "max_flows_per_win": 615,
+          "pure_benign_windows": 2426,
+          "mixed_label_windows": 497,
+          "category_window_counts": {
+            "BENIGN": 2923,
+            "SSH-Patator": 223,
+            "FTP-Patator": 274
+          },
+          "sequence_counts": {
+            "5": 2914,
+            "10": 2904,
+            "20": 2884
+          }
+        },
+        "30s": {
+          "total_windows": 975,
+          "avg_flows_per_win": 457.34,
+          "min_flows_per_win": 1,
+          "max_flows_per_win": 1843,
+          "pure_benign_windows": 723,
+          "mixed_label_windows": 252,
+          "category_window_counts": {
+            "BENIGN": 975,
+            "SSH-Patator": 126,
+            "FTP-Patator": 126
+          },
+          "sequence_counts": {
+            "5": 966,
+            "10": 956,
+            "20": 936
+          }
+        },
+        "60s": {
+          "total_windows": 488,
+          "avg_flows_per_win": 913.75,
+          "min_flows_per_win": 1,
+          "max_flows_per_win": 3685,
+          "pure_benign_windows": 361,
+          "mixed_label_windows": 127,
+          "category_window_counts": {
+            "BENIGN": 488,
+            "SSH-Patator": 63,
+            "FTP-Patator": 64
+          },
+          "sequence_counts": {
+            "5": 480,
+            "10": 470,
+            "20": 450
+          }
+        }
+      }
+    },
+    "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv": {
+      "total_flows": 286467,
+      "ts_sample": [
+        "7/7/2017 1:00",
+        "7/7/2017 1:00",
+        "7/7/2017 1:00"
+      ],
+      "min_ts": "2017-07-07 01:00:00",
+      "max_ts": "2017-07-07 03:29:00",
+      "total_duration_hours": 2.48,
+      "overall_flow_rate_per_sec": 32.04,
+      "attack_periods": {
+        "BENIGN": {
+          "count": 127537,
+          "min_ts": "2017-07-07 01:00:00",
+          "max_ts": "2017-07-07 03:29:00",
+          "duration_min": 149.0,
+          "preceding_10m_benign_flows": 0
+        },
+        "PortScan": {
+          "count": 158930,
+          "min_ts": "2017-07-07 01:05:00",
+          "max_ts": "2017-07-07 03:23:00",
+          "duration_min": 138.0,
+          "preceding_10m_benign_flows": 1428
+        }
+      },
+      "window_stats_native": {
+        "10s": {
+          "total_windows": 150,
+          "avg_flows_per_win": 1909.78,
+          "min_flows_per_win": 35,
+          "max_flows_per_win": 46216,
+          "pure_benign_windows": 123,
+          "mixed_label_windows": 27,
+          "category_window_counts": {
+            "BENIGN": 150,
+            "PortScan": 27
+          },
+          "sequence_counts": {
+            "5": 0,
+            "10": 0,
+            "20": 0
+          }
+        },
+        "30s": {
+          "total_windows": 150,
+          "avg_flows_per_win": 1909.78,
+          "min_flows_per_win": 35,
+          "max_flows_per_win": 46216,
+          "pure_benign_windows": 123,
+          "mixed_label_windows": 27,
+          "category_window_counts": {
+            "BENIGN": 150,
+            "PortScan": 27
+          },
+          "sequence_counts": {
+            "5": 0,
+            "10": 0,
+            "20": 0
+          }
+        },
+        "60s": {
+          "total_windows": 150,
+          "avg_flows_per_win": 1909.78,
+          "min_flows_per_win": 35,
+          "max_flows_per_win": 46216,
+          "pure_benign_windows": 123,
+          "mixed_label_windows": 27,
+          "category_window_counts": {
+            "BENIGN": 150,
+            "PortScan": 27
+          },
+          "sequence_counts": {
+            "5": 146,
+            "10": 141,
+            "20": 131
+          }
+        }
+      },
+      "window_stats_interpolated": {
+        "10s": {
+          "total_windows": 900,
+          "avg_flows_per_win": 318.3,
+          "min_flows_per_win": 5,
+          "max_flows_per_win": 7703,
+          "pure_benign_windows": 796,
+          "mixed_label_windows": 104,
+          "category_window_counts": {
+            "BENIGN": 900,
+            "PortScan": 104
+          },
+          "sequence_counts": {
+            "5": 896,
+            "10": 891,
+            "20": 881
+          }
+        },
+        "30s": {
+          "total_windows": 300,
+          "avg_flows_per_win": 954.89,
+          "min_flows_per_win": 17,
+          "max_flows_per_win": 23108,
+          "pure_benign_windows": 257,
+          "mixed_label_windows": 43,
+          "category_window_counts": {
+            "BENIGN": 300,
+            "PortScan": 43
+          },
+          "sequence_counts": {
+            "5": 296,
+            "10": 291,
+            "20": 281
+          }
+        },
+        "60s": {
+          "total_windows": 150,
+          "avg_flows_per_win": 1909.78,
+          "min_flows_per_win": 35,
+          "max_flows_per_win": 46216,
+          "pure_benign_windows": 123,
+          "mixed_label_windows": 27,
+          "category_window_counts": {
+            "BENIGN": 150,
+            "PortScan": 27
+          },
+          "sequence_counts": {
+            "5": 146,
+            "10": 141,
+            "20": 131
+          }
+        }
+      }
+    },
+    "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv": {
+      "total_flows": 225745,
+      "ts_sample": [
+        "7/7/2017 3:30",
+        "7/7/2017 3:30",
+        "7/7/2017 3:30"
+      ],
+      "min_ts": "2017-07-07 03:30:00",
+      "max_ts": "2017-07-07 05:02:00",
+      "total_duration_hours": 1.53,
+      "overall_flow_rate_per_sec": 40.9,
+      "attack_periods": {
+        "BENIGN": {
+          "count": 97718,
+          "min_ts": "2017-07-07 03:30:00",
+          "max_ts": "2017-07-07 05:02:00",
+          "duration_min": 92.0,
+          "preceding_10m_benign_flows": 0
+        },
+        "DDoS": {
+          "count": 128027,
+          "min_ts": "2017-07-07 03:56:00",
+          "max_ts": "2017-07-07 04:16:00",
+          "duration_min": 20.0,
+          "preceding_10m_benign_flows": 4815
+        }
+      },
+      "window_stats_native": {
+        "10s": {
+          "total_windows": 93,
+          "avg_flows_per_win": 2427.37,
+          "min_flows_per_win": 84,
+          "max_flows_per_win": 11188,
+          "pure_benign_windows": 72,
+          "mixed_label_windows": 21,
+          "category_window_counts": {
+            "BENIGN": 93,
+            "DDoS": 21
+          },
+          "sequence_counts": {
+            "5": 0,
+            "10": 0,
+            "20": 0
+          }
+        },
+        "30s": {
+          "total_windows": 93,
+          "avg_flows_per_win": 2427.37,
+          "min_flows_per_win": 84,
+          "max_flows_per_win": 11188,
+          "pure_benign_windows": 72,
+          "mixed_label_windows": 21,
+          "category_window_counts": {
+            "BENIGN": 93,
+            "DDoS": 21
+          },
+          "sequence_counts": {
+            "5": 0,
+            "10": 0,
+            "20": 0
+          }
+        },
+        "60s": {
+          "total_windows": 93,
+          "avg_flows_per_win": 2427.37,
+          "min_flows_per_win": 84,
+          "max_flows_per_win": 11188,
+          "pure_benign_windows": 72,
+          "mixed_label_windows": 21,
+          "category_window_counts": {
+            "BENIGN": 93,
+            "DDoS": 21
+          },
+          "sequence_counts": {
+            "5": 89,
+            "10": 84,
+            "20": 74
+          }
+        }
+      },
+      "window_stats_interpolated": {
+        "10s": {
+          "total_windows": 558,
+          "avg_flows_per_win": 404.56,
+          "min_flows_per_win": 14,
+          "max_flows_per_win": 1865,
+          "pure_benign_windows": 432,
+          "mixed_label_windows": 126,
+          "category_window_counts": {
+            "BENIGN": 558,
+            "DDoS": 126
+          },
+          "sequence_counts": {
+            "5": 554,
+            "10": 549,
+            "20": 539
+          }
+        },
+        "30s": {
+          "total_windows": 186,
+          "avg_flows_per_win": 1213.68,
+          "min_flows_per_win": 42,
+          "max_flows_per_win": 5594,
+          "pure_benign_windows": 144,
+          "mixed_label_windows": 42,
+          "category_window_counts": {
+            "BENIGN": 186,
+            "DDoS": 42
+          },
+          "sequence_counts": {
+            "5": 182,
+            "10": 177,
+            "20": 167
+          }
+        },
+        "60s": {
+          "total_windows": 93,
+          "avg_flows_per_win": 2427.37,
+          "min_flows_per_win": 84,
+          "max_flows_per_win": 11188,
+          "pure_benign_windows": 72,
+          "mixed_label_windows": 21,
+          "category_window_counts": {
+            "BENIGN": 93,
+            "DDoS": 21
+          },
+          "sequence_counts": {
+            "5": 89,
+            "10": 84,
+            "20": 74
+          }
+        }
+      }
+    }
+  },
+  "agg_native": {
+    "10s": {
+      "total_windows": 731,
+      "mixed_windows": 175,
+      "pure_benign_windows": 556,
+      "category_counts": {
+        "BENIGN": 731,
+        "SSH-Patator": 63,
+        "FTP-Patator": 64,
+        "PortScan": 27,
+        "DDoS": 21
+      },
+      "sequence_totals": {
+        "5": 0,
+        "10": 0,
+        "20": 0
+      }
+    },
+    "30s": {
+      "total_windows": 731,
+      "mixed_windows": 175,
+      "pure_benign_windows": 556,
+      "category_counts": {
+        "BENIGN": 731,
+        "SSH-Patator": 63,
+        "FTP-Patator": 64,
+        "PortScan": 27,
+        "DDoS": 21
+      },
+      "sequence_totals": {
+        "5": 0,
+        "10": 0,
+        "20": 0
+      }
+    },
+    "60s": {
+      "total_windows": 731,
+      "mixed_windows": 175,
+      "pure_benign_windows": 556,
+      "category_counts": {
+        "BENIGN": 731,
+        "SSH-Patator": 63,
+        "FTP-Patator": 64,
+        "PortScan": 27,
+        "DDoS": 21
+      },
+      "sequence_totals": {
+        "5": 715,
+        "10": 695,
+        "20": 655
+      }
+    }
+  },
+  "agg_interp": {
+    "10s": {
+      "total_windows": 4381,
+      "mixed_windows": 727,
+      "pure_benign_windows": 3654,
+      "category_counts": {
+        "BENIGN": 4381,
+        "SSH-Patator": 223,
+        "FTP-Patator": 274,
+        "PortScan": 104,
+        "DDoS": 126
+      },
+      "sequence_totals": {
+        "5": 4364,
+        "10": 4344,
+        "20": 4304
+      }
+    },
+    "30s": {
+      "total_windows": 1461,
+      "mixed_windows": 337,
+      "pure_benign_windows": 1124,
+      "category_counts": {
+        "BENIGN": 1461,
+        "SSH-Patator": 126,
+        "FTP-Patator": 126,
+        "PortScan": 43,
+        "DDoS": 42
+      },
+      "sequence_totals": {
+        "5": 1444,
+        "10": 1424,
+        "20": 1384
+      }
+    },
+    "60s": {
+      "total_windows": 731,
+      "mixed_windows": 175,
+      "pure_benign_windows": 556,
+      "category_counts": {
+        "BENIGN": 731,
+        "SSH-Patator": 63,
+        "FTP-Patator": 64,
+        "PortScan": 27,
+        "DDoS": 21
+      },
+      "sequence_totals": {
+        "5": 715,
+        "10": 695,
+        "20": 655
+      }
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "file_analysis": {
+    "Tuesday-WorkingHours.pcap_ISCX.csv": {
+      "total_minutes": 488,
+      "pure_benign_mins": 361,
+      "pure_attack_mins": 0,
+      "mixed_mins": 127,
+      "attack_timelines": {
+        "Brute Force": {
+          "start_minute": "2017-07-04 02:09:00",
+          "end_minute": "2017-07-04 10:30:00",
+          "active_minutes": 127,
+          "total_attack_flows": 13835
+        }
+      },
+      "mixed_prop_stats": {
+        "count": 127,
+        "min": 0.0007,
+        "mean": 0.1047,
+        "median": 0.0922,
+        "max": 0.3369
+      },
+      "strategy_distribution": {
+        "majority": {
+          "BENIGN": 488
+        },
+        "any_attack": {
+          "BENIGN": 361,
+          "Brute Force": 127
+        },
+        "thresh_5pct": {
+          "BENIGN": 376,
+          "Brute Force": 112
+        }
+      }
+    },
+    "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv": {
+      "total_minutes": 150,
+      "pure_benign_mins": 123,
+      "pure_attack_mins": 0,
+      "mixed_mins": 27,
+      "attack_timelines": {
+        "PortScan": {
+          "start_minute": "2017-07-07 01:05:00",
+          "end_minute": "2017-07-07 03:23:00",
+          "active_minutes": 27,
+          "total_attack_flows": 158930
+        }
+      },
+      "mixed_prop_stats": {
+        "count": 27,
+        "min": 0.0005,
+        "mean": 0.3515,
+        "median": 0.0796,
+        "max": 0.9881
+      },
+      "strategy_distribution": {
+        "majority": {
+          "BENIGN": 140,
+          "PortScan": 10
+        },
+        "any_attack": {
+          "BENIGN": 123,
+          "PortScan": 27
+        },
+        "thresh_5pct": {
+          "BENIGN": 134,
+          "PortScan": 16
+        }
+      }
+    },
+    "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv": {
+      "total_minutes": 93,
+      "pure_benign_mins": 72,
+      "pure_attack_mins": 0,
+      "mixed_mins": 21,
+      "attack_timelines": {
+        "DoS/DDoS": {
+          "start_minute": "2017-07-07 03:56:00",
+          "end_minute": "2017-07-07 04:16:00",
+          "active_minutes": 21,
+          "total_attack_flows": 128027
+        }
+      },
+      "mixed_prop_stats": {
+        "count": 21,
+        "min": 0.4799,
+        "mean": 0.7042,
+        "median": 0.706,
+        "max": 0.8227
+      },
+      "strategy_distribution": {
+        "majority": {
+          "BENIGN": 73,
+          "DoS/DDoS": 20
+        },
+        "any_attack": {
+          "BENIGN": 72,
+          "DoS/DDoS": 21
+        },
+        "thresh_5pct": {
+          "BENIGN": 72,
+          "DoS/DDoS": 21
+        }
+      }
+    }
+  },
+  "seq_analysis": {
+    "total_10m_sequences": 695,
+    "sequence_type_counts": {
+      "Pure Baseline BENIGN": 434,
+      "Ongoing Active Attack": 166,
+      "Attack Recovery / Post-Attack": 88,
+      "Pre-Attack Transition (Onset)": 7
+    },
+    "current_label_counts": {
+      "BENIGN": 522,
+      "Brute Force": 127,
+      "PortScan": 25,
+      "DoS/DDoS": 21
+    },
+    "early_warning_lead_up_sequences": 7,
+    "early_warning_future_1m_targets": 173,
+    "early_warning_future_5m_targets": 217
+  },
+  "split_design": {
+    "Tuesday-WorkingHours.pcap_ISCX.csv": {
+      "total_minutes": 488,
+      "train_mins": 341,
+      "train_pct": 69.9,
+      "val_mins": 73,
+      "val_pct": 15.0,
+      "test_mins": 74,
+      "test_pct": 15.2
+    },
+    "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv": {
+      "total_minutes": 150,
+      "train_mins": 105,
+      "train_pct": 70.0,
+      "val_mins": 22,
+      "val_pct": 14.7,
+      "test_mins": 23,
+      "test_pct": 15.3
+    },
+    "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv": {
+      "total_minutes": 93,
+      "train_mins": 65,
+      "train_pct": 69.9,
+      "val_mins": 13,
+      "val_pct": 14.0,
+      "test_mins": 15,
+      "test_pct": 16.1
+    }
+  }
+}

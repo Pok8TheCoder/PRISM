@@ -1,34 +1,20 @@
-# Virtual Environment
-venv/
-.venv/
-env/
+# Heavy Raw Datasets (Do NOT push to Git - over 5GB+)
+data/raw/
+*.pcap
+*.pcap_ISCX.csv
+*.binetflow
 
-# Python / Bytecode
+# Python & Environment Artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
+*.env
+venv/
+env/
+.venv/
+
+# Testing & Logs
 .pytest_cache/
-
-# Data & Models
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-models/checkpoints/*
-!models/checkpoints/.gitkeep
-*.pth
-*.pt
-*.onnx
-*.parquet
-*.h5
-*.hdf5
-*.pcap
-*.pcapng
-
-# Environment & Config
-.env
-.env.local
 *.log
 
 # IDE & OS
@@ -36,3 +22,5 @@ models/checkpoints/*
 .idea/
 .DS_Store
 Thumbs.db
+*.zip
+
