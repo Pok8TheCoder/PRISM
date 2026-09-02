@@ -94,10 +94,27 @@ def main():
         print(f"      Step +{k} (+{seconds_ahead}s): Threat Risk = {p:5.1%} | Imminent Stage: {stg}")
 
     print(f"\n      Overall Trajectory Risk Level: {risk_summary['risk_level']}")
+
+    # 6. Test RAMX Adaptive Engine (Warmup Calibration + Relative Anomaly Detection)
+    print("\n[5/5] Testing RAMX Adaptive Memory Engine (Warmup Calibrator & TTT)...")
+    from src.prediction.ramx import RAMXPredictor
+    ramx = RAMXPredictor(model, scaler_mean, scaler_std, warmup_steps=5, enable_ttt=False)
+    
+    # Warmup calibration steps
+    for _ in range(5):
+        ramx.predict_state(sample_raw_seq)
+    
+    # Evaluation with local anomaly adaptation
+    ramx_out = ramx.predict_state(sample_raw_seq)
+    print(f"      • RAMX Calibrated Status          : {ramx_out['calibrated']}")
+    print(f"      • RAMX Relative Anomaly Score     : {ramx_out['relative_anomaly']:.1%}")
+    print(f"      • RAMX Fused Threat Probability   : {ramx_out['p_attack']:.1%}")
+
     print("\n" + "=" * 65)
-    print("  SUCCESS! PRISM V2 Model is 100% operational.")
+    print("  SUCCESS! PRISM V2 + RAMX Adaptive Engine is 100% operational.")
     print("  To launch the Cyber Operations Dashboard UI, run:")
     print("      streamlit run app/streamlit_app.py")
+
     print("=" * 65 + "\n")
 
 if __name__ == "__main__":
