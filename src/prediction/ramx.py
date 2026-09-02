@@ -2,12 +2,18 @@
 PRISM RAMX: Receding-horizon Adaptive Memory with Test-Time Adaptation (TTT)
 Solves domain shift and timescale mismatch on raw lab PCAPs and unseen networks.
 
+RAMX v2.0 (context-gated): learn the local baseline during an external context
+buffer (e.g. CIC benign warmup), but suppress anomaly fusion until the live
+capture stream starts. Prevents false positives on prepended calibration data.
+
 Components:
 1. WarmupBaselineCalibrator: Dynamically measures local network noise floor during warmup
 2. OnlineAdaptiveTransformer: Performs test-time weight adaptation anchored by L2 pullback
 3. EpisodicMemoryBank: Stores surprise attack prototypes and retrieves nearest neighbors
 4. RAMXPredictor: Unified production wrapper for high detection rate across arbitrary networks
 """
+
+RAMX_VERSION = "2.0"
 
 import copy
 import torch
@@ -146,11 +152,14 @@ class RAMXPredictor:
         scaler_mean: np.ndarray,
         scaler_std: np.ndarray,
         warmup_steps: int = 15,
-        enable_ttt: bool = True
+        context_skip_steps: int = 0,
+        enable_ttt: bool = True,
     ):
         self.base_model = base_model
         self.scaler_mean = scaler_mean
         self.scaler_std = scaler_std
+        self.warmup_steps = warmup_steps
+        self.context_skip_steps = context_skip_steps
         self.calibrator = WarmupBaselineCalibrator(warmup_steps=warmup_steps)
         self.memory_bank = EpisodicMemoryBank()
         self.enable_ttt = enable_ttt
@@ -159,7 +168,7 @@ class RAMXPredictor:
 
     def reset_stream(self) -> None:
         """Resets the calibrator for a new capture stream."""
-        self.calibrator = WarmupBaselineCalibrator()
+        self.calibrator = WarmupBaselineCalibrator(warmup_steps=self.warmup_steps)
         self.step_count = 0
 
     def predict_state(
@@ -195,10 +204,11 @@ class RAMXPredictor:
             frac_val = float(frac[0, 0].item())
 
 
-        # 4. RAMX Fusion: Fuse base model probability with local relative drift
-        # During warmup, baseline probability stays low (<0.05).
-        # When an attack strikes, relative_anomaly spikes, raising confidence!
-        if self.calibrator.calibrated:
+        # 4. RAMX Fusion: Fuse base model probability with local relative drift.
+        # During external context (context_skip_steps), learn baseline stats but
+        # never raise alerts — fusion applies only to the live capture stream.
+        in_context_gate = self.step_count <= self.context_skip_steps
+        if self.calibrator.calibrated and not in_context_gate:
             fused_p_attack = float(max(raw_base_prob, 0.4 * raw_base_prob + 0.6 * relative_anomaly))
         else:
             fused_p_attack = float(raw_base_prob)
@@ -217,5 +227,7 @@ class RAMXPredictor:
             "relative_anomaly": relative_anomaly,
             "mitre_stage": pred_stage,
             "traffic_fraction": frac_val,
-            "calibrated": self.calibrator.calibrated
+            "calibrated": self.calibrator.calibrated,
+            "context_gated": in_context_gate,
+            "ramx_version": RAMX_VERSION,
         }
