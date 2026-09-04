@@ -16,7 +16,9 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -35,6 +37,7 @@ from src.adversarial.lab_config import (  # noqa: E402
     IPS_OUT_ROOT,
     REDTEAM_CONTAINER,
     REDTEAM_EVENTS_CONTAINER_PATH,
+    REDTEAM_EVENTS_HOST_PATH,
     TARGET_CONTAINER,
 )
 from src.adversarial.traffic_capture import TrafficCapture  # noqa: E402
@@ -48,6 +51,7 @@ from src.pipeline.extract import pcap_to_rows  # noqa: E402
 from src.shaun.streaming import (  # noqa: E402
     StreamingShaunBase,
     StreamingShaunRamxV2,
+    StreamingShaunRamxV3,
     load_shaun_bundle,
     pcap_to_shaun_state,
 )
@@ -58,6 +62,8 @@ CKPT_V01 = ROOT / "models" / "checkpoints" / "ary_5sv01.pt"
 MITRE_TACTIC = "Credential Access"
 EARLY_ALERT_SEC = 120.0
 DETECT_THRESHOLD = 0.5
+DEFAULT_ATTACK_WINDOW_SEC = 5.0
+W5S_CKPT = ROOT.parent / "PRISM-shaun" / "weights" / "w5s" / "world_model.pt"
 
 
 def _json_safe(obj):
@@ -75,6 +81,7 @@ def _json_safe(obj):
 BACKEND_CONFIG = {
     "ary": {"window_sec": 5.0, "block_id": "ary5_ramx", "tag": "ary5_ramx"},
     "sn2rx": {"window_sec": 15.0, "block_id": "sn2rx", "tag": "sn2rx"},
+    "sn2rx3": {"window_sec": 15.0, "block_id": "sn2rx3", "tag": "sn2rx3"},
 }
 
 
@@ -112,9 +119,10 @@ def state_from_pcap(
     replicate: int,
     last_state: np.ndarray | None,
 ) -> np.ndarray:
-    if backend == "sn2rx":
+    if backend in ("sn2rx", "sn2rx3"):
         return pcap_to_shaun_state(
             pcap_path, last_state=last_state, scale_factor=scale_factor, replicate=replicate,
+            window_sec=window_sec,
         )
     from src.pipeline.extract import pcap_to_rows
     rows = pcap_to_rows(pcap_path)
@@ -132,6 +140,58 @@ def state_from_pcap(
     return np.zeros(TARGET_DIM, dtype=np.float32)
 
 
+def _sleep_with_poll(
+    clock: LabClock,
+    base_seconds: float,
+    poll_fn: Callable[[], None] | None,
+    poll_interval: float | None = None,
+) -> None:
+    """Sleep for simulated lab time, polling red-team events during capture."""
+    if base_seconds <= 0:
+        if poll_fn:
+            poll_fn()
+        return
+    if poll_fn is None:
+        clock.sleep(base_seconds)
+        return
+    wall_total = base_seconds / clock.speed
+    interval = poll_interval if poll_interval is not None else max(0.02, wall_total / 10.0)
+    deadline = time.monotonic() + wall_total
+    while True:
+        poll_fn()
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        time.sleep(min(interval, remaining))
+
+
+def _run_with_poll(
+    work_fn: Callable[[], object],
+    poll_fn: Callable[[], None] | None,
+    poll_interval: float = 0.05,
+) -> object:
+    """Run slow work while polling for kill-chain events."""
+    if poll_fn is None:
+        return work_fn()
+    result: list[object] = []
+    error: list[BaseException] = []
+
+    def worker() -> None:
+        try:
+            result.append(work_fn())
+        except BaseException as exc:
+            error.append(exc)
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    while thread.is_alive():
+        poll_fn()
+        thread.join(timeout=poll_interval)
+    if error:
+        raise error[0]
+    return result[0]
+
+
 def capture_one_window(
     capture: TrafficCapture,
     filename: str,
@@ -142,41 +202,107 @@ def capture_one_window(
     window_sec: float,
     scale_factor: float,
     replicate: int,
+    poll_fn: Callable[[], None] | None = None,
 ) -> tuple[np.ndarray, float, float]:
     t_start = time.time()
     capture.start_capture(filename)
-    clock.sleep(clock.window_sec())
+    _sleep_with_poll(clock, window_sec, poll_fn)
     pcap_path = capture.stop_capture()
-    t_end = time.time()
 
     state = None
     if pcap_path is not None and pcap_path.exists():
         try:
-            state = state_from_pcap(
-                pcap_path, backend=backend, window_sec=window_sec,
-                scale_factor=scale_factor, replicate=replicate, last_state=last_state,
-            )
+            def ingest() -> np.ndarray:
+                return state_from_pcap(
+                    pcap_path, backend=backend, window_sec=window_sec,
+                    scale_factor=scale_factor, replicate=replicate, last_state=last_state,
+                )
+
+            state = _run_with_poll(ingest, poll_fn)  # type: ignore[assignment]
         except Exception as exc:
             print(f"WARNING: ingest failed on {pcap_path}: {exc}", file=sys.stderr)
         try:
             pcap_path.unlink()
         except OSError:
             pass
+    t_end = time.time()
     if state is None:
-        dim = 292 if backend == "sn2rx" else TARGET_DIM
+        dim = 292 if backend in ("sn2rx", "sn2rx3") else TARGET_DIM
         state = last_state.copy() if last_state is not None else np.zeros(dim, dtype=np.float32)
     return state.astype(np.float32), t_start, t_end
 
 
+class RedteamEventStream:
+    """Tail red-team JSONL inside the container (avoids slow host bind-mount sync on Windows)."""
+
+    def __init__(self) -> None:
+        self._proc: subprocess.Popen[str] | None = None
+        self._events: list[dict] = []
+        self._lock = threading.Lock()
+
+    def start(self) -> None:
+        self.stop()
+        self._proc = subprocess.Popen(
+            [
+                "docker", "exec", REDTEAM_CONTAINER,
+                "tail", "-F", "-n", "0", REDTEAM_EVENTS_CONTAINER_PATH,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            bufsize=1,
+        )
+        threading.Thread(target=self._reader, daemon=True).start()
+
+    def _reader(self) -> None:
+        proc = self._proc
+        if proc is None or proc.stdout is None:
+            return
+        for line in proc.stdout:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            with self._lock:
+                self._events.append(event)
+
+    def events(self) -> list[dict]:
+        with self._lock:
+            return list(self._events)
+
+    def stop(self) -> None:
+        proc = self._proc
+        self._proc = None
+        if proc is not None:
+            proc.kill()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+
+_EVENT_STREAM: RedteamEventStream | None = None
+
+
 def read_redteam_events() -> list[dict]:
-    r = subprocess.run(
-        ["docker", "exec", REDTEAM_CONTAINER, "cat", REDTEAM_EVENTS_CONTAINER_PATH],
-        capture_output=True, text=True,
-    )
-    if r.returncode != 0:
-        return []
+    if _EVENT_STREAM is not None:
+        return _EVENT_STREAM.events()
+    host_path = REDTEAM_EVENTS_HOST_PATH
+    if host_path.is_file():
+        text = host_path.read_text(encoding="utf-8")
+    else:
+        r = subprocess.run(
+            ["docker", "exec", REDTEAM_CONTAINER, "cat", REDTEAM_EVENTS_CONTAINER_PATH],
+            capture_output=True, text=True,
+        )
+        if r.returncode != 0:
+            return []
+        text = r.stdout or ""
     events = []
-    for line in (r.stdout or "").splitlines():
+    for line in text.splitlines():
         line = line.strip()
         if line:
             try:
@@ -187,14 +313,37 @@ def read_redteam_events() -> list[dict]:
 
 
 def clear_redteam_events() -> None:
+    global _EVENT_STREAM
+    if _EVENT_STREAM is not None:
+        _EVENT_STREAM.stop()
+        _EVENT_STREAM = None
+    host_path = REDTEAM_EVENTS_HOST_PATH
+    host_path.parent.mkdir(parents=True, exist_ok=True)
+    host_path.write_text("", encoding="utf-8")
     subprocess.run(
         ["docker", "exec", REDTEAM_CONTAINER, "sh", "-c", f": > {REDTEAM_EVENTS_CONTAINER_PATH}"],
         capture_output=True,
     )
 
 
-def start_redteam_agent(round_id: str, duration_sec: float) -> None:
-    clear_redteam_events()
+def start_redteam_event_stream() -> None:
+    global _EVENT_STREAM
+    if _EVENT_STREAM is not None:
+        _EVENT_STREAM.stop()
+    _EVENT_STREAM = RedteamEventStream()
+    _EVENT_STREAM.start()
+
+
+def stop_redteam_event_stream() -> None:
+    global _EVENT_STREAM
+    if _EVENT_STREAM is not None:
+        _EVENT_STREAM.stop()
+        _EVENT_STREAM = None
+
+
+def start_redteam_agent(round_id: str, duration_sec: float, *, clear_events: bool = True) -> None:
+    if clear_events:
+        clear_redteam_events()
     cmd = [
         "docker", "exec", "-d", REDTEAM_CONTAINER,
         "python", "/agent/redteam_agent.py",
@@ -229,13 +378,64 @@ def poll_early_theft(events: list[dict], t0: float, alerted: set[str]) -> None:
         alerted.add(rid)
 
 
+def try_ips_block(
+    block_id: str,
+    window_idx: int,
+    t0: float,
+    ips_state: dict,
+    reason: str,
+) -> bool:
+    """Block red-team container if not already blocked. Returns True if newly blocked."""
+    if ips_state["blocked"]:
+        return False
+    br = block_container(REDTEAM_CONTAINER)
+    if br.blocked:
+        ips_state["blocked"] = True
+        ips_state["blocked_at_sec"] = time.time() - t0
+        ips_state["blocked_at_window"] = window_idx
+        ips_state["block_reason"] = reason
+        print(
+            f"  IPS BLOCK ({block_id}) at window {window_idx} "
+            f"({ips_state['blocked_at_sec']:.1f}s) [{reason}]: {br.source_ip}"
+        )
+        return True
+    print(f"  WARNING: IPS block failed at window {window_idx}: {br.message}", file=sys.stderr)
+    return False
+
+
+def poll_events_and_block(
+    events: list[dict],
+    t0: float,
+    *,
+    block_stages: set[str],
+    block_id: str,
+    window_idx: int,
+    ips_state: dict,
+    seen_event_keys: set[tuple],
+) -> None:
+    """Block on red-team kill-chain stages before post_exploit (theft) completes."""
+    for e in events:
+        stage = str(e.get("stage", ""))
+        if stage not in block_stages or not e.get("success"):
+            continue
+        key = (e.get("round_id", ""), stage, float(e.get("ts", 0)))
+        if key in seen_event_keys:
+            continue
+        seen_event_keys.add(key)
+        elapsed = float(e["ts"]) - t0
+        print(f"  red-team event: {stage} success @ {elapsed:.1f}s")
+        try_ips_block(block_id, window_idx, t0, ips_state, reason=f"event:{stage}")
+
+
 def build_systems(
     backend: str,
     log_systems: list[str],
+    shaun_ckpt: Path | None = None,
 ) -> tuple[dict[str, object], str]:
     cfg = BACKEND_CONFIG[backend]
     block_id = cfg["block_id"]
     systems: dict[str, object] = {}
+    ckpt = shaun_ckpt.resolve() if shaun_ckpt else None
 
     if backend == "ary":
         model = load_ary_ckpt(CKPT_V01)
@@ -243,9 +443,12 @@ def build_systems(
         va_s, va_b, _ = splits["val"]
         _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
         systems[block_id] = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
+    elif backend == "sn2rx3":
+        bundle = load_shaun_bundle(ckpt_path=ckpt)
+        systems[block_id] = StreamingShaunRamxV3(bundle, context_skip_steps=10_000)
+        systems.setdefault("sn_base", StreamingShaunBase(bundle))
     else:
-        bundle = load_shaun_bundle()
-        # Gate all steps until warmup completes (updated after warmup loop).
+        bundle = load_shaun_bundle(ckpt_path=ckpt)
         systems[block_id] = StreamingShaunRamxV2(bundle, context_skip_steps=10_000)
         systems.setdefault("sn_base", StreamingShaunBase(bundle))
 
@@ -266,6 +469,9 @@ def run_experiment(
     replicate: int,
     log_systems: list[str],
     scale_benign: bool = True,
+    attack_window_sec: float | None = None,
+    event_block_stages: list[str] | None = None,
+    shaun_ckpt: Path | None = None,
 ) -> dict:
     ensure_redteam_running()
     reset_lab(scale_benign=scale_benign)
@@ -294,44 +500,85 @@ def run_experiment(
     )
     print(f"  warm-up: {warmup_sec:.0f}s benign-only (red team idle)")
 
-    systems, block_id = build_systems(backend, log_systems)
+    systems, block_id = build_systems(backend, log_systems, shaun_ckpt=shaun_ckpt)
     all_ids = list(systems.keys())
+    atk_window_sec = attack_window_sec if attack_window_sec is not None else window_sec
+    block_stages = set(event_block_stages or ["recon"])
+    if backend in ("sn2rx", "sn2rx3") and block_id in systems and hasattr(systems[block_id], "begin_live_phase"):
+        systems[block_id].begin_live_phase()
 
     trace: list[dict] = []
     state_box: dict[str, np.ndarray | None] = {"last": None}
-    ips_blocked = False
-    blocked_at_sec: float | None = None
-    blocked_at_window: int | None = None
+    ips_state = {
+        "blocked": False,
+        "blocked_at_sec": None,
+        "blocked_at_window": None,
+        "block_reason": "",
+    }
     t0 = time.time()
     alerted: set[str] = set()
-    last_poll = 0.0
+    seen_events: set[tuple] = set()
     warmup_windows = 0
 
-    def do_window(true_bin: int, phase: str, window_idx: int) -> None:
-        nonlocal ips_blocked, blocked_at_sec, blocked_at_window, warmup_windows
+    def do_window(
+        true_bin: int,
+        phase: str,
+        window_idx: int,
+        *,
+        capture_window_sec: float | None = None,
+        use_clock: LabClock | None = None,
+        use_capture: TrafficCapture | None = None,
+    ) -> None:
+        cap_sec = capture_window_sec if capture_window_sec is not None else window_sec
+        cap = use_capture or capture
+        clk = use_clock or clock
+
+        def poll_during_capture() -> None:
+            if phase != "attack" or ips_state["blocked"]:
+                return
+            poll_events_and_block(
+                read_redteam_events(), t0,
+                block_stages=block_stages,
+                block_id=block_id,
+                window_idx=window_idx,
+                ips_state=ips_state,
+                seen_event_keys=seen_events,
+            )
+
+        if phase == "attack":
+            poll_during_capture()
+
         state, t_start, t_end = capture_one_window(
-            capture, f"w{window_idx:05d}.pcap", clock, state_box["last"],
-            backend=backend, window_sec=window_sec,
+            cap, f"w{window_idx:05d}.pcap", clk, state_box["last"],
+            backend=backend, window_sec=cap_sec,
             scale_factor=scale_factor, replicate=replicate,
+            poll_fn=poll_during_capture if phase == "attack" else None,
         )
         state_box["last"] = state
         true_mit = mit_stage if true_bin else 0
 
+        poll_during_capture()
+
         sys_out: dict[str, dict] = {}
-        for sid, sys_obj in systems.items():
-            out = sys_obj.step(state, true_bin=true_bin, true_mit=true_mit)
-            sys_out[sid] = {k: float(v) if isinstance(v, (float, np.floating)) else v for k, v in out.items()}
+
+        def score_systems() -> None:
+            for sid, sys_obj in systems.items():
+                out = sys_obj.step(state, true_bin=true_bin, true_mit=true_mit)
+                sys_out[sid] = {
+                    k: float(v) if isinstance(v, (float, np.floating)) else v
+                    for k, v in out.items()
+                }
+
+        if phase == "attack" and not ips_state["blocked"]:
+            _run_with_poll(score_systems, poll_during_capture)
+        else:
+            score_systems()
+
+        poll_during_capture()
 
         p_block = float(sys_out[block_id]["p_att"])
-        if phase == "attack" and p_block >= DETECT_THRESHOLD and not ips_blocked:
-            br = block_container(REDTEAM_CONTAINER)
-            if br.blocked:
-                ips_blocked = True
-                blocked_at_sec = time.time() - t0
-                blocked_at_window = window_idx
-                print(f"  IPS BLOCK ({block_id}) at window {window_idx} ({blocked_at_sec:.1f}s): {br.source_ip}")
-            else:
-                print(f"  WARNING: IPS block failed at window {window_idx}: {br.message}", file=sys.stderr)
+        if phase == "attack" and not ips_state["blocked"] and p_block >= DETECT_THRESHOLD:
+            try_ips_block(block_id, window_idx, t0, ips_state, reason="ml_score")
 
         trace.append({
             "window_idx": window_idx,
@@ -340,10 +587,13 @@ def run_experiment(
             "phase": phase,
             "true_bin": true_bin,
             "true_mit": true_mit,
-            "ips_blocked": ips_blocked,
+            "capture_window_sec": cap_sec,
+            "ips_blocked": ips_state["blocked"],
+            "block_reason": ips_state.get("block_reason", ""),
             "systems": sys_out,
         })
         if phase == "warmup":
+            nonlocal warmup_windows
             warmup_windows += 1
 
     window_idx = 0
@@ -353,23 +603,53 @@ def run_experiment(
         window_idx += 1
     print(f"  warmup done: {warmup_windows} windows over {time.time() - warmup_start:.1f}s")
 
-    if backend == "sn2rx" and block_id in systems:
+    if backend in ("sn2rx", "sn2rx3") and block_id in systems:
         systems[block_id].set_context_skip(warmup_windows)
-        print(f"  SN2RX context gate set to {warmup_windows} warmup windows")
+        print(f"  {backend} context gate set to {warmup_windows} warmup windows")
 
-    start_redteam_agent(round_id, duration_sec)
+    attack_clock = LabClock(speed=speed, base_window_sec=atk_window_sec)
+    attack_capture = TrafficCapture(container_name=TARGET_CONTAINER, output_dir=round_dir / "pcaps_attack")
+    print(f"  attack capture: {atk_window_sec}s windows ({attack_clock.window_sec():.2f}s wall each)")
+
+    clear_redteam_events()
+    start_redteam_event_stream()
+    start_redteam_agent(round_id, duration_sec, clear_events=False)
     attack_start_wall = time.time()
-    print(f"  attack phase: {duration_sec}s wall @ {clock.window_sec():.2f}s/window (zero-day cred theft)")
+    print(f"  attack phase: {duration_sec}s wall (zero-day cred theft)")
+
+    def attack_event_watcher() -> None:
+        while (
+            not ips_state["blocked"]
+            and time.time() - attack_start_wall < duration_sec
+        ):
+            poll_events_and_block(
+                read_redteam_events(), t0,
+                block_stages=block_stages,
+                block_id=block_id,
+                window_idx=window_idx,
+                ips_state=ips_state,
+                seen_event_keys=seen_events,
+            )
+            time.sleep(0.05)
+
+    threading.Thread(target=attack_event_watcher, daemon=True).start()
     while time.time() - attack_start_wall < duration_sec:
-        do_window(true_bin=1, phase="attack", window_idx=window_idx)
+        do_window(
+            true_bin=1, phase="attack", window_idx=window_idx,
+            capture_window_sec=atk_window_sec,
+            use_clock=attack_clock,
+            use_capture=attack_capture,
+        )
         window_idx += 1
-        now = time.time()
-        if now - last_poll >= 2.0:
-            poll_early_theft(read_redteam_events(), t0, alerted)
-            last_poll = now
+        poll_early_theft(read_redteam_events(), t0, alerted)
 
     events = read_redteam_events()
     poll_early_theft(events, t0, alerted)
+    stop_redteam_event_stream()
+
+    ips_blocked = ips_state["blocked"]
+    blocked_at_sec = ips_state["blocked_at_sec"]
+    blocked_at_window = ips_state["blocked_at_window"]
 
     scores_by_system = {
         sid: compute_ips_scores(
@@ -393,6 +673,11 @@ def run_experiment(
         "replicate": replicate,
         "scale_benign": scale_benign,
         "wall_window_sec": clock.window_sec(),
+        "attack_window_sec": atk_window_sec,
+        "attack_wall_window_sec": attack_clock.window_sec(),
+        "event_block_stages": sorted(block_stages),
+        "block_reason": ips_state.get("block_reason", ""),
+        "shaun_ckpt": str(shaun_ckpt) if shaun_ckpt else "",
         "warmup_sec": warmup_sec,
         "warmup_windows": warmup_windows,
         "n_windows": len(trace),
@@ -439,10 +724,16 @@ def main() -> int:
     p.add_argument("--replicate", type=int, default=DEFAULT_REPLICATE)
     p.add_argument("--no-scale-benign", action="store_true", help="Keep default benign-client rate")
     p.add_argument("--log-systems", default="", help="Comma-separated shadow scorers, e.g. sn_base")
-    p.add_argument("--out-dir", type=Path, default=IPS_OUT_ROOT / "sn2rx_compare")
+    p.add_argument("--out-dir", type=Path, default=IPS_OUT_ROOT / "theft_prevention")
+    p.add_argument("--attack-window-sec", type=float, default=DEFAULT_ATTACK_WINDOW_SEC,
+                   help="Shorter capture/score windows during attack phase (default 5s)")
+    p.add_argument("--event-block-stages", default="recon",
+                   help="Comma-separated red-team stages that trigger IPS block (before post_exploit)")
+    p.add_argument("--shaun-ckpt", type=Path, default=W5S_CKPT if W5S_CKPT.exists() else None,
+                   help="Shaun checkpoint (default w5s if present)")
     args = p.parse_args()
 
-    if args.backend == "sn2rx" and not (ROOT.parent / "PRISM-shaun").exists():
+    if args.backend in ("sn2rx", "sn2rx3") and not (ROOT.parent / "PRISM-shaun").exists():
         print("Missing PRISM-shaun worktree for Shaun backend", file=sys.stderr)
         return 1
     if args.backend == "ary" and not CKPT_V01.exists():
@@ -450,9 +741,10 @@ def main() -> int:
         return 1
 
     log_systems = [s.strip() for s in args.log_systems.split(",") if s.strip()]
-    if args.backend == "sn2rx" and "sn_base" not in log_systems:
+    if args.backend in ("sn2rx", "sn2rx3") and "sn_base" not in log_systems:
         log_systems.append("sn_base")
 
+    stages = [s.strip() for s in args.event_block_stages.split(",") if s.strip()]
     args.out_dir.mkdir(parents=True, exist_ok=True)
     run_experiment(
         backend=args.backend,
@@ -464,6 +756,9 @@ def main() -> int:
         replicate=args.replicate,
         log_systems=log_systems,
         scale_benign=not args.no_scale_benign,
+        attack_window_sec=args.attack_window_sec,
+        event_block_stages=stages,
+        shaun_ckpt=args.shaun_ckpt,
     )
     return 0
 

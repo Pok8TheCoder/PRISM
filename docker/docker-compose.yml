@@ -73,7 +73,7 @@ services:
     networks:
       - prism-lab
     volumes:
-      - lab-events:/events
+      - ../data/lab_events:/events
     environment:
       TARGET_HOST: target-server
     depends_on:
@@ -91,6 +91,3 @@ networks:
   prism-lab:
     driver: bridge
     internal: true
-
-volumes:
-  lab-events:

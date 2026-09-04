@@ -1,0 +1,367 @@
+{
+  "backend": "sn_base",
+  "block_id": "sn_base",
+  "condition": "control",
+  "mode": "control",
+  "round_id": "5f25ab393c71",
+  "window_sec": 5.0,
+  "warmup_sec": 60.0,
+  "ramp_sec": 0.0,
+  "strike_sec": 60.0,
+  "warmup_windows": 12,
+  "n_windows": 24,
+  "ramp_summary": {
+    "n_windows": 0
+  },
+  "strike": {
+    "n_windows": 12,
+    "detected": false,
+    "max_p_att": 0.03963562846183777,
+    "max_raw_p_att": 0.03963562846183777,
+    "mean_p_att": 0.038245467469096184,
+    "ttd_sec": null,
+    "first3_p": [
+      0.038975078612565994,
+      0.039157647639513016,
+      0.038850001990795135
+    ]
+  },
+  "trace": [
+    {
+      "window_idx": 0,
+      "t_start": 1788458960.1473246,
+      "t_end": 1788458965.912347,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.0399392694234848
+        }
+      }
+    },
+    {
+      "window_idx": 1,
+      "t_start": 1788458966.0572755,
+      "t_end": 1788458971.3246536,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.04048536717891693
+        }
+      }
+    },
+    {
+      "window_idx": 2,
+      "t_start": 1788458971.3292348,
+      "t_end": 1788458976.607364,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.039853762835264206
+        }
+      }
+    },
+    {
+      "window_idx": 3,
+      "t_start": 1788458976.6115127,
+      "t_end": 1788458981.8659282,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03951957821846008
+        }
+      }
+    },
+    {
+      "window_idx": 4,
+      "t_start": 1788458981.8714504,
+      "t_end": 1788458987.1215858,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03985416516661644
+        }
+      }
+    },
+    {
+      "window_idx": 5,
+      "t_start": 1788458987.1297128,
+      "t_end": 1788458992.3870559,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.039827462285757065
+        }
+      }
+    },
+    {
+      "window_idx": 6,
+      "t_start": 1788458992.3941405,
+      "t_end": 1788458997.641657,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03943227604031563
+        }
+      }
+    },
+    {
+      "window_idx": 7,
+      "t_start": 1788458997.648893,
+      "t_end": 1788459002.9328341,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03829619288444519
+        }
+      }
+    },
+    {
+      "window_idx": 8,
+      "t_start": 1788459002.9368324,
+      "t_end": 1788459008.208362,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.039661820977926254
+        }
+      }
+    },
+    {
+      "window_idx": 9,
+      "t_start": 1788459008.2191565,
+      "t_end": 1788459013.4761841,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.04066285118460655
+        }
+      }
+    },
+    {
+      "window_idx": 10,
+      "t_start": 1788459013.4802315,
+      "t_end": 1788459018.7354903,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03929318115115166
+        }
+      }
+    },
+    {
+      "window_idx": 11,
+      "t_start": 1788459018.7425864,
+      "t_end": 1788459024.0155494,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.04030396789312363
+        }
+      }
+    },
+    {
+      "window_idx": 12,
+      "t_start": 1788459024.1786087,
+      "t_end": 1788459029.5328424,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.038975078612565994
+        }
+      }
+    },
+    {
+      "window_idx": 13,
+      "t_start": 1788459029.5368419,
+      "t_end": 1788459034.791898,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.039157647639513016
+        }
+      }
+    },
+    {
+      "window_idx": 14,
+      "t_start": 1788459034.7972507,
+      "t_end": 1788459040.0537395,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.038850001990795135
+        }
+      }
+    },
+    {
+      "window_idx": 15,
+      "t_start": 1788459040.057766,
+      "t_end": 1788459045.3122857,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03839319944381714
+        }
+      }
+    },
+    {
+      "window_idx": 16,
+      "t_start": 1788459045.3353117,
+      "t_end": 1788459050.6040275,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03963562846183777
+        }
+      }
+    },
+    {
+      "window_idx": 17,
+      "t_start": 1788459050.6110873,
+      "t_end": 1788459055.9045875,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03774341568350792
+        }
+      }
+    },
+    {
+      "window_idx": 18,
+      "t_start": 1788459055.9147258,
+      "t_end": 1788459061.190149,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03921181708574295
+        }
+      }
+    },
+    {
+      "window_idx": 19,
+      "t_start": 1788459061.1941464,
+      "t_end": 1788459066.449945,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.037697240710258484
+        }
+      }
+    },
+    {
+      "window_idx": 20,
+      "t_start": 1788459066.4549437,
+      "t_end": 1788459071.7222836,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03857742249965668
+        }
+      }
+    },
+    {
+      "window_idx": 21,
+      "t_start": 1788459071.7272813,
+      "t_end": 1788459076.9925182,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03672097623348236
+        }
+      }
+    },
+    {
+      "window_idx": 22,
+      "t_start": 1788459076.9971647,
+      "t_end": 1788459082.2504725,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03726344183087349
+        }
+      }
+    },
+    {
+      "window_idx": 23,
+      "t_start": 1788459082.2570987,
+      "t_end": 1788459087.5675902,
+      "phase": "strike",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "systems": {
+        "sn_base": {
+          "p_att": 0.03671973943710327
+        }
+      }
+    }
+  ]
+}

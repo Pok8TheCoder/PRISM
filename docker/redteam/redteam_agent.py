@@ -38,6 +38,7 @@ def log_event(path: str, stage: str, success: bool, evidence: str, round_id: str
     }
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(row) + "\n")
+        f.flush()
 
 
 def attempt_cred_theft(base: str, session: requests.Session, events_path: str, round_id: str) -> bool:

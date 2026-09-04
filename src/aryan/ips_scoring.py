@@ -43,7 +43,10 @@ def compute_ips_scores(
     stolen_at_sec = (stolen_at - t0) if (stolen_at is not None and t0 is not None) else None
 
     creds_stolen = stolen_at is not None
-    if creds_stolen:
+    if creds_stolen and ips_blocked and stolen_at_sec is not None and blocked_at_sec is not None:
+        theft_prevented = blocked_at_sec < stolen_at_sec
+        outcome = "prevented" if theft_prevented else "too_late"
+    elif creds_stolen:
         theft_prevented = False
         outcome = "undetected_theft" if not ips_blocked else "too_late"
     elif ips_blocked:

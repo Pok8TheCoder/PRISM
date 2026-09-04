@@ -1,0 +1,20 @@
+---
+description: Commit and push completed work to GitHub before ending a session
+alwaysApply: true
+---
+
+# Commit and push habit
+
+When a task or session produces meaningful code, reports, or lab results:
+
+1. **Commit** in the relevant repo(s) with a clear message focused on *why*.
+2. **Push** to `origin` on the current branch unless the user asked not to.
+3. **Do not commit**: secrets (`.env`), large binaries (`*.zip`, model weights), runtime captures (`data/lab_events/`, `*.pcap`), or generated log dumps (`suricata_logs/`).
+
+If the user says "commit and push" or "save to github", do it without asking again.
+
+**Repos:**
+- `D:\Cursor\PRISM` → `origin` (github.com/Pok8TheCoder/PRISM)
+- `D:\Cursor\Automode` → sibling automation/baseline scripts (push when repo exists)
+
+After pushing, tell the user the branch, commit hash, and remote URL.

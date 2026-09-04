@@ -1,0 +1,394 @@
+{
+  "backend": "sn2rx3",
+  "model": "sn2rx3",
+  "round_id": "ae52a5aeacb5",
+  "duration_sec": 25.0,
+  "speed": 25.0,
+  "state_window_sec": 15.0,
+  "scale_factor": 10.0,
+  "replicate": 5,
+  "scale_benign": true,
+  "wall_window_sec": 0.6,
+  "attack_window_sec": 5.0,
+  "attack_wall_window_sec": 0.2,
+  "event_block_stages": [
+    "recon"
+  ],
+  "block_reason": "event:recon",
+  "shaun_ckpt": "..\\PRISM-shaun\\weights\\w5s\\world_model.pt",
+  "warmup_sec": 12.0,
+  "warmup_windows": 3,
+  "n_windows": 9,
+  "redteam_ip": "172.18.0.5",
+  "block_system_id": "sn2rx3",
+  "log_systems": [
+    "sn2rx3",
+    "sn_base"
+  ],
+  "zero_day_objective": "T1555_sqli_cred_theft",
+  "events": [
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788452771.1305165,
+      "evidence": "status=200",
+      "round_id": "ae52a5aeacb5"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": false,
+      "ts": 1788452776.8611763,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q=%27+UNION+SELECT+username%2C+password_hash+FROM+users+--+ (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x7047d4c25890>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "ae52a5aeacb5"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": false,
+      "ts": 1788452785.3385293,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q= (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x7047d44751d0>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "ae52a5aeacb5"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": false,
+      "ts": 1788452791.9383578,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q= (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x7047d4476390>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "ae52a5aeacb5"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": false,
+      "ts": 1788452798.711826,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q= (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x7047d4477550>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "ae52a5aeacb5"
+    }
+  ],
+  "trace": [
+    {
+      "window_idx": 0,
+      "t_start": 1788452754.0868652,
+      "t_end": 1788452759.9325962,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 15.0,
+      "ips_blocked": false,
+      "block_reason": "",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.017381183803081512,
+          "raw_p_att": 0.017381183803081512,
+          "calibrated_raw_p_att": 0.017381183803081512,
+          "relative_anomaly": 0.0,
+          "context_gated": true,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.017381183803081512
+        }
+      }
+    },
+    {
+      "window_idx": 1,
+      "t_start": 1788452760.058774,
+      "t_end": 1788452765.4597445,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 15.0,
+      "ips_blocked": false,
+      "block_reason": "",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.017286650836467743,
+          "raw_p_att": 0.017286650836467743,
+          "calibrated_raw_p_att": 0.017286650836467743,
+          "relative_anomaly": 0.0,
+          "context_gated": true,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.017286650836467743
+        }
+      }
+    },
+    {
+      "window_idx": 2,
+      "t_start": 1788452765.4698625,
+      "t_end": 1788452770.819547,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 15.0,
+      "ips_blocked": false,
+      "block_reason": "",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.017452294006943703,
+          "raw_p_att": 0.017452294006943703,
+          "calibrated_raw_p_att": 0.017452294006943703,
+          "relative_anomaly": 0.0,
+          "context_gated": true,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.017452294006943703
+        }
+      }
+    },
+    {
+      "window_idx": 3,
+      "t_start": 1788452771.0191755,
+      "t_end": 1788452775.954919,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.015614444389939308,
+          "raw_p_att": 0.015614444389939308,
+          "calibrated_raw_p_att": 0.015614444389939308,
+          "relative_anomaly": 0.0,
+          "context_gated": false,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.015614444389939308
+        }
+      }
+    },
+    {
+      "window_idx": 4,
+      "t_start": 1788452775.9651306,
+      "t_end": 1788452780.900398,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.01775926724076271,
+          "raw_p_att": 0.01775926724076271,
+          "calibrated_raw_p_att": 0.01775926724076271,
+          "relative_anomaly": 0.0,
+          "context_gated": false,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.01775926724076271
+        }
+      }
+    },
+    {
+      "window_idx": 5,
+      "t_start": 1788452780.911648,
+      "t_end": 1788452785.8383698,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.015981340780854225,
+          "raw_p_att": 0.015981340780854225,
+          "calibrated_raw_p_att": 0.015981340780854225,
+          "relative_anomaly": 0.0,
+          "context_gated": false,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.015981340780854225
+        }
+      }
+    },
+    {
+      "window_idx": 6,
+      "t_start": 1788452785.8497605,
+      "t_end": 1788452790.786474,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.01594584994018078,
+          "raw_p_att": 0.01594584994018078,
+          "calibrated_raw_p_att": 0.01594584994018078,
+          "relative_anomaly": 0.0,
+          "context_gated": false,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.01594584994018078
+        }
+      }
+    },
+    {
+      "window_idx": 7,
+      "t_start": 1788452790.79814,
+      "t_end": 1788452795.7454603,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.018266446888446808,
+          "raw_p_att": 0.018266446888446808,
+          "calibrated_raw_p_att": 0.018266446888446808,
+          "relative_anomaly": 0.0,
+          "context_gated": false,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.018266446888446808
+        }
+      }
+    },
+    {
+      "window_idx": 8,
+      "t_start": 1788452795.755196,
+      "t_end": 1788452800.7273285,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx3": {
+          "p_att": 0.016267025843262672,
+          "raw_p_att": 0.016267025843262672,
+          "calibrated_raw_p_att": 0.016267025843262672,
+          "relative_anomaly": 0.0,
+          "context_gated": false,
+          "alert_suppressed": false,
+          "ramx_version": "3.0"
+        },
+        "sn_base": {
+          "p_att": 0.016267025843262672
+        }
+      }
+    }
+  ],
+  "scores": {
+    "binary_f1": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "fpr": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "tn": 3,
+    "fn": 6,
+    "ttd_windows": null,
+    "ttd_sec": null,
+    "detected": false,
+    "lost_to_attacker": null,
+    "benign_harm_count": 0,
+    "n_windows": 9,
+    "system_id": "sn2rx3",
+    "creds_stolen": false,
+    "theft_succeeded": false,
+    "stolen_at_sec": null,
+    "ips_blocked": true,
+    "blocked_at_sec": 17.267625331878662,
+    "blocked_at_window": 3,
+    "theft_prevented": true,
+    "prevented_theft": true,
+    "time_to_block_sec": 17.267625331878662,
+    "time_to_detect_sec": null,
+    "outcome": "prevented",
+    "benign_harm": 0
+  },
+  "scores_by_system": {
+    "sn2rx3": {
+      "binary_f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "fpr": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 3,
+      "fn": 6,
+      "ttd_windows": null,
+      "ttd_sec": null,
+      "detected": false,
+      "lost_to_attacker": null,
+      "benign_harm_count": 0,
+      "n_windows": 9,
+      "system_id": "sn2rx3",
+      "creds_stolen": false,
+      "theft_succeeded": false,
+      "stolen_at_sec": null,
+      "ips_blocked": true,
+      "blocked_at_sec": 17.267625331878662,
+      "blocked_at_window": 3,
+      "theft_prevented": true,
+      "prevented_theft": true,
+      "time_to_block_sec": 17.267625331878662,
+      "time_to_detect_sec": null,
+      "outcome": "prevented",
+      "benign_harm": 0
+    },
+    "sn_base": {
+      "binary_f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "fpr": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "tn": 3,
+      "fn": 6,
+      "ttd_windows": null,
+      "ttd_sec": null,
+      "detected": false,
+      "lost_to_attacker": null,
+      "benign_harm_count": 0,
+      "n_windows": 9,
+      "system_id": "sn_base",
+      "creds_stolen": false,
+      "theft_succeeded": false,
+      "stolen_at_sec": null,
+      "ips_blocked": false,
+      "blocked_at_sec": null,
+      "blocked_at_window": null,
+      "theft_prevented": false,
+      "prevented_theft": false,
+      "time_to_block_sec": null,
+      "time_to_detect_sec": null,
+      "outcome": "no_theft_attempted",
+      "benign_harm": 0
+    }
+  },
+  "creds_stolen": false,
+  "stolen_at_sec": null,
+  "ips_blocked": true,
+  "blocked_at_sec": 17.267625331878662,
+  "blocked_at_window": 3,
+  "prevented_theft": true,
+  "outcome": "prevented"
+}

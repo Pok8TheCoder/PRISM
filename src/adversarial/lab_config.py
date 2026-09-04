@@ -14,6 +14,7 @@ TARGET_CONTAINER = "target-server"
 BENIGN_CONTAINER = "benign-client"
 
 REDTEAM_EVENTS_CONTAINER_PATH = "/events/redteam.jsonl"
+REDTEAM_EVENTS_HOST_PATH = ROOT / "data" / "lab_events" / "redteam.jsonl"
 IPS_OUT_ROOT = ROOT / "results" / "ips_redteam"
 
 SAVE_DIR = ROOT / "data" / "raw" / "adversarial"

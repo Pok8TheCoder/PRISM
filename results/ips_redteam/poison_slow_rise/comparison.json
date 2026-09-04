@@ -1,0 +1,9 @@
+{
+  "control_detected": true,
+  "poison_detected": true,
+  "control_max_p": 0.6169006794691085,
+  "poison_max_p": 0.6031895190477371,
+  "delta_max_p": -0.013711160421371438,
+  "poison_suppressed_detection": false,
+  "ramp_raw_offset_drift": 0.03270486928522587
+}

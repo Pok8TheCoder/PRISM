@@ -1,0 +1,100 @@
+{
+  "control": {
+    "condition": "control",
+    "mode": "control",
+    "round_id": "efdba0ac0f24",
+    "warmup_sec": 60.0,
+    "ramp_sec": 0.0,
+    "strike_sec": 60.0,
+    "speed": 10.0,
+    "shaun_ckpt": "D:\\Cursor\\PRISM-shaun\\weights\\w5s\\world_model.pt",
+    "warmup_windows": 10,
+    "n_windows": 22,
+    "ramp_summary": {
+      "n_windows": 0
+    },
+    "strike_sn2rx3": {
+      "n_windows": 12,
+      "detected": true,
+      "max_p_att": 0.6169006794691085,
+      "max_raw_p_att": 0.04358244687318802,
+      "mean_p_att": 0.12892620057575183,
+      "ttd_sec": 36.965043783187866,
+      "first3_p": [
+        0.039614830166101456,
+        0.04101568087935448,
+        0.03999268263578415
+      ]
+    },
+    "strike_sn_base": {
+      "n_windows": 12,
+      "detected": false,
+      "max_p_att": 0.04358244687318802,
+      "max_raw_p_att": 0.0,
+      "mean_p_att": 0.041731870733201504,
+      "ttd_sec": null,
+      "first3_p": [
+        0.039614830166101456,
+        0.04101568087935448,
+        0.03999268263578415
+      ]
+    }
+  },
+  "poison": {
+    "condition": "poison_slow_rise",
+    "mode": "poison",
+    "round_id": "c6f09584bf83",
+    "warmup_sec": 60.0,
+    "ramp_sec": 300.0,
+    "strike_sec": 60.0,
+    "speed": 10.0,
+    "shaun_ckpt": "D:\\Cursor\\PRISM-shaun\\weights\\w5s\\world_model.pt",
+    "warmup_windows": 10,
+    "n_windows": 79,
+    "ramp_summary": {
+      "n_windows": 57,
+      "max_p_att": 0.6022121731191873,
+      "mean_p_att": 0.18407316858158265,
+      "max_raw_p_att": 0.04035715013742447,
+      "raw_offset_start": 0.0,
+      "raw_offset_end": 0.03270486928522587,
+      "calibrated_end": 0.001782706007361412,
+      "any_alert_during_ramp": true
+    },
+    "strike_sn2rx3": {
+      "n_windows": 12,
+      "detected": true,
+      "max_p_att": 0.6031895190477371,
+      "max_raw_p_att": 0.0420948788523674,
+      "mean_p_att": 0.4092737882276634,
+      "ttd_sec": 5.283864736557007,
+      "first3_p": [
+        0.042532037083413375,
+        0.6012728720903396,
+        0.6015050195157527
+      ]
+    },
+    "strike_sn_base": {
+      "n_windows": 12,
+      "detected": false,
+      "max_p_att": 0.0420948788523674,
+      "max_raw_p_att": 0.0,
+      "mean_p_att": 0.039688490641613804,
+      "ttd_sec": null,
+      "first3_p": [
+        0.035182636231184006,
+        0.036731619387865067,
+        0.03741127625107765
+      ]
+    }
+  },
+  "comparison": {
+    "control_detected": true,
+    "poison_detected": true,
+    "control_max_p": 0.6169006794691085,
+    "poison_max_p": 0.6031895190477371,
+    "delta_max_p": -0.013711160421371438,
+    "poison_suppressed_detection": false,
+    "ramp_raw_offset_drift": 0.03270486928522587
+  }
+}

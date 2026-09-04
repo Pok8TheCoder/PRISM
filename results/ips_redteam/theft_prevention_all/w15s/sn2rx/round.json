@@ -1,0 +1,367 @@
+{
+  "backend": "sn2rx",
+  "model": "sn2rx",
+  "round_id": "9a67c7c2142f",
+  "duration_sec": 25.0,
+  "speed": 25.0,
+  "state_window_sec": 15.0,
+  "scale_factor": 10.0,
+  "replicate": 5,
+  "scale_benign": true,
+  "wall_window_sec": 0.6,
+  "attack_window_sec": 5.0,
+  "attack_wall_window_sec": 0.2,
+  "event_block_stages": [
+    "recon"
+  ],
+  "block_reason": "event:recon",
+  "shaun_ckpt": "..\\PRISM-shaun\\weights\\world_model.pt",
+  "warmup_sec": 12.0,
+  "warmup_windows": 3,
+  "n_windows": 9,
+  "redteam_ip": "172.18.0.5",
+  "block_system_id": "sn2rx",
+  "log_systems": [
+    "sn2rx",
+    "sn_base"
+  ],
+  "zero_day_objective": "T1555_sqli_cred_theft",
+  "events": [
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": true,
+      "ts": 1788453237.9099517,
+      "evidence": "status=200",
+      "round_id": "9a67c7c2142f"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "exploit",
+      "success": false,
+      "ts": 1788453243.8586068,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q=%27+UNION+SELECT+username%2C+password_hash+FROM+users+--+ (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x73bec009a850>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "9a67c7c2142f"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": false,
+      "ts": 1788453251.6215668,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q= (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x73bec00ace90>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "9a67c7c2142f"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": false,
+      "ts": 1788453258.784745,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q= (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x73bec00ae010>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "9a67c7c2142f"
+    },
+    {
+      "class_id": "T1555_sqli_cred_theft",
+      "stage": "recon",
+      "success": false,
+      "ts": 1788453266.4589233,
+      "evidence": "HTTPConnectionPool(host='target-server', port=80): Max retries exceeded with url: /search?q= (Caused by ConnectTimeoutError(<HTTPConnection(host='target-server', port=80) at 0x73bec00af1d0>, 'Connection to target-server timed out. (connect timeout=5)'))",
+      "round_id": "9a67c7c2142f"
+    }
+  ],
+  "trace": [
+    {
+      "window_idx": 0,
+      "t_start": 1788453220.4098687,
+      "t_end": 1788453226.5293787,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 15.0,
+      "ips_blocked": false,
+      "block_reason": "",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.968539297580719,
+          "raw_p_att": 0.968539297580719,
+          "relative_anomaly": 0.0,
+          "context_gated": true
+        },
+        "sn_base": {
+          "p_att": 0.968539297580719
+        }
+      }
+    },
+    {
+      "window_idx": 1,
+      "t_start": 1788453226.6989071,
+      "t_end": 1788453232.189011,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 15.0,
+      "ips_blocked": false,
+      "block_reason": "",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9667145013809204,
+          "raw_p_att": 0.9667145013809204,
+          "relative_anomaly": 0.0,
+          "context_gated": true
+        },
+        "sn_base": {
+          "p_att": 0.9667145013809204
+        }
+      }
+    },
+    {
+      "window_idx": 2,
+      "t_start": 1788453232.208313,
+      "t_end": 1788453237.5914419,
+      "phase": "warmup",
+      "true_bin": 0,
+      "true_mit": 0,
+      "capture_window_sec": 15.0,
+      "ips_blocked": false,
+      "block_reason": "",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9914391040802002,
+          "raw_p_att": 0.9914391040802002,
+          "relative_anomaly": 0.0,
+          "context_gated": true
+        },
+        "sn_base": {
+          "p_att": 0.9914391040802002
+        }
+      }
+    },
+    {
+      "window_idx": 3,
+      "t_start": 1788453237.7510688,
+      "t_end": 1788453242.697533,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9842543601989746,
+          "raw_p_att": 0.9842543601989746,
+          "relative_anomaly": 0.0,
+          "context_gated": false
+        },
+        "sn_base": {
+          "p_att": 0.9842543601989746
+        }
+      }
+    },
+    {
+      "window_idx": 4,
+      "t_start": 1788453242.7114165,
+      "t_end": 1788453247.6482701,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9541966319084167,
+          "raw_p_att": 0.9541966319084167,
+          "relative_anomaly": 0.0,
+          "context_gated": false
+        },
+        "sn_base": {
+          "p_att": 0.9541966319084167
+        }
+      }
+    },
+    {
+      "window_idx": 5,
+      "t_start": 1788453247.6623588,
+      "t_end": 1788453252.5973444,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9629865884780884,
+          "raw_p_att": 0.9629865884780884,
+          "relative_anomaly": 0.0,
+          "context_gated": false
+        },
+        "sn_base": {
+          "p_att": 0.9629865884780884
+        }
+      }
+    },
+    {
+      "window_idx": 6,
+      "t_start": 1788453252.6134098,
+      "t_end": 1788453257.5460198,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9362651705741882,
+          "raw_p_att": 0.9362651705741882,
+          "relative_anomaly": 0.0,
+          "context_gated": false
+        },
+        "sn_base": {
+          "p_att": 0.9362651705741882
+        }
+      }
+    },
+    {
+      "window_idx": 7,
+      "t_start": 1788453257.5601232,
+      "t_end": 1788453262.5360184,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9803815484046936,
+          "raw_p_att": 0.9803815484046936,
+          "relative_anomaly": 0.0,
+          "context_gated": false
+        },
+        "sn_base": {
+          "p_att": 0.9803815484046936
+        }
+      }
+    },
+    {
+      "window_idx": 8,
+      "t_start": 1788453262.54914,
+      "t_end": 1788453267.484413,
+      "phase": "attack",
+      "true_bin": 1,
+      "true_mit": 3,
+      "capture_window_sec": 5.0,
+      "ips_blocked": true,
+      "block_reason": "event:recon",
+      "systems": {
+        "sn2rx": {
+          "p_att": 0.9307020902633667,
+          "raw_p_att": 0.9307020902633667,
+          "relative_anomaly": 0.0,
+          "context_gated": false
+        },
+        "sn_base": {
+          "p_att": 0.9307020902633667
+        }
+      }
+    }
+  ],
+  "scores": {
+    "binary_f1": 0.8,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "fpr": 1.0,
+    "tp": 6,
+    "fp": 3,
+    "tn": 0,
+    "fn": 0,
+    "ttd_windows": 0,
+    "ttd_sec": 0.0,
+    "detected": true,
+    "lost_to_attacker": null,
+    "benign_harm_count": 0,
+    "n_windows": 9,
+    "system_id": "sn2rx",
+    "creds_stolen": false,
+    "theft_succeeded": false,
+    "stolen_at_sec": null,
+    "ips_blocked": true,
+    "blocked_at_sec": 17.726065397262573,
+    "blocked_at_window": 3,
+    "theft_prevented": true,
+    "prevented_theft": true,
+    "time_to_block_sec": 17.726065397262573,
+    "time_to_detect_sec": 0.0,
+    "outcome": "prevented",
+    "benign_harm": 0
+  },
+  "scores_by_system": {
+    "sn2rx": {
+      "binary_f1": 0.8,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "fpr": 1.0,
+      "tp": 6,
+      "fp": 3,
+      "tn": 0,
+      "fn": 0,
+      "ttd_windows": 0,
+      "ttd_sec": 0.0,
+      "detected": true,
+      "lost_to_attacker": null,
+      "benign_harm_count": 0,
+      "n_windows": 9,
+      "system_id": "sn2rx",
+      "creds_stolen": false,
+      "theft_succeeded": false,
+      "stolen_at_sec": null,
+      "ips_blocked": true,
+      "blocked_at_sec": 17.726065397262573,
+      "blocked_at_window": 3,
+      "theft_prevented": true,
+      "prevented_theft": true,
+      "time_to_block_sec": 17.726065397262573,
+      "time_to_detect_sec": 0.0,
+      "outcome": "prevented",
+      "benign_harm": 0
+    },
+    "sn_base": {
+      "binary_f1": 0.8,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "fpr": 1.0,
+      "tp": 6,
+      "fp": 3,
+      "tn": 0,
+      "fn": 0,
+      "ttd_windows": 0,
+      "ttd_sec": 0.0,
+      "detected": true,
+      "lost_to_attacker": null,
+      "benign_harm_count": 0,
+      "n_windows": 9,
+      "system_id": "sn_base",
+      "creds_stolen": false,
+      "theft_succeeded": false,
+      "stolen_at_sec": null,
+      "ips_blocked": false,
+      "blocked_at_sec": null,
+      "blocked_at_window": null,
+      "theft_prevented": false,
+      "prevented_theft": false,
+      "time_to_block_sec": null,
+      "time_to_detect_sec": 0.0,
+      "outcome": "no_theft_attempted",
+      "benign_harm": 0
+    }
+  },
+  "creds_stolen": false,
+  "stolen_at_sec": null,
+  "ips_blocked": true,
+  "blocked_at_sec": 17.726065397262573,
+  "blocked_at_window": 3,
+  "prevented_theft": true,
+  "outcome": "prevented"
+}

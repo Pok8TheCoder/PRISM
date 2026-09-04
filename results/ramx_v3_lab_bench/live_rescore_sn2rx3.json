@@ -1,0 +1,68 @@
+{
+  "rounds": [
+    {
+      "path": "results\\zeroday_live_sweep\\live_rescore\\cred_theft\\round.json",
+      "objective": "cred_theft",
+      "class_id": "T1555_sqli_cred_theft",
+      "n_windows": 7,
+      "warmup_windows": 2,
+      "sn2rx": {
+        "binary_f1": 0.4444444444444445,
+        "benign_harm_count": 5,
+        "fp": 5,
+        "warmup_fp": 2
+      },
+      "sn2rx3_sim": {
+        "binary_f1": 0.5714285714285715,
+        "benign_harm_count": 3,
+        "fp": 3,
+        "warmup_fp": 0
+      },
+      "delta_harm": -2,
+      "delta_f1": 0.12698412698412703
+    },
+    {
+      "path": "results\\zeroday_live_sweep\\live_rescore\\key_theft\\round.json",
+      "objective": "key_theft",
+      "class_id": "T1552_key_theft",
+      "n_windows": 7,
+      "warmup_windows": 3,
+      "sn2rx": {
+        "binary_f1": 0.25,
+        "benign_harm_count": 6,
+        "fp": 6,
+        "warmup_fp": 3
+      },
+      "sn2rx3_sim": {
+        "binary_f1": 0.4,
+        "benign_harm_count": 3,
+        "fp": 3,
+        "warmup_fp": 0
+      },
+      "delta_harm": -3,
+      "delta_f1": 0.15000000000000002
+    },
+    {
+      "path": "results\\zeroday_live_sweep\\live_rescore\\defacement\\round.json",
+      "objective": "defacement",
+      "class_id": "T1491_web_defacement",
+      "n_windows": 8,
+      "warmup_windows": 3,
+      "sn2rx": {
+        "binary_f1": 0.4,
+        "benign_harm_count": 6,
+        "fp": 6,
+        "warmup_fp": 3
+      },
+      "sn2rx3_sim": {
+        "binary_f1": 0.5714285714285715,
+        "benign_harm_count": 3,
+        "fp": 3,
+        "warmup_fp": 0
+      },
+      "delta_harm": -3,
+      "delta_f1": 0.17142857142857149
+    }
+  ],
+  "note": "sn2rx3_sim uses stored raw_p_att + alert cap during context_gated windows"
+}

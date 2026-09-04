@@ -1,0 +1,1526 @@
+{
+  "n_pcaps": 60,
+  "n_scored": 60,
+  "scale_factor": 1.0,
+  "replicate": 1,
+  "warmup_steps": 20,
+  "v2": {
+    "mean_f1": 1.0,
+    "detection_rate": 1.0,
+    "total_warmup_harm": 0,
+    "attack_det_rate": 1.0
+  },
+  "v3": {
+    "mean_f1": 1.0,
+    "detection_rate": 1.0,
+    "total_warmup_harm": 0,
+    "attack_det_rate": 1.0
+  },
+  "delta": {
+    "warmup_harm": 0,
+    "attack_det_rate": 0.0,
+    "mean_f1": 0.0
+  },
+  "rows": [
+    {
+      "pcap": "live_http_flood_none.pcap",
+      "class": "T1499_http_flood",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.7290054321289062
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.665740305185318
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "live_http_flood_random_timing.pcap",
+      "class": "T1499_http_flood",
+      "n_windows": 27,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8860123157501221
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8093661278486252
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "live_port_scan_sequential_none.pcap",
+      "class": "T1046_service_scan",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6225871205329895
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+      "class": "T1046_service_scan",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6226451307535171
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "live_slow_loris_none.pcap",
+      "class": "T1499_slowloris",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8300830364227295
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.7668179094791412
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "live_ssh_bruteforce_none.pcap",
+      "class": "T1110_ssh_bruteforce",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6955321431159973
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.632267016172409
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r10_a1_T1021_remote_services_none.pcap",
+      "class": "T1021_remote_services",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6430771023035049
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r11_a1_T1210_exploit_remote_none.pcap",
+      "class": "T1210_exploit_remote",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6590353906154632
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r12_a1_T1135_share_discovery_none.pcap",
+      "class": "T1135_share_discovery",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6111410610377789
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r13_a1_T1049_connections_discovery_none.pcap",
+      "class": "T1049_connections_discovery",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6389233440160751
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r14_a1_T1071_http_beacon_none.pcap",
+      "class": "T1071_http_beacon",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6750453889369965
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6117802619934082
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r15_a1_T1071_dns_tunnel_none.pcap",
+      "class": "T1071_dns_tunnel",
+      "n_windows": 24,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6445345431566238
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r16_a1_T1571_non_standard_port_none.pcap",
+      "class": "T1571_non_standard_port",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6260232716798783
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r17_a1_T1572_protocol_tunnel_none.pcap",
+      "class": "T1572_protocol_tunnel",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6726735115051269
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6094083845615387
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r18_a1_T1573_encrypted_channel_none.pcap",
+      "class": "T1573_encrypted_channel",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.640575361251831
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r19_a1_T1095_non_app_protocol_none.pcap",
+      "class": "T1095_non_app_protocol",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6664551973342895
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6031900703907013
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r1_a1_ssh_bruteforce_none.pcap",
+      "class": "T1110_ssh_bruteforce",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6969147861003876
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6336496591567993
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r1_a1_T1046_service_scan_none.pcap",
+      "class": "T1046_service_scan",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6347605317831039
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+      "class": "T1110_ssh_bruteforce",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6761194586753845
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6128543317317963
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+      "class": "T1110_ssh_bruteforce",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6933632016181945
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6300980746746063
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r1_a3_ssh_bruteforce_slow_timing.pcap",
+      "class": "T1110_ssh_bruteforce",
+      "n_windows": 23,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6891841351985931
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6258913576602936
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r20_a1_T1102_web_service_none.pcap",
+      "class": "T1102_web_service",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6719935834407806
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6087284564971923
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r21_a1_T1104_multistage_channel_none.pcap",
+      "class": "T1104_multistage_channel",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6577079713344574
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r22_a1_T1041_exfil_c2_none.pcap",
+      "class": "T1041_exfil_c2",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6869950830936432
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6237299561500549
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r23_a1_T1048_exfil_alt_protocol_none.pcap",
+      "class": "T1048_exfil_alt_protocol",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.7306393146514892
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.667374187707901
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r24_a1_T1030_exfil_size_limit_none.pcap",
+      "class": "T1030_exfil_size_limit",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6873795509338378
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6241144239902496
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r25_a1_T1020_automated_exfil_none.pcap",
+      "class": "T1020_automated_exfil",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.7024397015571594
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6391745746135712
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r26_a1_T1498_network_dos_none.pcap",
+      "class": "T1498_network_dos",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6525571286678314
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r27_a1_T1499_http_flood_none.pcap",
+      "class": "T1499_http_flood",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6730324327945709
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6097673058509826
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r28_a1_T1499_slowloris_none.pcap",
+      "class": "T1499_slowloris",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8069576263427735
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.7436924993991851
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r29_a1_T1090_proxy_none.pcap",
+      "class": "T1090_proxy",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6838116943836212
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6205465674400329
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r2_a1_port_scan_sequential_none.pcap",
+      "class": "T1046_service_scan",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6403993368148804
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r2_a1_T1595_active_scan_none.pcap",
+      "class": "T1595_active_scan",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6652095079421997
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6019443809986115
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r2_a2_port_scan_sequential_random_timing.pcap",
+      "class": "T1046_service_scan",
+      "n_windows": 23,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8637880563735962
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8005229294300079
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r2_a2_T1595_active_scan_random_timing.pcap",
+      "class": "T1595_active_scan",
+      "n_windows": 32,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6511247813701629
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r2_a3_port_scan_sequential_randomize_port_order.pcap",
+      "class": "T1046_service_scan",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6219370156526566
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r30_a1_T1568_dynamic_resolution_none.pcap",
+      "class": "T1568_dynamic_resolution",
+      "n_windows": 25,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6644933760166168
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6012282490730285
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r31_a1_T1205_traffic_signaling_none.pcap",
+      "class": "T1205_traffic_signaling",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6383997827768325
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r32_a1_T1570_lateral_transfer_none.pcap",
+      "class": "T1570_lateral_transfer",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.715598976612091
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6523338496685028
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r33_a1_T1046_service_scan_none.pcap",
+      "class": "T1046_service_scan",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6286190211772918
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r34_a1_T1595_active_scan_none.pcap",
+      "class": "T1595_active_scan",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6620692074298858
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r35_a1_T1018_remote_discovery_none.pcap",
+      "class": "T1018_remote_discovery",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.648255267739296
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r36_a1_T1040_network_sniffing_none.pcap",
+      "class": "T1040_network_sniffing",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6128115490078926
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r37_a1_T1110_ssh_bruteforce_none.pcap",
+      "class": "T1110_ssh_bruteforce",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6955956161022187
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6323304891586303
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r38_a1_T1110_web_bruteforce_none.pcap",
+      "class": "T1110_web_bruteforce",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6851895272731781
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6219244003295898
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r39_a1_T1187_password_spray_none.pcap",
+      "class": "T1187_password_spray",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6556236147880554
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r3_a1_http_flood_none.pcap",
+      "class": "T1499_http_flood",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8529919862747193
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.789726859331131
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r3_a1_T1018_remote_discovery_none.pcap",
+      "class": "T1018_remote_discovery",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6821405112743377
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6188753843307495
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r3_a2_http_flood_random_timing.pcap",
+      "class": "T1499_http_flood",
+      "n_windows": 27,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8810089826583862
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8119219601154327
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r3_a3_http_flood_slow_timing.pcap",
+      "class": "T1499_http_flood",
+      "n_windows": 29,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.8785924196243287
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.813626828789711
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r40_a1_T1133_external_remote_none.pcap",
+      "class": "T1133_external_remote",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6369935363531113
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r41_a1_T1190_web_exploit_probe_none.pcap",
+      "class": "T1190_web_exploit_probe",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6939262747764587
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6306611478328704
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r42_a1_T1021_remote_services_none.pcap",
+      "class": "T1021_remote_services",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6601397037506104
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r43_a1_T1210_exploit_remote_none.pcap",
+      "class": "T1210_exploit_remote",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6604863107204437
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r44_a1_T1135_share_discovery_none.pcap",
+      "class": "T1135_share_discovery",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6306566298007965
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r45_a1_T1049_connections_discovery_none.pcap",
+      "class": "T1049_connections_discovery",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6484706729650497
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r46_a1_T1071_http_beacon_none.pcap",
+      "class": "T1071_http_beacon",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.683670562505722
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6204054355621338
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r47_a1_T1071_dns_tunnel_none.pcap",
+      "class": "T1071_dns_tunnel",
+      "n_windows": 24,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.643901315331459
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r48_a1_T1571_non_standard_port_none.pcap",
+      "class": "T1571_non_standard_port",
+      "n_windows": 22,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.608633529394865
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    },
+    {
+      "pcap": "r49_a1_T1572_protocol_tunnel_none.pcap",
+      "class": "T1572_protocol_tunnel",
+      "n_windows": 21,
+      "v2": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6840345323085785
+      },
+      "v3": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "ttd": 0,
+        "detected": true,
+        "harm": 0,
+        "max_p_attack": 0.6207694053649903
+      },
+      "v2_warmup_mean_p": 0.15602799504995346,
+      "v3_warmup_mean_p": 0.15602799504995346
+    }
+  ]
+}

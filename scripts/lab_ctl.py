@@ -33,6 +33,7 @@ def _remove_conflicting_containers() -> None:
 
 def cmd_up(_: argparse.Namespace) -> int:
     print("Building and starting isolated PRISM lab (internal network only)...")
+    (ROOT / "data" / "lab_events").mkdir(parents=True, exist_ok=True)
     _remove_conflicting_containers()
     r = subprocess.run(_compose_cmd("up", "-d", "--build"), cwd=str(ROOT))
     if r.returncode != 0:

@@ -1,0 +1,104 @@
+{
+  "models": [
+    "ary5",
+    "shaun"
+  ],
+  "out_dir": "D:\\Cursor\\PRISM\\results\\shap_analysis",
+  "method": "gradient",
+  "summaries": [
+    {
+      "key": "ary5",
+      "label": "ARY-5sV01",
+      "bucket_counts": {
+        "tp": 193,
+        "tn": 2083,
+        "fp": 5,
+        "fn": 1
+      },
+      "failure_top": [
+        {
+          "feature": "std_flow_71",
+          "index": 185,
+          "fn_minus_tp": 0.04481019824743271,
+          "fn_importance": 0.04481121525168419,
+          "tp_importance": 1.0168449762204546e-06
+        },
+        {
+          "feature": "num_flows",
+          "index": 0,
+          "fn_minus_tp": 0.017401529476046562,
+          "fn_importance": 0.018158746883273125,
+          "tp_importance": 0.0007572180475108325
+        },
+        {
+          "feature": "std_flow_23",
+          "index": 137,
+          "fn_minus_tp": 0.01314526703208685,
+          "fn_importance": 0.013165968470275402,
+          "tp_importance": 2.0701765606645495e-05
+        },
+        {
+          "feature": "num_unique_dst_ports",
+          "index": 3,
+          "fn_minus_tp": 0.012737101875245571,
+          "fn_importance": 0.01277191936969757,
+          "tp_importance": 3.4817192499758676e-05
+        },
+        {
+          "feature": "std_flow_59",
+          "index": 173,
+          "fn_minus_tp": 0.012279776856303215,
+          "fn_importance": 0.012306494638323784,
+          "tp_importance": 2.6717503715190105e-05
+        }
+      ]
+    },
+    {
+      "key": "shaun",
+      "label": "Shaun PRISM V2",
+      "bucket_counts": {
+        "tp": 168,
+        "tn": 618,
+        "fp": 14,
+        "fn": 1
+      },
+      "failure_top": [
+        {
+          "feature": "flow_9_mean",
+          "index": 9,
+          "fn_minus_tp": 0.321735680103302,
+          "fn_importance": 0.3470703065395355,
+          "tp_importance": 0.02533462643623352
+        },
+        {
+          "feature": "flow_8_max",
+          "index": 136,
+          "fn_minus_tp": 0.310724139213562,
+          "fn_importance": 0.3282549977302551,
+          "tp_importance": 0.01753084547817707
+        },
+        {
+          "feature": "flow_11_max",
+          "index": 139,
+          "fn_minus_tp": 0.22795160114765167,
+          "fn_importance": 0.244357630610466,
+          "tp_importance": 0.01640603318810463
+        },
+        {
+          "feature": "flow_9_max",
+          "index": 137,
+          "fn_minus_tp": 0.17911899089813232,
+          "fn_importance": 0.1931004524230957,
+          "tp_importance": 0.013981463387608528
+        },
+        {
+          "feature": "flow_49_max",
+          "index": 177,
+          "fn_minus_tp": 0.17629298567771912,
+          "fn_importance": 0.20276139676570892,
+          "tp_importance": 0.02646840736269951
+        }
+      ]
+    }
+  ]
+}

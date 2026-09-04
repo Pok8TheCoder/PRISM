@@ -78,7 +78,10 @@ def compute_round_scores(
         if idx_before_success is not None:
             lost_to_attacker = pred[idx_before_success] == 0
 
-        benign_harm = sum(1 for pb, tb in zip(pred, true_bins) if tb == 0 and pb == 1)
+        benign_harm = sum(
+            1 for w, pb, tb in zip(trace, pred, true_bins)
+            if tb == 0 and pb == 1 and w.get("phase") != "warmup"
+        )
 
         scores[sid] = {
             "binary_f1": f1,

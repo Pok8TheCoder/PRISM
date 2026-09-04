@@ -64,16 +64,19 @@ def _load_shaun_model_modules():
     return StateTransformerWorldModel, RAMXPredictor
 
 
-def load_shaun_bundle(shaun_root: Path | None = None) -> dict[str, Any]:
+def load_shaun_bundle(
+    shaun_root: Path | None = None,
+    ckpt_path: Path | None = None,
+) -> dict[str, Any]:
     """Load Shaun V2 checkpoint, scaler, and model class."""
     shaun = (shaun_root or SHAUN_ROOT).resolve()
-    ck_path = shaun / "weights" / "world_model.pt"
-    if not ck_path.exists():
-        raise FileNotFoundError(f"Missing Shaun checkpoint: {ck_path}")
+    ck = (ckpt_path or shaun / "weights" / "world_model.pt").resolve()
+    if not ck.exists():
+        raise FileNotFoundError(f"Missing Shaun checkpoint: {ck}")
 
     StateTransformerWorldModel, RAMXPredictor = _load_shaun_model_modules()
-    ck = torch.load(ck_path, map_location="cpu", weights_only=False)
-    sd = ck["model_state_dict"]
+    ckpt = torch.load(str(ck), map_location="cpu", weights_only=False)
+    sd = ckpt["model_state_dict"]
     d_state = sd["input_embed.0.weight"].shape[1]
     pe_len = sd.get("pos_encoder.pe", torch.zeros(1, 50, 256)).shape[1]
     model = StateTransformerWorldModel(
@@ -81,8 +84,8 @@ def load_shaun_bundle(shaun_root: Path | None = None) -> dict[str, Any]:
     )
     model.load_state_dict(sd)
     model.eval()
-    mean = np.asarray(ck.get("scaler_mean", np.zeros((1, d_state))), dtype=np.float32)
-    std = np.asarray(ck.get("scaler_std", np.ones((1, d_state))), dtype=np.float32)
+    mean = np.asarray(ckpt.get("scaler_mean", np.zeros((1, d_state))), dtype=np.float32)
+    std = np.asarray(ckpt.get("scaler_std", np.ones((1, d_state))), dtype=np.float32)
     std = np.where(std < 1e-6, 1.0, std)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -92,6 +95,7 @@ def load_shaun_bundle(shaun_root: Path | None = None) -> dict[str, Any]:
         "std": std,
         "device": device,
         "shaun_root": shaun,
+        "ckpt_path": ck,
         "RAMXPredictor": RAMXPredictor,
     }
 
@@ -103,13 +107,14 @@ def pcap_to_shaun_state(
     scale_factor: float = 1.0,
     replicate: int = 1,
     shaun_root: Path | None = None,
+    window_sec: float = SHAUN_WINDOW_SEC,
 ) -> np.ndarray:
     """Extract one 292-d state from a live capture PCAP (optionally scaled)."""
     pcap_to_rows, scale_prism_rows, rows_to_shaun_states = _ensure_prism_imports()
     rows = pcap_to_rows(pcap)
     if scale_factor != 1.0 or replicate != 1:
         rows = scale_prism_rows(rows, factor=scale_factor, replicate=replicate)
-    states = rows_to_shaun_states(rows, shaun_root=shaun_root or SHAUN_ROOT, window_sec=SHAUN_WINDOW_SEC)
+    states = rows_to_shaun_states(rows, shaun_root=shaun_root or SHAUN_ROOT, window_sec=window_sec)
     if len(states):
         return states[-1].astype(np.float32)
     if last_state is not None:
@@ -194,3 +199,66 @@ class StreamingShaunRamxV2:
             "relative_anomaly": float(res["relative_anomaly"]),
             "context_gated": bool(res.get("context_gated", False)),
         }
+
+
+class StreamingShaunRamxV3:
+    """Shaun V2 + RAMX v3 — alert suppression during warmup + raw local calibration."""
+
+    system_id = "sn2rx3"
+
+    def __init__(self, bundle: dict[str, Any] | None = None, context_skip_steps: int = 0):
+        bundle = bundle or load_shaun_bundle()
+        self.model = bundle["model"]
+        self.mean = bundle["mean"]
+        self.std = bundle["std"]
+        self.device = bundle["device"]
+        _, RAMXPredictorV3 = _load_shaun_ramx_v3()
+        self.predictor = RAMXPredictorV3(
+            self.model,
+            self.mean,
+            self.std,
+            warmup_steps=RAMX_WARMUP_STEPS,
+            context_skip_steps=context_skip_steps,
+            enable_ttt=False,
+        )
+        self.buf: list[np.ndarray] = []
+
+    def set_context_skip(self, steps: int) -> None:
+        self.predictor.set_context_skip(steps)
+
+    def begin_live_phase(self) -> None:
+        self.predictor.begin_live_phase()
+
+    def step(self, raw_state: np.ndarray, true_bin: int = 0, true_mit: int = 0) -> dict[str, float]:
+        raw = np.asarray(raw_state, dtype=np.float32)
+        self.buf.append(raw)
+        traj = _padded_raw(self.buf)
+        res = self.predictor.predict_state(traj, device=str(self.device))
+        return {
+            "p_att": float(res["p_attack"]),
+            "raw_p_att": float(res["raw_p_attack"]),
+            "calibrated_raw_p_att": float(res.get("calibrated_raw_p_attack", res["raw_p_attack"])),
+            "relative_anomaly": float(res["relative_anomaly"]),
+            "context_gated": bool(res.get("context_gated", False)),
+            "alert_suppressed": bool(res.get("alert_suppressed", False)),
+            "raw_offset": float(res.get("raw_offset", 0.0)),
+            "ramx_version": str(res.get("ramx_version", "3.0")),
+        }
+
+
+def _load_shaun_ramx_v3():
+    shaun = _ensure_shaun_path()
+    prev_cwd = os.getcwd()
+    prev_path = sys.path.copy()
+    os.chdir(shaun)
+    for key in list(sys.modules):
+        if key == "src" or key.startswith("src."):
+            del sys.modules[key]
+    sys.path = [str(shaun)] + [p for p in sys.path if Path(p).resolve() != ROOT.resolve()]
+    try:
+        from src.prediction.ramx_v3 import RAMXPredictorV3
+        from src.prediction.ramx import RAMXPredictor
+        return RAMXPredictor, RAMXPredictorV3
+    finally:
+        os.chdir(prev_cwd)
+        sys.path = prev_path

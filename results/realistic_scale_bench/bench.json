@@ -1,0 +1,3903 @@
+{
+  "n_attack_pcaps": 20,
+  "warmup_steps": 20,
+  "tiers": [
+    {
+      "id": "quiet_lab",
+      "scale_factor": 1.0,
+      "replicate": 1,
+      "note": "Docker lab default (~20\u2013100 flows/window)",
+      "n_pcaps": 20,
+      "lab_rows": [
+        {
+          "pcap": "live_http_flood_none.pcap",
+          "class": "T1499_http_flood",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007474964484572411,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007474964484572411,
+              "attack_max": 0.007474964484572411
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732142347283661,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732142347283661,
+              "attack_max": 0.5732142347283661
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.3225135803222656,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.3225135803222656,
+              "attack_max": 0.3225135803222656
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7290054321289062,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7290054321289062,
+              "attack_max": 0.7290054321289062
+            }
+          }
+        },
+        {
+          "pcap": "live_http_flood_random_timing.pcap",
+          "class": "T1499_http_flood",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.019302668049931526,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008091051684459671,
+              "attack_max": 0.019302668049931526
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.3157894736842105,
+            "precision": 1.0,
+            "recall": 0.1875,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732144796149805,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.414381681975016,
+              "attack_max": 0.5732144796149805
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.923076923076923,
+            "precision": 1.0,
+            "recall": 0.8571428571428571,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7150307893753052,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.5907315696988787,
+              "attack_max": 0.7150307893753052
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8860123157501221,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8362926278795515,
+              "attack_max": 0.8860123157501221
+            }
+          }
+        },
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007907848805189133,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007907848805189133,
+              "attack_max": 0.007907848805189133
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007907848805189133,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007907848805189133,
+              "attack_max": 0.007907848805189133
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.056467801332473755,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.056467801332473755,
+              "attack_max": 0.056467801332473755
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6225871205329895,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6225871205329895,
+              "attack_max": 0.6225871205329895
+            }
+          }
+        },
+        {
+          "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007793069817125797,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007793069817125797,
+              "attack_max": 0.007793069817125797
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5733510200213641,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5733510200213641,
+              "attack_max": 0.5733510200213641
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.05661282688379288,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.05661282688379288,
+              "attack_max": 0.05661282688379288
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6226451307535171,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6226451307535171,
+              "attack_max": 0.6226451307535171
+            }
+          }
+        },
+        {
+          "pcap": "live_slow_loris_none.pcap",
+          "class": "T1499_slowloris",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.008501699194312096,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008501699194312096,
+              "attack_max": 0.008501699194312096
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5736557306535541,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5736557306535541,
+              "attack_max": 0.5736557306535541
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5752075910568237,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.5752075910568237,
+              "attack_max": 0.5752075910568237
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8300830364227295,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8300830364227295,
+              "attack_max": 0.8300830364227295
+            }
+          }
+        },
+        {
+          "pcap": "live_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007361963391304016,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007361963391304016,
+              "attack_max": 0.007361963391304016
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5731656442582607,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5731656442582607,
+              "attack_max": 0.5731656442582607
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.2388303577899933,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.2388303577899933,
+              "attack_max": 0.2388303577899933
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6955321431159973,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6955321431159973,
+              "attack_max": 0.6955321431159973
+            }
+          }
+        },
+        {
+          "pcap": "r10_a1_T1021_remote_services_none.pcap",
+          "class": "T1021_remote_services",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007836319506168365,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007836319506168365,
+              "attack_max": 0.007836319506168365
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5733696173876524,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5733696173876524,
+              "attack_max": 0.5733696173876524
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.10769275575876236,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.10769275575876236,
+              "attack_max": 0.10769275575876236
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6430771023035049,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6430771023035049,
+              "attack_max": 0.6430771023035049
+            }
+          }
+        },
+        {
+          "pcap": "r11_a1_T1210_exploit_remote_none.pcap",
+          "class": "T1210_exploit_remote",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007498250342905521,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007498250342905521,
+              "attack_max": 0.007498250342905521
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732242476474493,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732242476474493,
+              "attack_max": 0.5732242476474493
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.14758847653865814,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.14758847653865814,
+              "attack_max": 0.14758847653865814
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6590353906154632,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6590353906154632,
+              "attack_max": 0.6590353906154632
+            }
+          }
+        },
+        {
+          "pcap": "r12_a1_T1135_share_discovery_none.pcap",
+          "class": "T1135_share_discovery",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007993929088115692,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007993929088115692,
+              "attack_max": 0.007993929088115692
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5734373895078897,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5734373895078897,
+              "attack_max": 0.5734373895078897
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.027852652594447136,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.027852652594447136,
+              "attack_max": 0.027852652594447136
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6111410610377789,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6111410610377789,
+              "attack_max": 0.6111410610377789
+            }
+          }
+        },
+        {
+          "pcap": "r13_a1_T1049_connections_discovery_none.pcap",
+          "class": "T1049_connections_discovery",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007980916649103165,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007980916649103165,
+              "attack_max": 0.007980916649103165
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5734317941591143,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5734317941591143,
+              "attack_max": 0.5734317941591143
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.09730836004018784,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.09730836004018784,
+              "attack_max": 0.09730836004018784
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6389233440160751,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6389233440160751,
+              "attack_max": 0.6389233440160751
+            }
+          }
+        },
+        {
+          "pcap": "r14_a1_T1071_http_beacon_none.pcap",
+          "class": "T1071_http_beacon",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007471420336514711,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007471420336514711,
+              "attack_max": 0.007471420336514711
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732127107447013,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732127107447013,
+              "attack_max": 0.5732127107447013
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.18761347234249115,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.18761347234249115,
+              "attack_max": 0.18761347234249115
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6750453889369965,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6750453889369965,
+              "attack_max": 0.6750453889369965
+            }
+          }
+        },
+        {
+          "pcap": "r15_a1_T1071_dns_tunnel_none.pcap",
+          "class": "T1071_dns_tunnel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.009177342057228088,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007627292743159665,
+              "attack_max": 0.009177342057228088
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.5,
+            "precision": 1.0,
+            "recall": 0.3333333333333333,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573946257084608,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.44205417435288563,
+              "attack_max": 0.573946257084608
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.1113363578915596,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.09561379253864288,
+              "attack_max": 0.1113363578915596
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6445345431566238,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6382455170154571,
+              "attack_max": 0.6445345431566238
+            }
+          }
+        },
+        {
+          "pcap": "r16_a1_T1571_non_standard_port_none.pcap",
+          "class": "T1571_non_standard_port",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.00794126931577921,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.00794126931577921,
+              "attack_max": 0.00794126931577921
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573414745805785,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.573414745805785,
+              "attack_max": 0.573414745805785
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.06505817919969559,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.06505817919969559,
+              "attack_max": 0.06505817919969559
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6260232716798783,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6260232716798783,
+              "attack_max": 0.6260232716798783
+            }
+          }
+        },
+        {
+          "pcap": "r17_a1_T1572_protocol_tunnel_none.pcap",
+          "class": "T1572_protocol_tunnel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007475371938198805,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007475371938198805,
+              "attack_max": 0.007475371938198805
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732144099334254,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732144099334254,
+              "attack_max": 0.5732144099334254
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.18168377876281738,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.18168377876281738,
+              "attack_max": 0.18168377876281738
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6726735115051269,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6726735115051269,
+              "attack_max": 0.6726735115051269
+            }
+          }
+        },
+        {
+          "pcap": "r18_a1_T1573_encrypted_channel_none.pcap",
+          "class": "T1573_encrypted_channel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.00752098485827446,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.00752098485827446,
+              "attack_max": 0.00752098485827446
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732340234890579,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732340234890579,
+              "attack_max": 0.5732340234890579
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.10143840312957764,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.10143840312957764,
+              "attack_max": 0.10143840312957764
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.640575361251831,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.640575361251831,
+              "attack_max": 0.640575361251831
+            }
+          }
+        },
+        {
+          "pcap": "r19_a1_T1095_non_app_protocol_none.pcap",
+          "class": "T1095_non_app_protocol",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.00909744668751955,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007490082830190659,
+              "attack_max": 0.00909744668751955
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.7499999999999999,
+            "precision": 1.0,
+            "recall": 0.6,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5739119020756334,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.48518148385050386,
+              "attack_max": 0.5739119020756334
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.16613799333572388,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.14011942967772484,
+              "attack_max": 0.16613799333572388
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6664551973342895,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6560477718710899,
+              "attack_max": 0.6664551973342895
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007584933191537857,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007584933191537857,
+              "attack_max": 0.007584933191537857
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732615212723612,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732615212723612,
+              "attack_max": 0.5732615212723612
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.24228696525096893,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.24228696525096893,
+              "attack_max": 0.24228696525096893
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6969147861003876,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6969147861003876,
+              "attack_max": 0.6969147861003876
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_T1046_service_scan_none.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007571828551590443,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007571828551590443,
+              "attack_max": 0.007571828551590443
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732558862771838,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732558862771838,
+              "attack_max": 0.5732558862771838
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.08690132945775986,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.08690132945775986,
+              "attack_max": 0.08690132945775986
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6347605317831039,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6347605317831039,
+              "attack_max": 0.6347605317831039
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007588846143335104,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007588846143335104,
+              "attack_max": 0.007588846143335104
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732632038416341,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732632038416341,
+              "attack_max": 0.5732632038416341
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.1902986466884613,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.1902986466884613,
+              "attack_max": 0.1902986466884613
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6761194586753845,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6761194586753845,
+              "attack_max": 0.6761194586753845
+            }
+          }
+        },
+        {
+          "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007685429882258177,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007562828483060002,
+              "attack_max": 0.007685429882258177
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573304734849371,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5385124241956509,
+              "attack_max": 0.573304734849371
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.23340800404548645,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.22270949184894562,
+              "attack_max": 0.23340800404548645
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6933632016181945,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6890837967395782,
+              "attack_max": 0.6933632016181945
+            }
+          }
+        }
+      ],
+      "lab_summary": {
+        "ary5_base": {
+          "n": 20,
+          "mean_f1": 0.0,
+          "detection_rate": 0.0,
+          "mean_attack_max_p": 0.008438325114548206,
+          "mean_warmup_mean_p": 0.008196641411632297
+        },
+        "ary5_ramx": {
+          "n": 20,
+          "mean_f1": 0.8782894736842106,
+          "detection_rate": 0.95,
+          "mean_attack_max_p": 0.545099570107879,
+          "mean_warmup_mean_p": 0.008196641411632297
+        },
+        "shaun_v2": {
+          "n": 20,
+          "mean_f1": 0.09615384615384615,
+          "detection_rate": 0.1,
+          "mean_attack_max_p": 0.19556341608986258,
+          "mean_warmup_mean_p": 0.15602799504995346
+        },
+        "shaun_v2_ramx": {
+          "n": 20,
+          "mean_f1": 1.0,
+          "detection_rate": 1.0,
+          "mean_attack_max_p": 0.678225366435945,
+          "mean_warmup_mean_p": 0.15602799504995346
+        }
+      },
+      "ramx_delta": {
+        "shaun": {
+          "f1": 0.9038461538461539,
+          "detection_rate": 0.9,
+          "attack_max_p": 0.4826619503460824
+        },
+        "ary5": {
+          "f1": 0.8782894736842106,
+          "detection_rate": 0.95,
+          "attack_max_p": 0.5366612449933308
+        }
+      }
+    },
+    {
+      "id": "cic_like",
+      "scale_factor": 10.0,
+      "replicate": 5,
+      "note": "CIC training density (~500 flows/window)",
+      "n_pcaps": 20,
+      "lab_rows": [
+        {
+          "pcap": "live_http_flood_none.pcap",
+          "class": "T1499_http_flood",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007473075296729803,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007473075296729803,
+              "attack_max": 0.007473075296729803
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732134223775938,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732134223775938,
+              "attack_max": 0.5732134223775938
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7563941478729248,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7563941478729248,
+              "attack_max": 0.7563941478729248
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.90255765914917,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.90255765914917,
+              "attack_max": 0.90255765914917
+            }
+          }
+        },
+        {
+          "pcap": "live_http_flood_random_timing.pcap",
+          "class": "T1499_http_flood",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.019056491553783417,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008071995165664703,
+              "attack_max": 0.019056491553783417
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.3157894736842105,
+            "precision": 1.0,
+            "recall": 0.1875,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732139153545722,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.41436994522121184,
+              "attack_max": 0.5732139153545722
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9531927704811096,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.909910261631012,
+              "attack_max": 0.9531927704811096
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9812771081924438,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9639641046524048,
+              "attack_max": 0.9812771081924438
+            }
+          }
+        },
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007580045145004988,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007580045145004988,
+              "attack_max": 0.007580045145004988
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732594194123521,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732594194123521,
+              "attack_max": 0.5732594194123521
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.512641966342926,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.512641966342926,
+              "attack_max": 0.512641966342926
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8050567865371704,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8050567865371704,
+              "attack_max": 0.8050567865371704
+            }
+          }
+        },
+        {
+          "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.0075508528389036655,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.0075508528389036655,
+              "attack_max": 0.0075508528389036655
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732468667207286,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732468667207286,
+              "attack_max": 0.5732468667207286
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5126667618751526,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.5126667618751526,
+              "attack_max": 0.5126667618751526
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.805066704750061,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.805066704750061,
+              "attack_max": 0.805066704750061
+            }
+          }
+        },
+        {
+          "pcap": "live_slow_loris_none.pcap",
+          "class": "T1499_slowloris",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.008487658575177193,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008487658575177193,
+              "attack_max": 0.008487658575177193
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5736496931873262,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5736496931873262,
+              "attack_max": 0.5736496931873262
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7086970806121826,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7086970806121826,
+              "attack_max": 0.7086970806121826
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.883478832244873,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.883478832244873,
+              "attack_max": 0.883478832244873
+            }
+          }
+        },
+        {
+          "pcap": "live_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007448538672178984,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007448538672178984,
+              "attack_max": 0.007448538672178984
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732028716290369,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732028716290369,
+              "attack_max": 0.5732028716290369
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.4006780683994293,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.4006780683994293,
+              "attack_max": 0.4006780683994293
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7602712273597717,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7602712273597717,
+              "attack_max": 0.7602712273597717
+            }
+          }
+        },
+        {
+          "pcap": "r10_a1_T1021_remote_services_none.pcap",
+          "class": "T1021_remote_services",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007534611504524946,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007534611504524946,
+              "attack_max": 0.007534611504524946
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732398829469457,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732398829469457,
+              "attack_max": 0.5732398829469457
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9453417062759399,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9453417062759399,
+              "attack_max": 0.9453417062759399
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.978136682510376,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.978136682510376,
+              "attack_max": 0.978136682510376
+            }
+          }
+        },
+        {
+          "pcap": "r11_a1_T1210_exploit_remote_none.pcap",
+          "class": "T1210_exploit_remote",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007471879944205284,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007471879944205284,
+              "attack_max": 0.007471879944205284
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732129083760082,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732129083760082,
+              "attack_max": 0.5732129083760082
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5363666415214539,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.5363666415214539,
+              "attack_max": 0.5363666415214539
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8145466566085815,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8145466566085815,
+              "attack_max": 0.8145466566085815
+            }
+          }
+        },
+        {
+          "pcap": "r12_a1_T1135_share_discovery_none.pcap",
+          "class": "T1135_share_discovery",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007993407547473907,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007993407547473907,
+              "attack_max": 0.007993407547473907
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5734371652454138,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5734371652454138,
+              "attack_max": 0.5734371652454138
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.23251457512378693,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.23251457512378693,
+              "attack_max": 0.23251457512378693
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6930058300495148,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6930058300495148,
+              "attack_max": 0.6930058300495148
+            }
+          }
+        },
+        {
+          "pcap": "r13_a1_T1049_connections_discovery_none.pcap",
+          "class": "T1049_connections_discovery",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.008096104487776756,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008096104487776756,
+              "attack_max": 0.008096104487776756
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.008096104487776756,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008096104487776756,
+              "attack_max": 0.008096104487776756
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7105132937431335,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7105132937431335,
+              "attack_max": 0.7105132937431335
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8842053174972534,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8842053174972534,
+              "attack_max": 0.8842053174972534
+            }
+          }
+        },
+        {
+          "pcap": "r14_a1_T1071_http_beacon_none.pcap",
+          "class": "T1071_http_beacon",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007468839641660452,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007468839641660452,
+              "attack_max": 0.007468839641660452
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573211601045914,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.573211601045914,
+              "attack_max": 0.573211601045914
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.30359843373298645,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.30359843373298645,
+              "attack_max": 0.30359843373298645
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7214393734931945,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7214393734931945,
+              "attack_max": 0.7214393734931945
+            }
+          }
+        },
+        {
+          "pcap": "r15_a1_T1071_dns_tunnel_none.pcap",
+          "class": "T1071_dns_tunnel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.008771004155278206,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007419612206932571,
+              "attack_max": 0.008771004155278206
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.5,
+            "precision": 1.0,
+            "recall": 0.3333333333333333,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5737715317867695,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.43420507322513946,
+              "attack_max": 0.5737715317867695
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7190737724304199,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.5720795840024948,
+              "attack_max": 0.7190737724304199
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.887629508972168,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8288318336009979,
+              "attack_max": 0.887629508972168
+            }
+          }
+        },
+        {
+          "pcap": "r16_a1_T1571_non_standard_port_none.pcap",
+          "class": "T1571_non_standard_port",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007711214944720268,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007711214944720268,
+              "attack_max": 0.007711214944720268
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5733158224262297,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5733158224262297,
+              "attack_max": 0.5733158224262297
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6602903604507446,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6602903604507446,
+              "attack_max": 0.6602903604507446
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8641161441802978,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8641161441802978,
+              "attack_max": 0.8641161441802978
+            }
+          }
+        },
+        {
+          "pcap": "r17_a1_T1572_protocol_tunnel_none.pcap",
+          "class": "T1572_protocol_tunnel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007469345349818468,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007469345349818468,
+              "attack_max": 0.007469345349818468
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732118185004219,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732118185004219,
+              "attack_max": 0.5732118185004219
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.2989722788333893,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.2989722788333893,
+              "attack_max": 0.2989722788333893
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7195889115333557,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7195889115333557,
+              "attack_max": 0.7195889115333557
+            }
+          }
+        },
+        {
+          "pcap": "r18_a1_T1573_encrypted_channel_none.pcap",
+          "class": "T1573_encrypted_channel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007493798155337572,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007493798155337572,
+              "attack_max": 0.007493798155337572
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573222333206795,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.573222333206795,
+              "attack_max": 0.573222333206795
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6912246942520142,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6912246942520142,
+              "attack_max": 0.6912246942520142
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8764898777008057,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8764898777008057,
+              "attack_max": 0.8764898777008057
+            }
+          }
+        },
+        {
+          "pcap": "r19_a1_T1095_non_app_protocol_none.pcap",
+          "class": "T1095_non_app_protocol",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.009085016325116158,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.00746862767264247,
+              "attack_max": 0.009085016325116158
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.7499999999999999,
+            "precision": 1.0,
+            "recall": 0.6,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5739065570197999,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.4851685926256081,
+              "attack_max": 0.5739065570197999
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.40395626425743103,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.298986092209816,
+              "attack_max": 0.40395626425743103
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7615825057029724,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7195944368839264,
+              "attack_max": 0.7615825057029724
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007577987387776375,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007577987387776375,
+              "attack_max": 0.007577987387776375
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732585345767438,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732585345767438,
+              "attack_max": 0.5732585345767438
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.4281415641307831,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.4281415641307831,
+              "attack_max": 0.4281415641307831
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7712566256523132,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7712566256523132,
+              "attack_max": 0.7712566256523132
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_T1046_service_scan_none.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007509912829846144,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007509912829846144,
+              "attack_max": 0.007509912829846144
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732292625168338,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732292625168338,
+              "attack_max": 0.5732292625168338
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5941876173019409,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.5941876173019409,
+              "attack_max": 0.5941876173019409
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8376750469207763,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8376750469207763,
+              "attack_max": 0.8376750469207763
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007529927417635918,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007529927417635918,
+              "attack_max": 0.007529927417635918
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732378687895834,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732378687895834,
+              "attack_max": 0.5732378687895834
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.3464996814727783,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.3464996814727783,
+              "attack_max": 0.3464996814727783
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7385998725891113,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7385998725891113,
+              "attack_max": 0.7385998725891113
+            }
+          }
+        },
+        {
+          "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007458990905433893,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007458073319867253,
+              "attack_max": 0.007458990905433893
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732073660893365,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5384679719782435,
+              "attack_max": 0.5732073660893365
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.4364173710346222,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.42759330570697784,
+              "attack_max": 0.4364173710346222
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7745669484138489,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7710373222827911,
+              "attack_max": 0.7745669484138489
+            }
+          }
+        }
+      ],
+      "lab_summary": {
+        "ary5_base": {
+          "n": 20,
+          "mean_f1": 0.0,
+          "detection_rate": 0.0,
+          "mean_attack_max_p": 0.00833843513391912,
+          "mean_warmup_mean_p": 0.008196641411632297
+        },
+        "ary5_ramx": {
+          "n": 20,
+          "mean_f1": 0.8782894736842106,
+          "detection_rate": 0.95,
+          "mean_attack_max_p": 0.5450672472848093,
+          "mean_warmup_mean_p": 0.008196641411632297
+        },
+        "shaun_v2": {
+          "n": 20,
+          "mean_f1": 0.6,
+          "detection_rate": 0.6,
+          "mean_attack_max_p": 0.5575684525072575,
+          "mean_warmup_mean_p": 0.15602799504995346
+        },
+        "shaun_v2_ramx": {
+          "n": 20,
+          "mean_f1": 1.0,
+          "detection_rate": 1.0,
+          "mean_attack_max_p": 0.823027381002903,
+          "mean_warmup_mean_p": 0.15602799504995346
+        }
+      },
+      "ramx_delta": {
+        "shaun": {
+          "f1": 0.4,
+          "detection_rate": 0.4,
+          "attack_max_p": 0.26545892849564545
+        },
+        "ary5": {
+          "f1": 0.8782894736842106,
+          "detection_rate": 0.95,
+          "attack_max_p": 0.5367288121508902
+        }
+      }
+    },
+    {
+      "id": "enterprise",
+      "scale_factor": 50.0,
+      "replicate": 10,
+      "note": "High-volume enterprise (~5k flows/window)",
+      "n_pcaps": 20,
+      "lab_rows": [
+        {
+          "pcap": "live_http_flood_none.pcap",
+          "class": "T1499_http_flood",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.00747290626168251,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.00747290626168251,
+              "attack_max": 0.00747290626168251
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732133496925235,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732133496925235,
+              "attack_max": 0.5732133496925235
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7901653051376343,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7901653051376343,
+              "attack_max": 0.7901653051376343
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9160661220550537,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9160661220550537,
+              "attack_max": 0.9160661220550537
+            }
+          }
+        },
+        {
+          "pcap": "live_http_flood_random_timing.pcap",
+          "class": "T1499_http_flood",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.023305149748921394,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008964692680713008,
+              "attack_max": 0.023305149748921394
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.38095238095238093,
+            "precision": 1.0,
+            "recall": 0.23529411764705882,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573213863694109,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.4200903757143875,
+              "attack_max": 0.573213863694109
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9648026823997498,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9240544438362122,
+              "attack_max": 0.9648026823997498
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9859210729599,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9696217775344849,
+              "attack_max": 0.9859210729599
+            }
+          }
+        },
+        {
+          "pcap": "live_port_scan_sequential_none.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007509706541895866,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007509706541895866,
+              "attack_max": 0.007509706541895866
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732291738130152,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732291738130152,
+              "attack_max": 0.5732291738130152
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.612097978591919,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.612097978591919,
+              "attack_max": 0.612097978591919
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8448391914367676,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8448391914367676,
+              "attack_max": 0.8448391914367676
+            }
+          }
+        },
+        {
+          "pcap": "live_port_scan_sequential_randomize_port_order.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.0075273048132658005,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.0075273048132658005,
+              "attack_max": 0.0075273048132658005
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732367410697042,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732367410697042,
+              "attack_max": 0.5732367410697042
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.6120237708091736,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6120237708091736,
+              "attack_max": 0.6120237708091736
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8448095083236694,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8448095083236694,
+              "attack_max": 0.8448095083236694
+            }
+          }
+        },
+        {
+          "pcap": "live_slow_loris_none.pcap",
+          "class": "T1499_slowloris",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.008427963592112064,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.008427963592112064,
+              "attack_max": 0.008427963592112064
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5736240243446081,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5736240243446081,
+              "attack_max": 0.5736240243446081
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7180199027061462,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7180199027061462,
+              "attack_max": 0.7180199027061462
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8872079610824585,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8872079610824585,
+              "attack_max": 0.8872079610824585
+            }
+          }
+        },
+        {
+          "pcap": "live_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007475562393665314,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007475562393665314,
+              "attack_max": 0.007475562393665314
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732144918292761,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732144918292761,
+              "attack_max": 0.5732144918292761
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.41609740257263184,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.41609740257263184,
+              "attack_max": 0.41609740257263184
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7664389610290527,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7664389610290527,
+              "attack_max": 0.7664389610290527
+            }
+          }
+        },
+        {
+          "pcap": "r10_a1_T1021_remote_services_none.pcap",
+          "class": "T1021_remote_services",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.0074957069009542465,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.0074957069009542465,
+              "attack_max": 0.0074957069009542465
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732231539674103,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732231539674103,
+              "attack_max": 0.5732231539674103
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9705266356468201,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9705266356468201,
+              "attack_max": 0.9705266356468201
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.988210654258728,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.988210654258728,
+              "attack_max": 0.988210654258728
+            }
+          }
+        },
+        {
+          "pcap": "r11_a1_T1210_exploit_remote_none.pcap",
+          "class": "T1210_exploit_remote",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007469556760042906,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007469556760042906,
+              "attack_max": 0.007469556760042906
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732119094068184,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732119094068184,
+              "attack_max": 0.5732119094068184
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5844826102256775,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.5844826102256775,
+              "attack_max": 0.5844826102256775
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.833793044090271,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.833793044090271,
+              "attack_max": 0.833793044090271
+            }
+          }
+        },
+        {
+          "pcap": "r12_a1_T1135_share_discovery_none.pcap",
+          "class": "T1135_share_discovery",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007992144674062729,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007992144674062729,
+              "attack_max": 0.007992144674062729
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5734366222098469,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5734366222098469,
+              "attack_max": 0.5734366222098469
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.3722185790538788,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.3722185790538788,
+              "attack_max": 0.3722185790538788
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7488874316215515,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7488874316215515,
+              "attack_max": 0.7488874316215515
+            }
+          }
+        },
+        {
+          "pcap": "r13_a1_T1049_connections_discovery_none.pcap",
+          "class": "T1049_connections_discovery",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007782759610563517,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007782759610563517,
+              "attack_max": 0.007782759610563517
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5733465866325422,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5733465866325422,
+              "attack_max": 0.5733465866325422
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7886983156204224,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7886983156204224,
+              "attack_max": 0.7886983156204224
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.915479326248169,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.915479326248169,
+              "attack_max": 0.915479326248169
+            }
+          }
+        },
+        {
+          "pcap": "r14_a1_T1071_http_beacon_none.pcap",
+          "class": "T1071_http_beacon",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.0074686454609036446,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.0074686454609036446,
+              "attack_max": 0.0074686454609036446
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732115175481886,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732115175481886,
+              "attack_max": 0.5732115175481886
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.3148561120033264,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.3148561120033264,
+              "attack_max": 0.3148561120033264
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7259424448013305,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7259424448013305,
+              "attack_max": 0.7259424448013305
+            }
+          }
+        },
+        {
+          "pcap": "r15_a1_T1071_dns_tunnel_none.pcap",
+          "class": "T1071_dns_tunnel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007913694716989994,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007288080329696338,
+              "attack_max": 0.007913694716989994
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.5,
+            "precision": 1.0,
+            "recall": 0.3333333333333333,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5734028887283057,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.4341454056769402,
+              "attack_max": 0.5734028887283057
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8014799952507019,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.6455705761909485,
+              "attack_max": 0.8014799952507019
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9205919981002808,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8582282304763793,
+              "attack_max": 0.9205919981002808
+            }
+          }
+        },
+        {
+          "pcap": "r16_a1_T1571_non_standard_port_none.pcap",
+          "class": "T1571_non_standard_port",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007560127414762974,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007560127414762974,
+              "attack_max": 0.007560127414762974
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573250854788348,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.573250854788348,
+              "attack_max": 0.573250854788348
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7526770234107971,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7526770234107971,
+              "attack_max": 0.7526770234107971
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9010708093643188,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9010708093643188,
+              "attack_max": 0.9010708093643188
+            }
+          }
+        },
+        {
+          "pcap": "r17_a1_T1572_protocol_tunnel_none.pcap",
+          "class": "T1572_protocol_tunnel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007468849886208773,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007468849886208773,
+              "attack_max": 0.007468849886208773
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732116054510698,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732116054510698,
+              "attack_max": 0.5732116054510698
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.3105592429637909,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.3105592429637909,
+              "attack_max": 0.3105592429637909
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7242236971855164,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7242236971855164,
+              "attack_max": 0.7242236971855164
+            }
+          }
+        },
+        {
+          "pcap": "r18_a1_T1573_encrypted_channel_none.pcap",
+          "class": "T1573_encrypted_channel",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.00749132689088583,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.00749132689088583,
+              "attack_max": 0.00749132689088583
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732212705630808,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732212705630808,
+              "attack_max": 0.5732212705630808
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7592264413833618,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7592264413833618,
+              "attack_max": 0.7592264413833618
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.9036905765533447,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.9036905765533447,
+              "attack_max": 0.9036905765533447
+            }
+          }
+        },
+        {
+          "pcap": "r19_a1_T1095_non_app_protocol_none.pcap",
+          "class": "T1095_non_app_protocol",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.009016443975269794,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007470703031867742,
+              "attack_max": 0.009016443975269794
+            }
+          },
+          "ary5_ramx": {
+            "f1": 0.7499999999999999,
+            "precision": 1.0,
+            "recall": 0.6,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.573877070909366,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.48517246309015893,
+              "attack_max": 0.573877070909366
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.43189215660095215,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.31726937741041183,
+              "attack_max": 0.43189215660095215
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7727568626403809,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7269077509641648,
+              "attack_max": 0.7727568626403809
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.0075773810967803,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.0075773810967803,
+              "attack_max": 0.0075773810967803
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732582738716154,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732582738716154,
+              "attack_max": 0.5732582738716154
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.4464586675167084,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.4464586675167084,
+              "attack_max": 0.4464586675167084
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7785834670066833,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7785834670066833,
+              "attack_max": 0.7785834670066833
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_T1046_service_scan_none.pcap",
+          "class": "T1046_service_scan",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007504235487431288,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007504235487431288,
+              "attack_max": 0.007504235487431288
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732268212595955,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732268212595955,
+              "attack_max": 0.5732268212595955
+            }
+          },
+          "shaun_v2": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.669023871421814,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.669023871421814,
+              "attack_max": 0.669023871421814
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.8676095485687256,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.8676095485687256,
+              "attack_max": 0.8676095485687256
+            }
+          }
+        },
+        {
+          "pcap": "r1_a1_T1110_ssh_bruteforce_none.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007525196298956871,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007525196298956871,
+              "attack_max": 0.007525196298956871
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732358344085514,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5732358344085514,
+              "attack_max": 0.5732358344085514
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.36261358857154846,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.36261358857154846,
+              "attack_max": 0.36261358857154846
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7450454354286193,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7450454354286193,
+              "attack_max": 0.7450454354286193
+            }
+          }
+        },
+        {
+          "pcap": "r1_a2_ssh_bruteforce_random_timing.pcap",
+          "class": "T1110_ssh_bruteforce",
+          "attack_start_5s": 20,
+          "attack_start_shaun_15s": 20,
+          "ary5_base": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.007476571016013622,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.007466425653547049,
+              "attack_max": 0.007476571016013622
+            }
+          },
+          "ary5_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.5732149255368858,
+            "raw_summary": {
+              "warmup_mean": 0.008196641411632299,
+              "attack_mean": 0.5384715328412131,
+              "attack_max": 0.5732149255368858
+            }
+          },
+          "shaun_v2": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "ttd": null,
+            "detected": false,
+            "harm": 0,
+            "max_p_attack": 0.4588243067264557,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.44950298964977264,
+              "attack_max": 0.4588243067264557
+            }
+          },
+          "shaun_v2_ramx": {
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "ttd": 0,
+            "detected": true,
+            "harm": 0,
+            "max_p_attack": 0.7835297226905823,
+            "raw_summary": {
+              "warmup_mean": 0.15602799504995346,
+              "attack_mean": 0.7798011958599091,
+              "attack_max": 0.7835297226905823
+            }
+          }
+        }
+      ],
+      "lab_summary": {
+        "ary5_base": {
+          "n": 20,
+          "mean_f1": 0.0,
+          "detection_rate": 0.0,
+          "mean_attack_max_p": 0.008473061677068471,
+          "mean_warmup_mean_p": 0.008196641411632297
+        },
+        "ary5_ramx": {
+          "n": 20,
+          "mean_f1": 0.931547619047619,
+          "detection_rate": 1.0,
+          "mean_attack_max_p": 0.5733030489862431,
+          "mean_warmup_mean_p": 0.008196641411632297
+        },
+        "shaun_v2": {
+          "n": 20,
+          "mean_f1": 0.6,
+          "detection_rate": 0.6,
+          "mean_attack_max_p": 0.6068372294306755,
+          "mean_warmup_mean_p": 0.15602799504995346
+        },
+        "shaun_v2_ramx": {
+          "n": 20,
+          "mean_f1": 1.0,
+          "detection_rate": 1.0,
+          "mean_attack_max_p": 0.8427348917722701,
+          "mean_warmup_mean_p": 0.15602799504995346
+        }
+      },
+      "ramx_delta": {
+        "shaun": {
+          "f1": 0.4,
+          "detection_rate": 0.4,
+          "attack_max_p": 0.2358976623415946
+        },
+        "ary5": {
+          "f1": 0.931547619047619,
+          "detection_rate": 1.0,
+          "attack_max_p": 0.5648299873091746
+        }
+      }
+    }
+  ],
+  "cic_native": {
+    "source": "shaun_processed_holdout_attack_windows",
+    "n_attack_windows": 200,
+    "flows_per_window_med": 450.0,
+    "shaun_base": {
+      "n": 200,
+      "mean_f1": 1.0,
+      "detection_rate": 1.0,
+      "mean_attack_max_p": 0.9103747031092644,
+      "mean_warmup_mean_p": 0.15602799504995346
+    },
+    "shaun_ramx": {
+      "n": 200,
+      "mean_f1": 1.0,
+      "detection_rate": 1.0,
+      "mean_attack_max_p": 0.9641498812437058,
+      "mean_warmup_mean_p": 0.15602799504995346
+    },
+    "ramx_delta": {
+      "f1": 0.0,
+      "detection_rate": 0.0,
+      "attack_max_p": 0.05377517813444144
+    }
+  }
+}
