@@ -206,6 +206,18 @@ def internet_step(worker_id: int) -> None:
         ssh_banner()
 
 
+def demo_step(worker_id: int) -> None:
+    """Lightweight browsing for the dual-IPS demo (~1000 identities, no mass register)."""
+    uid = 1000 + (worker_id % 1000)
+    paths = ["/", "/", "/search", "/api/health", "/login", "/register"]
+    http_request("GET", random.choice(paths), headers={"X-Demo-User": f"user{uid}"})
+    if random.random() < 0.45:
+        q = random.choice(SEARCH_TERMS)
+        http_request("GET", f"/search?q={urllib.parse.quote(q)}")
+    if random.random() < 0.2:
+        http_burst(["/", random.choice(STATIC_PATHS), "/api/health"])
+
+
 def worker_loop(worker_id: int) -> None:
     profile = PROFILE
     if profile == "internet":
@@ -218,6 +230,8 @@ def worker_loop(worker_id: int) -> None:
         step_fn = api_poll
     elif profile == "crawler":
         step_fn = crawler_step
+    elif profile == "demo":
+        step_fn = lambda: demo_step(worker_id)  # noqa: E731
     else:
         step_fn = default_step
 
@@ -232,8 +246,10 @@ def main() -> None:
         flush=True,
     )
     threads = [threading.Thread(target=worker_loop, args=(i,), daemon=True) for i in range(WORKERS)]
-    for t in threads:
+    for i, t in enumerate(threads):
         t.start()
+        if i % 50 == 49:
+            time.sleep(0.05)
     for t in threads:
         t.join()
 

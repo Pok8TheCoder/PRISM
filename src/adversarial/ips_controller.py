@@ -10,7 +10,7 @@ from __future__ import annotations
 import subprocess
 from dataclasses import dataclass
 
-from src.adversarial.lab_config import TARGET_CONTAINER
+from src.adversarial.lab_config import REDTEAM_CONTAINER, TARGET_CONTAINER
 
 
 @dataclass
@@ -81,6 +81,55 @@ def block_ip(
     if r.returncode != 0:
         return BlockResult(False, source_ip, r.stderr.strip() or "iptables failed")
     return BlockResult(True, source_ip, "blocked")
+
+
+def get_bridge_gateway(target_container: str = TARGET_CONTAINER) -> str:
+    """IPv4 default gateway inside the target — host-published traffic sources from here."""
+    r = subprocess.run(
+        ["docker", "exec", target_container, "ip", "route", "show", "default"],
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    if r.returncode != 0:
+        return ""
+    parts = (r.stdout or "").split()
+    if "via" in parts:
+        i = parts.index("via")
+        if i + 1 < len(parts):
+            return parts[i + 1].strip()
+    return ""
+
+
+def block_demo_attackers(
+    extra_ips: list[str] | None = None,
+    *,
+    include_redteam: bool = True,
+    include_host_gateway: bool = True,
+    target_container: str = TARGET_CONTAINER,
+) -> list[BlockResult]:
+    """Block red-team container and/or host-browser NAT IP. Benign clients stay up."""
+    results: list[BlockResult] = []
+    ips: list[str] = []
+    if include_redteam:
+        try:
+            ips.append(get_container_ip(REDTEAM_CONTAINER))
+        except RuntimeError as exc:
+            results.append(BlockResult(False, "", str(exc)))
+    if include_host_gateway:
+        gw = get_bridge_gateway(target_container)
+        if gw:
+            ips.append(gw)
+    for ip in extra_ips or []:
+        if ip:
+            ips.append(ip)
+    seen: set[str] = set()
+    for ip in ips:
+        if ip in seen:
+            continue
+        seen.add(ip)
+        results.append(block_ip(ip, target_container=target_container))
+    return results
 
 
 def block_container(

@@ -19,7 +19,8 @@ if [ -f /etc/vsftpd.conf ]; then
 fi
 
 cd /app/webapp
-gunicorn --bind 0.0.0.0:80 --workers 2 --access-logfile - --error-logfile - app:app &
+WORKERS="${GUNICORN_WORKERS:-2}"
+gunicorn --bind 0.0.0.0:80 --workers "$WORKERS" --access-logfile - --error-logfile - app:app &
 
 echo "PRISM target-server ready (SSH:22, HTTP:80 -> Flask lab webapp)"
 exec tail -f /dev/null

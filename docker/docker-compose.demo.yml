@@ -1,0 +1,101 @@
+# Dual-IPS demo overlay: publish the lab site to the host and simulate ~1000 users.
+#
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.demo.yml -p prism up -d --build
+#
+# Target: http://127.0.0.1:8080
+# Network is no longer internal so the host browser can reach the site.
+
+networks:
+  prism-lab:
+    driver: bridge
+    internal: false
+
+services:
+  target-server:
+    ports:
+      - "127.0.0.1:8080:80"
+    environment:
+      GUNICORN_WORKERS: "${GUNICORN_WORKERS:-4}"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+
+  benign-client:
+    environment:
+      TARGET_HOST: target-server
+      BENIGN_PROFILE: demo
+      BENIGN_WORKERS: "250"
+      BENIGN_INTERVAL: "10"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  benign-users-b:
+    build:
+      context: ./benign
+    container_name: benign-users-b
+    hostname: benign-users-b
+    networks:
+      - prism-lab
+    environment:
+      TARGET_HOST: target-server
+      BENIGN_PROFILE: demo
+      BENIGN_WORKERS: "250"
+      BENIGN_INTERVAL: "10.5"
+    depends_on:
+      target-server:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    restart: unless-stopped
+
+  benign-users-c:
+    build:
+      context: ./benign
+    container_name: benign-users-c
+    hostname: benign-users-c
+    networks:
+      - prism-lab
+    environment:
+      TARGET_HOST: target-server
+      BENIGN_PROFILE: api
+      BENIGN_WORKERS: "250"
+      BENIGN_INTERVAL: "9.5"
+    depends_on:
+      target-server:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 384M
+    restart: unless-stopped
+
+  benign-users-d:
+    build:
+      context: ./benign
+    container_name: benign-users-d
+    hostname: benign-users-d
+    networks:
+      - prism-lab
+    environment:
+      TARGET_HOST: target-server
+      BENIGN_PROFILE: crawler
+      BENIGN_WORKERS: "250"
+      BENIGN_INTERVAL: "11"
+    depends_on:
+      target-server:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 384M
+    restart: unless-stopped

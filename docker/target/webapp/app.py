@@ -78,7 +78,15 @@ def current_user():
 
 
 PAGE_TEMPLATE = """<!doctype html>
-<html><head><title>{title}</title></head>
+<html><head><title>{title}</title>
+<style>
+  body {{ font-family: Segoe UI, sans-serif; background: #f4f6f8; color: #1b1f24;
+         max-width: 720px; margin: 32px auto; padding: 0 16px; }}
+  a {{ color: #0969da; }}
+  input, textarea, button {{ font-size: 16px; margin: 6px 0; padding: 6px 8px; }}
+  h1 {{ font-size: 28px; }}
+</style>
+</head>
 <body>
 {body}
 </body></html>"""
