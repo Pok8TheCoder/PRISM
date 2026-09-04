@@ -27,14 +27,21 @@ class WarmupBaselineCalibrator:
         self.calibrated = False
 
     def update(self, state_vector: np.ndarray) -> None:
-        if self.calibrated:
+        x = np.asarray(state_vector, dtype=np.float64).reshape(-1)
+        if not self.calibrated:
+            self.warmup_buffer.append(x.copy())
+            if len(self.warmup_buffer) >= self.warmup_steps:
+                buf = np.stack(self.warmup_buffer, axis=0)
+                self.baseline_mean = np.mean(buf, axis=0)
+                self.baseline_std = np.std(buf, axis=0) + self.epsilon
+                self.calibrated = True
             return
-        self.warmup_buffer.append(state_vector.copy())
-        if len(self.warmup_buffer) >= self.warmup_steps:
-            buf = np.stack(self.warmup_buffer, axis=0)
-            self.baseline_mean = np.mean(buf, axis=0)
-            self.baseline_std = np.std(buf, axis=0) + self.epsilon
-            self.calibrated = True
+        # Slow EMA so benign drift does not look like a kill chain.
+        a = 0.06
+        self.baseline_mean = (1.0 - a) * self.baseline_mean + a * x
+        resid = np.abs(x - self.baseline_mean)
+        self.baseline_std = (1.0 - a) * self.baseline_std + a * resid
+        self.baseline_std = np.maximum(self.baseline_std, self.epsilon)
 
     def get_relative_anomaly_score(self, current_state: np.ndarray) -> float:
         if not self.calibrated or self.baseline_mean is None or self.baseline_std is None:
@@ -42,7 +49,7 @@ class WarmupBaselineCalibrator:
         z_scores = np.abs((current_state - self.baseline_mean) / self.baseline_std)
         top_k = max(5, int(0.05 * len(current_state)))
         mean_top_z = float(np.mean(np.sort(z_scores)[-top_k:]))
-        anomaly_prob = float(1.0 / (1.0 + np.exp(-0.8 * (mean_top_z - 4.5))))
+        anomaly_prob = float(1.0 / (1.0 + np.exp(-1.05 * (mean_top_z - 3.2))))
         return float(np.clip(anomaly_prob, 0.0, 1.0))
 
 
@@ -68,6 +75,69 @@ class RawScoreCalibrator:
         if not self.ready:
             return raw_p
         return float(np.clip(raw_p - self.offset, 0.0, 1.0))
+
+    def is_saturated(self) -> bool:
+        if len(self.scores) < 8:
+            return False
+        return float(np.std(self.scores[-min(self.window, len(self.scores)) :])) < 0.02
+
+
+class ClassPriorTracker:
+    """Total-variation shift vs the warmup class histogram.
+
+    HX-C's binary attack head is often saturated (~1.0 on everything). The
+    33-way catalog still moves when traffic becomes a scan/flood, so TV
+    distance from the warmup prior is a usable live detector.
+    """
+
+    def __init__(self) -> None:
+        self._sum: np.ndarray | None = None
+        self._n = 0
+        self.prior: np.ndarray | None = None
+        self.frozen = False
+        self.warmup_shifts: list[float] = []
+        self.shift_offset: float = 0.0
+
+    def reset(self) -> None:
+        self._sum = None
+        self._n = 0
+        self.prior = None
+        self.frozen = False
+        self.warmup_shifts = []
+        self.shift_offset = 0.0
+
+    def observe_warmup(self, class_p: np.ndarray) -> None:
+        if self.frozen:
+            return
+        if self.prior is not None:
+            self.warmup_shifts.append(self.shift(class_p))
+        p = np.asarray(class_p, dtype=np.float64).reshape(-1)
+        if self._sum is None:
+            self._sum = np.zeros_like(p)
+        if self._sum.shape != p.shape:
+            return
+        self._sum += p
+        self._n += 1
+        self.prior = self._sum / max(self._n, 1)
+
+    def freeze(self) -> None:
+        if self._n and self._sum is not None:
+            self.prior = self._sum / self._n
+        if self.warmup_shifts:
+            self.shift_offset = float(np.median(self.warmup_shifts))
+        self.frozen = True
+
+    def shift_adjusted(self, class_p: np.ndarray) -> float:
+        return float(np.clip(self.shift(class_p) - self.shift_offset, 0.0, 1.0))
+
+    def shift(self, class_p: np.ndarray) -> float:
+        if self.prior is None:
+            return 0.0
+        p = np.asarray(class_p, dtype=np.float64).reshape(-1)
+        if p.shape != self.prior.shape:
+            return 0.0
+        tv = 0.5 * float(np.abs(p - self.prior).sum())
+        return float(np.clip(tv, 0.0, 1.0))
 
 
 class EpisodicMemoryBank:
@@ -107,7 +177,7 @@ class RAMXHXPredictor:
         context_skip_steps: int = 0,
         alert_cap_during_gate: float = 0.49,
         raw_calibrator_window: int = 20,
-        cooldown_steps: int = 5,
+        cooldown_steps: int = 0,
         memory_write_thresh: float = 0.85,
         memory_boost: float = 0.65,
         memory_dist: float = 15.0,
@@ -123,6 +193,7 @@ class RAMXHXPredictor:
         self.confirm_min = confirm_min
         self.calibrator = WarmupBaselineCalibrator(warmup_steps=warmup_steps)
         self.raw_calibrator = RawScoreCalibrator(window=raw_calibrator_window)
+        self.prior = ClassPriorTracker()
         self.memory_bank = EpisodicMemoryBank()
         self.step_count = 0
         self.live_step_count = 0
@@ -133,6 +204,7 @@ class RAMXHXPredictor:
     def reset_stream(self) -> None:
         self.calibrator.reset()
         self.raw_calibrator.reset()
+        self.prior.reset()
         self.step_count = 0
         self.live_step_count = 0
         self.in_live_phase = False
@@ -144,10 +216,12 @@ class RAMXHXPredictor:
         self.live_step_count = 0
         self.calibrator.reset()
         self.raw_calibrator.reset()
+        self.prior.reset()
         self.cooldown_left = 0
 
     def set_context_skip(self, steps: int) -> None:
         self.context_skip_steps = int(steps)
+        self.prior.freeze()
 
     def fuse(
         self,
@@ -156,15 +230,25 @@ class RAMXHXPredictor:
         relative_anomaly: float,
         in_context_gate: bool,
         in_cooldown: bool,
+        class_shift: float = 0.0,
     ) -> tuple[float, bool]:
         """Returns (fused_p, alert_suppressed) before confirm/memory."""
-        if in_context_gate or in_cooldown:
-            fused = min(raw_p, self.alert_cap_during_gate)
-            return fused, raw_p >= 0.5
-        if self.calibrator.calibrated:
-            fused = float(max(raw_p, 0.4 * raw_p + 0.6 * relative_anomaly))
+        shift = float(class_shift)
+        not_ready = not self.raw_calibrator.ready
+        if in_context_gate or not_ready:
+            fused = min(max(relative_anomaly, shift), self.alert_cap_during_gate)
+            return fused, True
+        if in_cooldown:
+            fused = min(max(raw_p, relative_anomaly, shift), self.alert_cap_during_gate)
+            return fused, True
+        if self.raw_calibrator.is_saturated():
+            fused = float(max(relative_anomaly, shift, 0.35 * relative_anomaly + 0.65 * shift))
+        elif self.calibrator.calibrated:
+            fused = float(
+                max(raw_p, 0.30 * raw_p + 0.40 * relative_anomaly + 0.30 * shift)
+            )
         else:
-            fused = float(raw_p)
+            fused = float(max(raw_p, shift))
         return float(np.clip(fused, 0.0, 1.0)), False
 
     def maybe_memory(
@@ -189,8 +273,7 @@ class RAMXHXPredictor:
         return fused
 
     def after_alert(self, confirmed: bool, fused: float) -> None:
+        if self.cooldown_steps <= 0:
+            return
         if confirmed and fused >= 0.5:
             self.cooldown_left = self.cooldown_steps
-            # Refresh baseline after the episode so cooldown FPs die.
-            self.calibrator.reset()
-            self.raw_calibrator.reset()

@@ -221,6 +221,7 @@ class StreamingHX:
             relative_anomaly=rel,
             in_context_gate=in_gate,
             in_cooldown=in_cd,
+            class_shift=0.0,
         )
 
         confirm_p = self._confirm_p()

@@ -1,0 +1,38 @@
+# Forecast demo: Harborline target (stepwise steal) published on the host.
+#
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.forecast.yml -p prism up -d --build
+#
+# Site: http://127.0.0.1:8080
+# Labs: python scripts/demo_forecast.py --no-up
+
+networks:
+  prism-lab:
+    driver: bridge
+    internal: false
+
+services:
+  target-server:
+    build:
+      context: ./target_corp
+    ports:
+      - "127.0.0.1:8080:80"
+    environment:
+      GUNICORN_WORKERS: "${GUNICORN_WORKERS:-4}"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+
+  benign-client:
+    environment:
+      TARGET_HOST: target-server
+      BENIGN_PROFILE: harbor
+      BENIGN_WORKERS: "80"
+      BENIGN_INTERVAL: "6"
+      BENIGN_DNS_NOISE: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 384M

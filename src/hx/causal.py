@@ -183,16 +183,84 @@ class StreamingHXC:
     def begin_live_phase(self) -> None:
         self.ramx.begin_live_phase()
 
-    def _forward(self) -> dict[str, Any]:
+    def _scaled_window(self, buf: list[np.ndarray]) -> np.ndarray:
         m, s = self.mean.reshape(-1), self.std.reshape(-1)
-        seq = ((_padded_raw(self.buf, self.model.lookback) - m) / s).astype(np.float32)
+        return ((_padded_raw(buf, self.model.lookback) - m) / s).astype(np.float32)
+
+    def _infer_buf(self, buf: list[np.ndarray]) -> dict[str, Any]:
+        seq = self._scaled_window(buf)
         x = torch.from_numpy(seq).float().unsqueeze(0).to(self.device)
+        m, s = self.mean.reshape(-1), self.std.reshape(-1)
         with torch.no_grad():
             out = self.model(x)
             class_p = torch.softmax(out["class_logits"], dim=-1)[0].cpu().numpy()
             p_att = float(1.0 - class_p[0])
             hidden = out["hidden"][0].detach().cpu().numpy()
-        return {"p_att": p_att, "class_probs": class_p, "hidden": hidden, "traj": seq}
+            pred_scaled = out["pred_state_mean"][0].detach().cpu().numpy().reshape(-1)
+        pred_raw = (pred_scaled * s + m).astype(np.float32)
+        return {
+            "p_att": p_att,
+            "class_probs": class_p,
+            "hidden": hidden,
+            "traj": seq,
+            "pred_raw": pred_raw,
+        }
+
+    def _forward(self) -> dict[str, Any]:
+        return self._infer_buf(self.buf)
+
+    def _fuse_scores(
+        self,
+        *,
+        raw_p: float,
+        class_p: np.ndarray,
+        state: np.ndarray,
+        gated: bool,
+        imagined: bool = False,
+    ) -> dict[str, float]:
+        rel = 0.0 if imagined else self.ramx.calibrator.get_relative_anomaly_score(state)
+        calibrated_raw = self.ramx.raw_calibrator.adjust(raw_p)
+        in_cd = self.ramx.cooldown_left > 0
+        shift = self.ramx.prior.shift_adjusted(class_p)
+        fused, suppressed = self.ramx.fuse(
+            raw_p=calibrated_raw,
+            relative_anomaly=rel,
+            in_context_gate=gated,
+            in_cooldown=in_cd,
+            class_shift=shift,
+        )
+        return {
+            "fused": float(fused),
+            "rel": float(rel),
+            "calibrated_raw": float(calibrated_raw),
+            "class_shift": float(shift),
+            "suppressed": float(suppressed),
+        }
+
+    def rollout(self, horizon: int = 6) -> dict[str, Any]:
+        """Open-loop K-step forecast on the state head; fuse with frozen RAMX stats."""
+        if not self.buf or horizon <= 0:
+            return {"forecast": [], "forecast_max": 0.0}
+        buf = list(self.buf)
+        future: list[float] = []
+        stages: list[str] = []
+        gated = self.ramx.step_count <= self.ramx.context_skip_steps
+        for _ in range(horizon):
+            inf = self._infer_buf(buf)
+            scores = self._fuse_scores(
+                raw_p=inf["p_att"], class_p=inf["class_probs"], state=inf["pred_raw"], gated=gated, imagined=True,
+            )
+            future.append(scores["fused"])
+            idx = int(np.argmax(inf["class_probs"]))
+            name = self.class_names[idx] if idx < len(self.class_names) else "Benign"
+            stages.append(name)
+            buf.append(inf["pred_raw"])
+        return {
+            "forecast": future,
+            "forecast_max": float(max(future) if future else 0.0),
+            "forecast_mean": float(np.mean(future) if future else 0.0),
+            "forecast_tech": stages,
+        }
 
     def _emit_technique(self, class_p: np.ndarray, confirmed: bool) -> tuple[str | None, float, int]:
         idx = int(np.argmax(class_p))
@@ -211,25 +279,30 @@ class StreamingHXC:
         self.buf.append(raw)
         fwd = self._forward()
         raw_p = fwd["p_att"]
+        class_p = fwd["class_probs"]
 
         self.ramx.step_count += 1
         if self.ramx.in_live_phase:
             self.ramx.live_step_count += 1
         self.ramx.calibrator.update(raw)
+        in_gate = self.ramx.step_count <= self.ramx.context_skip_steps
+        if in_gate:
+            self.ramx.prior.observe_warmup(class_p)
         rel = self.ramx.calibrator.get_relative_anomaly_score(raw)
         calibrated_raw = self.ramx.raw_calibrator.adjust(raw_p)
         self.ramx.raw_calibrator.update(raw_p)
 
-        in_gate = self.ramx.step_count <= self.ramx.context_skip_steps
         in_cd = self.ramx.cooldown_left > 0
         if in_cd:
             self.ramx.cooldown_left -= 1
 
+        shift = 0.0 if in_gate else self.ramx.prior.shift_adjusted(class_p)
         fused, suppressed = self.ramx.fuse(
             raw_p=calibrated_raw,
             relative_anomaly=rel,
             in_context_gate=in_gate,
             in_cooldown=in_cd,
+            class_shift=shift,
         )
         confirmed = (not in_gate) and (not in_cd) and fused >= DETECT_THRESHOLD
         tech, tech_p, stage = self._emit_technique(fwd["class_probs"], confirmed)
@@ -252,6 +325,7 @@ class StreamingHXC:
             "raw_p_att": float(raw_p),
             "calibrated_raw_p_att": float(calibrated_raw),
             "relative_anomaly": float(rel),
+            "class_shift": float(shift),
             "confirm_p": None,
             "confirmed": bool(confirmed and fused >= DETECT_THRESHOLD),
             "suspect": False,

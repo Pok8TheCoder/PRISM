@@ -206,6 +206,19 @@ def internet_step(worker_id: int) -> None:
         ssh_banner()
 
 
+def harbor_step(worker_id: int) -> None:
+    """Public Harborline browsing only — no ticket IDOR, no ops login."""
+    paths = ["/", "/", "/careers", "/status", "/search", "/login", "/robots.txt", "/api/health"]
+    http_request("GET", random.choice(paths), headers={"X-Demo-User": f"staff{worker_id % 200}"})
+    if random.random() < 0.4:
+        q = random.choice(SEARCH_TERMS)
+        http_request("GET", f"/search?q={urllib.parse.quote(q)}")
+    if random.random() < 0.15:
+        http_burst(["/", "/careers", "/api/health"])
+    if DNS_NOISE and random.random() < 0.08:
+        dns_query()
+
+
 def demo_step(worker_id: int) -> None:
     """Lightweight browsing for the dual-IPS demo (~1000 identities, no mass register)."""
     uid = 1000 + (worker_id % 1000)
@@ -232,6 +245,8 @@ def worker_loop(worker_id: int) -> None:
         step_fn = crawler_step
     elif profile == "demo":
         step_fn = lambda: demo_step(worker_id)  # noqa: E731
+    elif profile == "harbor":
+        step_fn = lambda: harbor_step(worker_id)  # noqa: E731
     else:
         step_fn = default_step
 
