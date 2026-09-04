@@ -55,6 +55,8 @@ from src.shaun.streaming import (  # noqa: E402
     load_shaun_bundle,
     pcap_to_shaun_state,
 )
+from src.hx.causal import StreamingHXC, load_hxc_bundle  # noqa: E402
+from src.hx.streaming import StreamingHX, load_hx_bundle  # noqa: E402
 
 LAB_CTL = ROOT / "scripts" / "lab_ctl.py"
 SPLITS_5S = ROOT / "data" / "aryan_splits_5s"
@@ -82,7 +84,11 @@ BACKEND_CONFIG = {
     "ary": {"window_sec": 5.0, "block_id": "ary5_ramx", "tag": "ary5_ramx"},
     "sn2rx": {"window_sec": 15.0, "block_id": "sn2rx", "tag": "sn2rx"},
     "sn2rx3": {"window_sec": 15.0, "block_id": "sn2rx3", "tag": "sn2rx3"},
+    "hx": {"window_sec": 5.0, "block_id": "hx", "tag": "hx"},
+    "hx_c": {"window_sec": 5.0, "block_id": "hx_c", "tag": "hx_c"},
 }
+
+SHAUN_LIKE = ("sn2rx", "sn2rx3", "hx", "hx_c")
 
 
 def load_ary_ckpt(path: Path) -> TemporalTransformerWorldModel:
@@ -119,7 +125,7 @@ def state_from_pcap(
     replicate: int,
     last_state: np.ndarray | None,
 ) -> np.ndarray:
-    if backend in ("sn2rx", "sn2rx3"):
+    if backend in SHAUN_LIKE:
         return pcap_to_shaun_state(
             pcap_path, last_state=last_state, scale_factor=scale_factor, replicate=replicate,
             window_sec=window_sec,
@@ -227,7 +233,7 @@ def capture_one_window(
             pass
     t_end = time.time()
     if state is None:
-        dim = 292 if backend in ("sn2rx", "sn2rx3") else TARGET_DIM
+        dim = 292 if backend in SHAUN_LIKE else TARGET_DIM
         state = last_state.copy() if last_state is not None else np.zeros(dim, dtype=np.float32)
     return state.astype(np.float32), t_start, t_end
 
@@ -443,6 +449,12 @@ def build_systems(
         va_s, va_b, _ = splits["val"]
         _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
         systems[block_id] = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
+    elif backend == "hx":
+        bundle = load_hx_bundle()
+        systems[block_id] = StreamingHX(bundle, context_skip_steps=10_000)
+    elif backend == "hx_c":
+        bundle = load_hxc_bundle()
+        systems[block_id] = StreamingHXC(bundle, context_skip_steps=10_000)
     elif backend == "sn2rx3":
         bundle = load_shaun_bundle(ckpt_path=ckpt)
         systems[block_id] = StreamingShaunRamxV3(bundle, context_skip_steps=10_000)
@@ -504,7 +516,7 @@ def run_experiment(
     all_ids = list(systems.keys())
     atk_window_sec = attack_window_sec if attack_window_sec is not None else window_sec
     block_stages = set(event_block_stages or ["recon"])
-    if backend in ("sn2rx", "sn2rx3") and block_id in systems and hasattr(systems[block_id], "begin_live_phase"):
+    if backend in SHAUN_LIKE and block_id in systems and hasattr(systems[block_id], "begin_live_phase"):
         systems[block_id].begin_live_phase()
 
     trace: list[dict] = []
@@ -603,7 +615,7 @@ def run_experiment(
         window_idx += 1
     print(f"  warmup done: {warmup_windows} windows over {time.time() - warmup_start:.1f}s")
 
-    if backend in ("sn2rx", "sn2rx3") and block_id in systems:
+    if backend in SHAUN_LIKE and block_id in systems:
         systems[block_id].set_context_skip(warmup_windows)
         print(f"  {backend} context gate set to {warmup_windows} warmup windows")
 
@@ -733,7 +745,7 @@ def main() -> int:
                    help="Shaun checkpoint (default w5s if present)")
     args = p.parse_args()
 
-    if args.backend in ("sn2rx", "sn2rx3") and not (ROOT.parent / "PRISM-shaun").exists():
+    if args.backend in SHAUN_LIKE and not (ROOT.parent / "PRISM-shaun").exists():
         print("Missing PRISM-shaun worktree for Shaun backend", file=sys.stderr)
         return 1
     if args.backend == "ary" and not CKPT_V01.exists():
