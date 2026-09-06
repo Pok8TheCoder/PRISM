@@ -97,6 +97,7 @@ UNSWNB15_LABEL_TO_MITRE = {
 # CICIoT2023 Label Mapping
 CICIOT2023_LABEL_TO_MITRE = {
     "Benign": "Benign",
+    "BenignTraffic": "Benign",
     "DDoS-ICMP_Flood": "Impact",
     "DDoS-UDP_Flood": "Impact",
     "DDoS-TCP_Flood": "Impact",
@@ -104,8 +105,12 @@ CICIOT2023_LABEL_TO_MITRE = {
     "DDoS-SYN_Flood": "Impact",
     "DDoS-RSTFINFlood": "Impact",
     "DDoS-SynonymIP-Flood": "Impact",
+    "DDoS-SynonymousIP_Flood": "Impact",
     "DDoS-SlowLoris": "Impact",
     "DDoS-HTTP_Flood": "Impact",
+    "DDoS-ICMP_Fragmentation": "Impact",
+    "DDoS-ACK_Fragmentation": "Impact",
+    "DDoS-UDP_Fragmentation": "Impact",
     "DoS-UDP_Flood": "Impact",
     "DoS-TCP_Flood": "Impact",
     "DoS-SYN_Flood": "Impact",
@@ -122,6 +127,7 @@ CICIOT2023_LABEL_TO_MITRE = {
     "MITM-ArpSpoofing": "Lateral Movement",
     "DictionaryBruteForce": "Initial Access",
     "BrowserExtraction": "Exfiltration",
+    "BrowserHijacking": "Exfiltration",
     "CommandInjection": "Initial Access",
     "XSS": "Initial Access",
     "SqlInjection": "Initial Access",

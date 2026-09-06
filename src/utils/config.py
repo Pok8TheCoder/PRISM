@@ -56,6 +56,14 @@ class TrainConfig:
     lambda_dynamics: float = 1.0
     lambda_infiltration: float = 0.5
     lambda_mitre: float = 0.3
+    lambda_contrastive: float = 0.0
+    contrastive_temp: float = 0.07
+    asymmetric_fn_weight: float = 3.5
+    use_focal: bool = True
+    use_stop_gradient: bool = True
+    max_sq_err: float = 5.0
+    label_smoothing: float = 0.01
+    balanced_sampling: bool = True
     scheduler: str = "cosine"  # cosine | step | plateau
     warmup_steps: int = 500
     device: str = "auto"  # auto | cuda | cpu

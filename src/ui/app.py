@@ -128,11 +128,17 @@ def _append_timeline(result, prediction: dict):
 @st.cache_resource(show_spinner="Loading PRISM World Model...")
 def _load_prism_model(model_name: str, device: str = "cpu"):
     from src.models.world_model import StateTransformerWorldModel, LSTMWorldModel, load_checkpoint
+    from src.models.gen7_world_model import Gen7DecoupledWorldModel
     from src.models.gnn_model import GraphWorldModel
     from src.models.latent_dynamics import LatentDynamicsWorldModel
 
     d_state = 242
-    if "GNN" in model_name or "Graph" in model_name:
+    if "Gen 7" in model_name or "Decoupled" in model_name:
+        m = Gen7DecoupledWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=20)
+        ckpt_path = "weights/gen7/world_model_best.pt" if (ROOT / "weights/gen7/world_model_best.pt").exists() else "weights/world_model_best.pt"
+        if (ROOT / ckpt_path).exists():
+            load_checkpoint(m, ckpt_path, device=device)
+    elif "GNN" in model_name or "Graph" in model_name:
         m = GraphWorldModel(d_node=d_state, d_graph=d_state, d_model=256, lookback=20)
         load_checkpoint(m, "weights/gnn/world_model_best.pt", device=device)
     elif "LSTM" in model_name:
@@ -547,6 +553,7 @@ def main():
     with st.sidebar:
         st.subheader("PRISM Model Selector")
         prism_model_names = [
+            "Gen 7 Decoupled World Model (Contrastive SOTA)",
             "Transformer World Model (Primary 200ep GPU)",
             "Graph World Model (GNN 200ep)",
             "LSTM World Model (200ep)",

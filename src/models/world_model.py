@@ -13,6 +13,8 @@ import torch.nn.functional as F
 
 from src.models.components import (
     StateEmbedding,
+    MaskedStateEmbedding,
+    HeadAdapter,
     LearnablePositionalEncoding,
     SinusoidalPositionalEncoding,
     TemporalConv1DBlock,
@@ -30,16 +32,18 @@ logger = logging.getLogger("prism.models.world_model")
 
 class TemporalTransformerWorldModel(nn.Module):
     """
-    Generation 5 Multi-Scale Temporal Transformer World Model for Network Dynamics.
+    Generation 7 Multi-Scale Temporal Transformer World Model for Network Dynamics.
     Architecture:
-        1. Linear State Embedding (D_state -> D_model) + Dropout
-        2. Generation 5 Multi-Scale 1D Inception Temporal Block (k=1, 3, 5, MaxPool)
+        1. Sparsity-Aware Masked State Embedding (D_state -> D_model)
+        2. Multi-Scale 1D Inception Temporal Block (k=1, 3, 5, MaxPool)
         3. Positional Encoding (learnable or sinusoidal)
         4. Causal Transformer Encoder (N layers, H heads, Pre-LN)
         5. Temporal Attention Pooling (fuses sequence context with instantaneous state)
         6. Residual State Dynamics Head: S_{t+1} = S_t + Delta S_t
-        7. Infiltration Binary Head: h_fused -> P(attack | trajectory)
-        8. MITRE Attack Stage Head: h_fused -> P(stage | trajectory)
+        7. Decoupled Classification Adapters with Stop-Gradient protection:
+           - Infiltration Binary Head: h_inf -> P(attack | trajectory)
+           - MITRE Attack Stage Head: h_mitre -> P(stage | trajectory)
+        8. Zero-Day Anomaly Surprise Engine
     """
 
     def __init__(
@@ -54,7 +58,8 @@ class TemporalTransformerWorldModel(nn.Module):
         num_mitre_stages: int = NUM_MITRE_STAGES,
         pos_encoding: str = "learnable",  # "learnable" | "sinusoidal"
         residual_dynamics: bool = True,
-        conv_type: str = "multiscale",  # "multiscale" (Gen 5) | "single" (Gen 4/3)
+        conv_type: str = "multiscale",  # "multiscale" (Gen 5/7) | "single" (Gen 4/3)
+        use_stop_gradient: bool = True,
     ):
         super().__init__()
         self.d_state = d_state
@@ -63,11 +68,12 @@ class TemporalTransformerWorldModel(nn.Module):
         self.num_mitre_stages = num_mitre_stages
         self.residual_dynamics = residual_dynamics
         self.conv_type = conv_type
+        self.use_stop_gradient = use_stop_gradient
 
-        # 1. Input embedding
-        self.embedding = StateEmbedding(d_state, d_model, dropout)
+        # 1. Input embedding with domain sparsity masking
+        self.embedding = MaskedStateEmbedding(d_state, d_model, dropout)
 
-        # 2. Causal 1D Temporal Convolution (Multi-scale for Gen 5, Single for Gen 4)
+        # 2. Causal 1D Temporal Convolution (Multi-scale for Gen 7/5, Single for Gen 4)
         if conv_type == "single":
             self.temporal_conv = TemporalConv1DBlock(d_model, kernel_size=3, dropout=dropout)
         else:
@@ -103,7 +109,10 @@ class TemporalTransformerWorldModel(nn.Module):
         # 6. Residual State Dynamics Head
         self.state_head = StatePredictionHead(d_model, d_state, head_dropout)
 
-        # 7. Multi-task classification heads
+        # 7. Dedicated Task Adapters & Multi-task classification heads
+        self.adapter_inf = HeadAdapter(d_model, dropout=head_dropout)
+        self.adapter_mitre = HeadAdapter(d_model, dropout=head_dropout)
+
         self.infiltration_head = ClassificationHead(d_model, 2, head_dropout)
         self.mitre_head = ClassificationHead(
             d_model, num_mitre_stages, head_dropout
@@ -112,15 +121,16 @@ class TemporalTransformerWorldModel(nn.Module):
         self._init_weights()
         n_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
         logger.info(
-            "TemporalTransformerWorldModel: d_state=%d, d_model=%d, "
-            "layers=%d, heads=%d, params=%.2fM, residual_dynamics=%s",
-            d_state, d_model, n_layers, n_heads, n_params / 1e6, residual_dynamics,
+            "TemporalTransformerWorldModel (Gen 7): d_state=%d, d_model=%d, "
+            "layers=%d, heads=%d, params=%.2fM, residual_dynamics=%s, stop_grad=%s",
+            d_state, d_model, n_layers, n_heads, n_params / 1e6, residual_dynamics, use_stop_gradient,
         )
 
     def forward(
         self,
         state_seq: torch.Tensor,
         return_attention: bool = False,
+        use_stop_gradient: Optional[bool] = None,
     ) -> dict:
         """
         Forward pass.
@@ -131,6 +141,8 @@ class TemporalTransformerWorldModel(nn.Module):
             Sequence of past network states.
         return_attention : bool
             If True, extract and return attention weights from last layer.
+        use_stop_gradient : bool, optional
+            Override model-level stop_gradient behavior for classification heads.
 
         Returns
         -------
@@ -146,6 +158,7 @@ class TemporalTransformerWorldModel(nn.Module):
         """
         B, L, _ = state_seq.shape
         device = state_seq.device
+        stop_grad = self.use_stop_gradient if use_stop_gradient is None else use_stop_gradient
 
         # 1. Embed & local temporal conv
         x = self.embedding(state_seq)            # (B, L, D_model)
@@ -173,8 +186,18 @@ class TemporalTransformerWorldModel(nn.Module):
         else:
             pred_mean = delta_mean
 
-        pred_binary = self.infiltration_head(h_fused)
-        pred_mitre = self.mitre_head(h_fused)
+        # 6. Decoupled Classification Path (Decouples 242-dim dynamics from 2/7-dim classification)
+        if stop_grad and self.training:
+            # Scaled gradient blend: 90% detached, 10% soft gradient feedback
+            h_class_base = 0.1 * h_fused + 0.9 * h_fused.detach()
+        else:
+            h_class_base = h_fused
+
+        h_inf = self.adapter_inf(h_class_base)
+        h_mit = self.adapter_mitre(h_class_base)
+
+        pred_binary = self.infiltration_head(h_inf)
+        pred_mitre = self.mitre_head(h_mit)
 
         out = {
             "pred_state_mean": pred_mean,
@@ -199,6 +222,50 @@ class TemporalTransformerWorldModel(nn.Module):
         with torch.no_grad():
             out = self.forward(state_seq)
         return torch.softmax(out["pred_binary"], dim=-1)[:, 1]
+
+    def compute_zero_day_anomaly(
+        self,
+        state_seq: torch.Tensor,
+        next_state: torch.Tensor,
+        sigma_threshold: float = 3.0,
+    ) -> dict:
+        """
+        Compute Zero-Day Anomaly Surprise Score (Negative Log-Likelihood / Mahalanobis Deviation).
+        Detects novel exploits that break learned network transition dynamics.
+
+        Parameters
+        ----------
+        state_seq : (B, L, D_state) or (L, D_state)
+        next_state: (B, D_state) or (D_state)
+        """
+        if state_seq.dim() == 2:
+            state_seq = state_seq.unsqueeze(0)
+        if next_state.dim() == 1:
+            next_state = next_state.unsqueeze(0)
+
+        with torch.no_grad():
+            out = self.forward(state_seq)
+            mean = out["pred_state_mean"]
+            logvar = out["pred_state_logvar"].clamp(-8.0, 2.0)
+            var = logvar.exp()
+
+            # Normalized quadratic error per feature
+            sq_err = (next_state - mean) ** 2
+            per_feature_surprise = sq_err / (var + 1e-6)  # (B, D_state)
+            mean_surprise = per_feature_surprise.mean(dim=-1)  # (B,)
+
+            # Top contributing anomalous features
+            top_vals, top_indices = torch.topk(
+                per_feature_surprise, k=min(10, self.d_state), dim=-1
+            )
+
+        return {
+            "surprise_score": mean_surprise.cpu().numpy(),
+            "per_feature_surprise": per_feature_surprise.cpu().numpy(),
+            "is_zero_day_alert": (mean_surprise > (sigma_threshold ** 2)).cpu().numpy(),
+            "top_anomalous_indices": top_indices.cpu().numpy(),
+            "top_anomalous_values": top_vals.cpu().numpy(),
+        }
 
     def sample_next_state(
         self,
@@ -365,6 +432,11 @@ class LSTMWorldModel(nn.Module):
 # ===========================================================================
 # Generation-Specific Model Aliases
 # ===========================================================================
+from src.models.timesfm_model import Gen6_TimesFMWorldModel, TimesFMWorldModel
+from src.models.gen7_world_model import Gen7DecoupledWorldModel
+
+Gen7_DecoupledTemporalTransformer = Gen7DecoupledWorldModel
+Gen6_TimesFMCyberWorldModel = Gen6_TimesFMWorldModel
 Gen5_MultiScaleTemporalTransformer = TemporalTransformerWorldModel
 Gen4_BalancedTemporalTransformer = TemporalTransformerWorldModel
 Gen3_TemporalTransformer = TemporalTransformerWorldModel
@@ -382,12 +454,38 @@ def build_world_model(cfg) -> nn.Module:
     """
     arch = getattr(cfg, "architecture", "transformer").lower()
 
-    if arch in (
+    if arch in ("gen7", "gen7_world_model", "gen7_decoupled", "gen7_contrastive"):
+        return Gen7DecoupledWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            lookback=getattr(cfg, "lookback", 60),
+            dropout=cfg.dropout,
+            residual_dynamics=getattr(cfg, "residual_dynamics", True),
+        )
+    elif arch in ("gen6", "gen6_timesfm", "timesfm", "timesfm_world_model"):
+        return Gen6_TimesFMWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            lookback=getattr(cfg, "lookback", 20),
+            patch_len=getattr(cfg, "patch_len", 4),
+            patch_stride=getattr(cfg, "patch_stride", 2),
+            dropout=cfg.dropout,
+            head_dropout=cfg.head_dropout,
+            residual_dynamics=getattr(cfg, "residual_dynamics", True),
+        )
+    elif arch in (
+        "gen7", "gen7_transformer", "gen7_decoupled",
         "gen5", "gen5_transformer", "gen5_multiscale_transformer",
         "gen4", "gen4_transformer", "gen4_balanced_transformer",
         "gen3", "gen3_transformer",
         "transformer", "temporal_transformer", "temporal",
     ):
+        conv_type = "single" if arch in ("gen4", "gen4_transformer", "gen4_balanced_transformer", "gen3", "gen3_transformer") else "multiscale"
+        use_stop_gradient = getattr(cfg, "use_stop_gradient", True)
         return TemporalTransformerWorldModel(
             d_state=cfg.d_state,
             d_model=cfg.d_model,
@@ -397,6 +495,8 @@ def build_world_model(cfg) -> nn.Module:
             dropout=cfg.dropout,
             head_dropout=cfg.head_dropout,
             residual_dynamics=getattr(cfg, "residual_dynamics", True),
+            conv_type=conv_type,
+            use_stop_gradient=use_stop_gradient,
         )
     elif arch in ("gen1", "gen1_transformer", "gen2", "gen2_transformer", "state_transformer"):
         return StateTransformerWorldModel(

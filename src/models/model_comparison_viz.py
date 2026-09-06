@@ -82,10 +82,33 @@ def evaluate_all_prism_models(
 
     records = []
 
-    # 1. PRISM Gen 5: Multi-Scale Temporal Transformer (Master)
-    print("\n[1/7] Evaluating PRISM Gen 5 (Multi-Scale Temporal Transformer)...")
-    transformer_g5 = TemporalTransformerWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=lookback).to(device)
-    tf_ckpt_g5 = _ROOT / "weights" / "world_model_best.pt"
+    # 1. PRISM Gen 6: Google TimesFM Cyber World Model
+    timesfm_ckpt = _ROOT / "weights" / "gen6_timesfm_best.pt"
+    if timesfm_ckpt.exists():
+        print("\n[1/8] Evaluating PRISM Gen 6 (Google TimesFM Cyber World Model)...")
+        from src.models.timesfm_model import Gen6_TimesFMWorldModel
+        timesfm = Gen6_TimesFMWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=lookback).to(device)
+        load_checkpoint(timesfm, str(timesfm_ckpt), device=device)
+        m_g6 = evaluate_model(timesfm, test_loader, device=device)
+        records.append({
+            "Model": "PRISM Gen 6 (Google TimesFM)",
+            "Type": "World Model (Patch-Level Foundation Transformer)",
+            "F1": m_g6["binary"]["f1"],
+            "Precision": m_g6["binary"]["precision"],
+            "Recall": m_g6["binary"]["recall"],
+            "FPR": m_g6["binary"]["fpr"],
+            "ROC_AUC": m_g6["binary"]["roc_auc"],
+            "MITRE_F1_Macro": m_g6["mitre"]["f1_macro"],
+            "Dynamics_MSE": m_g6["dynamics"]["mse"],
+            "Can_Forecast_K_Steps": "Yes (Direct Multi-Patch)",
+        })
+
+    # 2. PRISM Gen 5: Multi-Scale Temporal Transformer
+    print("[2/8] Evaluating PRISM Gen 5 (Multi-Scale Temporal Transformer)...")
+    transformer_g5 = TemporalTransformerWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=lookback, conv_type="multiscale").to(device)
+    tf_ckpt_g5 = _ROOT / "weights" / "gen5_multiscale_transformer.pt"
+    if not tf_ckpt_g5.exists():
+        tf_ckpt_g5 = _ROOT / "weights" / "world_model_best.pt"
     if tf_ckpt_g5.exists():
         load_checkpoint(transformer_g5, str(tf_ckpt_g5), device=device)
     m_g5 = evaluate_model(transformer_g5, test_loader, device=device)
@@ -102,10 +125,12 @@ def evaluate_all_prism_models(
         "Can_Forecast_K_Steps": "Yes (Autoregressive)",
     })
 
-    # 2. PRISM Gen 4: Balanced Temporal Transformer
-    gen4_ckpt = _ROOT / "weights" / "gen4_world_model.pt"
+    # 3. PRISM Gen 4: Balanced Temporal Transformer
+    gen4_ckpt = _ROOT / "weights" / "gen4_balanced_transformer.pt"
+    if not gen4_ckpt.exists():
+        gen4_ckpt = _ROOT / "weights" / "gen4_world_model.pt"
     if gen4_ckpt.exists():
-        print("[2/7] Evaluating PRISM Gen 4 (Balanced Temporal Transformer)...")
+        print("[3/8] Evaluating PRISM Gen 4 (Balanced Temporal Transformer)...")
         transformer_g4 = TemporalTransformerWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=lookback, conv_type="single").to(device)
         load_checkpoint(transformer_g4, str(gen4_ckpt), device=device)
         m_g4 = evaluate_model(transformer_g4, test_loader, device=device)
@@ -122,8 +147,8 @@ def evaluate_all_prism_models(
             "Can_Forecast_K_Steps": "Yes (Autoregressive)",
         })
 
-    # 3. LSTM World Model (200-epoch)
-    print("[3/7] Evaluating LSTMWorldModel...")
+    # 4. LSTM World Model (200-epoch)
+    print("[4/8] Evaluating LSTMWorldModel...")
     lstm = LSTMWorldModel(d_state=d_state, d_model=256, lstm_layers=2, lookback=lookback).to(device)
     lstm_ckpt = _ROOT / "weights" / "lstm" / "world_model_best.pt"
     if not lstm_ckpt.exists():

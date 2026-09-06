@@ -32,28 +32,36 @@ results/logs/
 results/figures/
 
 # Data and Weights
-# Ignore large multi-gigabyte raw CSVs (>100MB violates GitHub push limit)
-data/raw/**/*.csv
-data/raw/*.csv
-data/processed/*.csv
-data/processed/**/*.csv
+# Ignore large raw and processed archives, pcaps, binetflow, and splits
+data/raw/
+data/processed/
+data/splits_*/
+*.tar.bz2
+*.pcap
+*.binetflow
 
-# Track processed dataset splits and state representations
-!data/splits/*.npz
-!data/processed/*.npz
-!data/raw/*.npz
+# Track schema and small reference splits
 !data/*.json
+!data/splits/*.npz
 
-# Ignore intermediate epoch checkpoints to avoid exceeding repository limits
-weights/*_epoch*.pt
-weights/**/*_epoch*.pt
+# Ignore intermediate epoch weights and temporary experiment folders
+weights/**/world_model_epoch*.pt
+weights/gen7_dilated_v1/
+weights/gen7_fixABCDEFG/
+weights/gen7_synthetic_augmented/
+weights/test_gpu_run/
+weights/universal_gen5*/
+weights/universal_gen6*/
+weights/universal_gen7_converged/
+weights/universal_gen7_final/
+weights/universal_gen7_test*/
 
-# Track best model checkpoints, baselines, scalers, and evaluation metrics
-!weights/world_model_best.pt
-!weights/**/world_model_best.pt
+# Track Gen 7 best model weights and evaluation deliverables
+!weights/universal_gen7_dilated/world_model_best.pt
+!weights/universal_gen7_dilated/*.json
 !weights/*.pkl
-!weights/**/*.json
 !weights/*.json
+
 
 # IDE & OS
 .vscode/

@@ -520,6 +520,17 @@ class FlowExtractor:
         # Map to MITRE stage string
         df["mitre_stage"] = df["Label"].map(label_map)
 
+        # High-fidelity Infiltration decomposition:
+        # - Ports 53 (DNS exfil/tunneling), 80/443/8080/8443 (Web/TLS exfil) -> Exfiltration (Stage 5)
+        # - Other Infiltration traffic (SMB 445, RPC 135, RDP 3389, SSH 22) -> Lateral Movement (Stage 3)
+        if self.dataset_type == "cicids2018" and "Dst Port" in df.columns:
+            infil_mask = df["Label"].str.contains("Infilteration", case=False, na=False)
+            if infil_mask.any():
+                dst_p = pd.to_numeric(df["Dst Port"], errors="coerce").fillna(0).astype(int)
+                exfil_ports = {53, 80, 443, 8080, 8443}
+                exfil_mask = infil_mask & dst_p.isin(exfil_ports)
+                df.loc[exfil_mask, "mitre_stage"] = "Exfiltration"
+
         # Warn about unmapped labels and default them to Benign
         unmapped_mask = df["mitre_stage"].isna()
         if unmapped_mask.any():

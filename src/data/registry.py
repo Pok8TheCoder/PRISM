@@ -164,9 +164,12 @@ def get_dataset_extractor(dataset_name: str, raw_dir: str = "data/raw") -> Any:
     Factory method to instantiate the appropriate extractor for a dataset.
     """
     key = dataset_name.lower().replace("_", "-")
-    if key == "cicids2018" or key == "ctu13":
+    if key == "cicids2018":
         from src.data.flow_extractor import FlowExtractor
         return FlowExtractor(dataset_type=key, raw_dir=raw_dir)
+    elif key == "ctu13":
+        from src.data.ctu13_extractor import CTU13Extractor
+        return CTU13Extractor(raw_dir=raw_dir)
     elif key == "unsw-nb15":
         from src.data.unswnb15_extractor import UNSWNB15Extractor
         return UNSWNB15Extractor(raw_dir=raw_dir)

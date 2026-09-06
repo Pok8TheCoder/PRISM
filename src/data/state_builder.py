@@ -111,7 +111,13 @@ class StateBuilder:
                 has_attack = int((window[label_col] > 0).any())
                 if has_attack:
                     attack_flows = window[window[label_col] > 0]
-                    dominant_stage = int(attack_flows[label_col].value_counts().idxmax()) if len(attack_flows) > 0 else 0
+                    stage_counts = attack_flows[label_col].value_counts()
+                    if 5 in stage_counts.index:
+                        dominant_stage = 5
+                    elif 3 in stage_counts.index:
+                        dominant_stage = 3
+                    else:
+                        dominant_stage = int(stage_counts.idxmax())
                 else:
                     dominant_stage = 0
             else:
