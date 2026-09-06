@@ -37,6 +37,7 @@ class StateBuilder:
         self.window_size = window_size_seconds
         self.features = features or UNIFIED_FLOW_FEATURES
         self.median_indices = MEDIAN_FEATURE_INDICES
+        self.window_culprits: List[Dict[str, any]] = []
 
     def build_states_from_dataframe(
         self,
@@ -73,6 +74,7 @@ class StateBuilder:
         mitre_labels_list = []
         attack_fractions_list = []
         timestamps_list = []
+        self.window_culprits = []
 
         for window_time, group in grouped:
             if len(group) == 0:
@@ -115,11 +117,16 @@ class StateBuilder:
             burst_factor = float((pkts_s_max + 1.0) / (pkts_s_mean + 1.0))
 
             # --- Graph Topological Feature Extraction (Spatial Intelligence without GNN) ---
+            candidate_culprit_ip = "0.0.0.0"
             # 1. Max Out-Degree (Fan-Out: Host scanning many targets)
             if "src_ip" in group.columns and "dst_ip" in group.columns and group["src_ip"].notna().any():
-                max_src_out_degree = float(group.groupby("src_ip")["dst_ip"].nunique().max())
+                fanout_series = group.groupby("src_ip")["dst_ip"].nunique()
+                max_src_out_degree = float(fanout_series.max())
+                candidate_culprit_ip = str(fanout_series.idxmax())
             elif "src_ip" in group.columns and "dst_port_binned" in group.columns and group["src_ip"].notna().any():
-                max_src_out_degree = float(group.groupby("src_ip")["dst_port_binned"].nunique().max())
+                fanout_series = group.groupby("src_ip")["dst_port_binned"].nunique()
+                max_src_out_degree = float(fanout_series.max())
+                candidate_culprit_ip = str(fanout_series.idxmax())
             else:
                 max_src_out_degree = float(np.log1p(maxs[8]))
 
@@ -199,6 +206,7 @@ class StateBuilder:
             mitre_labels_list.append(dominant_mitre)
             attack_fractions_list.append(attack_fraction)
             timestamps_list.append(window_time)
+            self.window_culprits.append(candidate_culprit_ip)
 
         if not states_list:
             return (

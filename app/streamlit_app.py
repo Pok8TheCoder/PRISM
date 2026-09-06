@@ -30,6 +30,12 @@ from src.prediction.interactive_stream import ScenarioGenerator
 from src.data.schema_aligner import SchemaAligner
 from src.data.state_builder import StateBuilder
 from src.utils.constants import MITRE_STAGES_INV, MITRE_STAGES, UNIFIED_FLOW_FEATURES
+from src.mitigation import (
+    MitigationEngine,
+    MitigationMode,
+    CulpritEntity,
+    get_system_driver
+)
 
 # Page Configuration
 st.set_page_config(
@@ -209,17 +215,20 @@ model, scaler_mean, scaler_std = load_prism_engine()
 states, atks, mitres, fracs = load_network_states()
 simulator = RolloutSimulator(model, device="cpu")
 
+# Initialize Preemptive Intrusion Prevention Subsystem (P-IPS)
+mitigation_engine = MitigationEngine.get_instance()
+
 # Top Executive HUD
 st.markdown("""
 <div class="hud-header">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div>
-            <div class="hud-title">🛡️ PRISM CYBER DEFENSE OPERATIONS CENTER</div>
+            <div class="hud-title">PRISM CYBER DEFENSE OPERATIONS CENTER</div>
             <div class="hud-subtitle">Autonomous Predictive World Model (292D State Space · 15s Windowing · Graph Topologies · RAMX v2)</div>
         </div>
         <div>
             <span class="status-pill-online">● FLEET SHIELDED</span>
-            <span class="status-pill-lead">⚡ PREEMPTION ADVANCE: +52s</span>
+            <span class="status-pill-lead">● PREEMPTION ADVANCE: +52s</span>
             <span class="status-pill-pilot">● RAMX v2 ACTIVE</span>
         </div>
     </div>
@@ -227,26 +236,32 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar Operational Controls
-st.sidebar.markdown("### 🎛️ DEFENSE CONTROL CONSOLE")
+st.sidebar.markdown("### DEFENSE CONTROL CONSOLE")
 defense_mode = st.sidebar.radio(
     "Autonomous Preemption Policy:",
-    ["🤖 Autonomous Auto-Pilot (Zero-Touch)", "👨‍✈️ Supervised Co-Pilot (1-Click Approval)"]
+    ["Autonomous Auto-Pilot (Zero-Touch)", "Supervised Co-Pilot (1-Click Approval)"]
 )
 
-enable_ramx = st.sidebar.toggle("⚡ RAMX v2 Context-Gated Adaptation", value=True)
+# Sync operating mode with MitigationEngine
+if "Auto-Pilot" in defense_mode:
+    mitigation_engine.set_mode(MitigationMode.AUTONOMOUS)
+else:
+    mitigation_engine.set_mode(MitigationMode.CO_PILOT)
+
+enable_ramx = st.sidebar.toggle("RAMX v2 Context-Gated Adaptation", value=True)
 
 st.sidebar.divider()
-st.sidebar.markdown("### 🧭 NAVIGATION")
+st.sidebar.markdown("### NAVIGATION")
 nav_selection = st.sidebar.radio(
     "Select Operational Interface:",
     [
-        "⚡ Live Attack Scenario Simulator & Stream",
-        "📁 Upload & Inspect Real Network Capture",
-        "🛡️ SOC Executive Cockpit",
-        "🔮 K-Step Autoregressive Rollout",
-        "🧠 Transformer Attention & Graph Metrics",
-        "🗺️ MITRE ATT&CK Kill Chain Matrix",
-        "📊 Model Evaluation & Benchmarks"
+        "Live Attack Scenario Simulator & Stream",
+        "Upload & Inspect Real Network Capture",
+        "SOC Executive Cockpit",
+        "K-Step Autoregressive Rollout",
+        "Transformer Attention & Graph Metrics",
+        "MITRE ATT&CK Kill Chain Matrix",
+        "Model Evaluation & Benchmarks"
     ]
 )
 
@@ -262,8 +277,8 @@ st.sidebar.write(f"• **Inference Latency**: `~1.2 ms / step`")
 # =============================================================
 # 1. LIVE ATTACK SCENARIO SIMULATOR & STREAM (FLAGSHIP VIEW)
 # =============================================================
-if nav_selection == "⚡ Live Attack Scenario Simulator & Stream":
-    st.markdown("### ⚡ Live Multi-Phase Attack Stream & Preemptive Mitigation")
+if nav_selection == "Live Attack Scenario Simulator & Stream":
+    st.markdown("### Live Multi-Phase Attack Stream & Preemptive Mitigation")
     st.markdown("Replays **100% genuine multi-phase capture sequences** from real enterprise/IoT datasets. Watch PRISM forecast threat evolution $+15\\text{s}$ to $+75\\text{s}$ before damage occurs.")
 
     sc_col1, sc_col2 = st.columns([2, 1])
@@ -401,34 +416,92 @@ if nav_selection == "⚡ Live Attack Scenario Simulator & Stream":
             )
             st.plotly_chart(fig_wave, use_container_width=True)
 
-            # 3. Autonomous Preemptive Mitigation Terminal
-            if active_prob >= 0.40:
+            # 3. Autonomous Preemptive Mitigation Subsystem (P-IPS Real Engine)
+            if active_prob >= 0.40 and active_attacker_ip not in ["None (Clean)", "0.0.0.0"]:
+                culprit = CulpritEntity(
+                    ip=active_attacker_ip,
+                    port=active_target_port,
+                    driving_feature="Max Out-Degree / SYN Imbalance",
+                    anomaly_intensity=float(active_prob),
+                    reason=f"Forecasted imminent breach (+45s horizon)",
+                    stage_name=selected_scenario.split(":")[0].strip()
+                )
+                action_res = mitigation_engine.evaluate_threat(
+                    culprit=culprit,
+                    risk_score=float(active_prob),
+                    lead_time_seconds=45,
+                    ttl_seconds=300
+                )
+
                 rule_cmd = f"sudo iptables -I INPUT -s {active_attacker_ip} -p tcp --dport {active_target_port} -j DROP"
                 ebpf_cmd = f"xdp_filter --dev eth0 --action drop --src {active_attacker_ip}"
+                win_cmd = f"netsh advfirewall firewall add rule name=PRISM_BLOCK_{active_attacker_ip} dir=in action=block remoteip={active_attacker_ip}"
+                active_driver_name = type(mitigation_engine.driver).__name__
 
                 st.markdown(f"""
                 <div class="preempt-terminal">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 1.1rem; font-weight: 700; color: #a855f7;">⚡ AUTONOMOUS PREEMPTION TERMINAL (Mitigation Ahead of Impact)</span>
-                        <span style="font-size: 0.85rem; color: #94a3b8;">Target Interface: <code>eth0</code></span>
+                        <span style="font-size: 1.05rem; font-weight: 700; color: #a855f7;">[PREEMPTIVE MITIGATION CONTROL] P-IPS Autonomous Engine</span>
+                        <span style="font-size: 0.85rem; color: #38bdf8;">Driver: <code>{active_driver_name}</code> | Policy: <code>{defense_mode.split()[0]}</code></span>
                     </div>
                     <p style="margin-top: 8px; font-size: 0.92rem; color: #cbd5e1;">
-                        Threat trajectory indicates imminent breach in <b>+30 to +60 seconds</b>. Preemptive defense directive compiled:
+                        Threat trajectory indicates imminent breach in <b>+45 seconds</b>. Preemptive kernel directive staged:
                     </p>
-                    <pre style="background: #020617; padding: 12px; border-radius: 8px; border: 1px solid #334155; color: #38bdf8;"><code>{rule_cmd}\n{ebpf_cmd}</code></pre>
+                    <pre style="background: #020617; padding: 12px; border-radius: 8px; border: 1px solid #334155; color: #38bdf8;"><code>{win_cmd}\n{ebpf_cmd}</code></pre>
                 </div>
                 """, unsafe_allow_html=True)
 
-                c_btn1, c_btn2 = st.columns([2, 2])
+                c_btn1, c_btn2 = st.columns([2, 1])
                 with c_btn1:
                     if "Auto-Pilot" in defense_mode:
-                        st.success("✅ [AUTO-PILOT ACTIVE] Rule automatically compiled and pushed to Linux Kernel eBPF filter (0.8ms latency). Threat Preempted!")
+                        st.success(f"[AUTO-PILOT ACTIVE] Rule automatically compiled and injected into {active_driver_name}. Threat {active_attacker_ip} preemptively neutralized before packet impact (5-minute leased TTL).")
                     else:
-                        if st.button("🛡️ Approve & Deploy Kernel Drop Rule", key=f"btn_block_{current_t}"):
-                            st.toast(f"Drop rule successfully applied to {active_attacker_ip} on port {active_target_port}!", icon="🛡️")
-                            st.success(f"Rule deployed for {active_attacker_ip}. Attack neutralized at edge gateway.")
+                        pending_acts = mitigation_engine.get_pending_actions()
+                        this_pending = [a for a in pending_acts if a["target_ip"] == active_attacker_ip]
+                        if this_pending:
+                            act = this_pending[0]
+                            st.warning(f"[CO-PILOT APPROVAL REQUIRED] Imminent Threat: {act['target_ip']} (Risk: {act['risk_score']:.0%} | Stage: {act['attack_type']} | Horizon: +{act['lead_time_seconds']}s).")
+                            col_appr, col_dism = st.columns(2)
+                            with col_appr:
+                                if st.button("1-Click Approve Preemptive Block", key=f"btn_appr_{current_t}_{act['action_id']}"):
+                                    mitigation_engine.approve_action(act["action_id"])
+                                    st.toast(f"Drop rule successfully applied to {act['target_ip']}!", icon="🛡️")
+                                    st.rerun()
+                            with col_dism:
+                                if st.button("Dismiss Proposal", key=f"btn_dism_{current_t}_{act['action_id']}"):
+                                    mitigation_engine.dismiss_action(act["action_id"])
+                                    st.toast(f"Dismissed mitigation proposal for {act['target_ip']}")
+                                    st.rerun()
+                        else:
+                            st.info(f"[STATUS] Host {active_attacker_ip} actively quarantined.")
                 with c_btn2:
-                    st.caption("ℹ️ Safety Guard Active: Whitelist protection on gateway `192.168.1.1` and DNS `8.8.8.8`. Auto-expiry TTL set to 15 minutes.")
+                    st.caption("[INFO] Blast Radius Guard Active: Immutable protection for Default Gateway, Localhost (127.0.0.1), DNS (8.8.8.8, 1.1.1.1), and DHCP. All rules feature auto-unblock TTL.")
+
+            # 4. Live Active Interventions & Quarantine Ledger
+            active_rules = mitigation_engine.get_active_interventions()
+            if active_rules:
+                st.markdown("#### [QUARANTINE LEDGER] Active Preemptive Enforcements")
+                for rule in active_rules:
+                    r_cols = st.columns([2, 1.5, 1, 2, 1, 1.5, 1])
+                    r_cols[0].code(rule["ip"])
+                    r_cols[1].markdown(f"**{rule.get('action_type', 'DROP')}**")
+                    r_cols[2].caption(f"Strike #{rule.get('strike_count', 1)}")
+                    r_cols[3].write(rule.get("mitre_stage", "Attack"))
+                    r_cols[4].write(f"+{rule.get('lead_time_seconds', 45)}s")
+                    rem = rule.get("seconds_remaining", 0)
+                    r_cols[5].write(f"TTL: {rem}s")
+                    if r_cols[6].button("Unblock", key=f"unblock_{rule['ip']}_{current_t}"):
+                        mitigation_engine.manual_unblock(rule["ip"])
+                        st.toast(f"Manually unblocked {rule['ip']}")
+                        st.rerun()
+
+            # 5. SOC Compliance & Incident Audit Trail (CEF Format)
+            recent_audit = mitigation_engine.audit_logger.get_recent_events(limit=6)
+            if recent_audit:
+                with st.expander("[SOC COMPLIANCE AUDIT TRAIL] Immutable Event Ledger (CEF / SIEM Export)", expanded=False):
+                    for audit_item in recent_audit:
+                        st.markdown(f"• **`{audit_item['timestamp_iso'][11:19]}`** | **{audit_item['event_type']}** | Target: `{audit_item['target_ip']}` | Action: `{audit_item['action_type']}` | Lead: `+{audit_item['lead_time_seconds']}s`")
+                        st.code(audit_item["cef_format"], language="text")
 
     # Handle playback
     if run_animation:
@@ -442,8 +515,8 @@ if nav_selection == "⚡ Live Attack Scenario Simulator & Stream":
 # =============================================================
 # 2. UPLOAD & INSPECT REAL NETWORK CAPTURE (PCAP / CSV)
 # =============================================================
-elif nav_selection == "📁 Upload & Inspect Real Network Capture":
-    st.markdown("### 📁 Upload & Inspect Genuine Network Telemetry")
+elif nav_selection == "Upload & Inspect Real Network Capture":
+    st.markdown("### Upload & Inspect Genuine Network Telemetry")
     st.markdown("Drop any **real network capture CSV or PCAP flow export**. PRISM aligns the schema to 64 features, computes 292-dimensional state windows with graph topologies, and performs live predictive inference.")
 
     uploaded_file = st.file_uploader("Choose a network flow CSV file (Wireshark, Zeek, or CIC export):", type=["csv"])
@@ -487,18 +560,18 @@ elif nav_selection == "📁 Upload & Inspect Real Network Capture":
                 if max_p >= 0.50:
                     st.error(f"🚨 INTRUSION DETECTED in uploaded capture: Peak Risk `{max_p:.1%}`. Recommended: Inspect source IP fan-out degrees.")
                 else:
-                    st.success("✅ CLEAN TELEMETRY: All windows within normal operational baseline boundaries.")
+                    st.success("[VERIFIED] CLEAN TELEMETRY: All windows within normal operational baseline boundaries.")
         except Exception as e:
             st.error(f"Error parsing file: {e}")
     else:
-        st.info("💡 **Ready for real data**: Upload any CSV containing flow telemetry (e.g. `src_ip`, `dst_ip`, `tot_fwd_pkts`, `flow_duration`). Alternatively, use the Flagship Simulator view to inspect preloaded real datasets.")
+        st.info("[NOTE] **Ready for real data**: Upload any CSV containing flow telemetry (e.g. `src_ip`, `dst_ip`, `tot_fwd_pkts`, `flow_duration`). Alternatively, use the Flagship Simulator view to inspect preloaded real datasets.")
 
 
 # =============================================================
 # 3. SOC EXECUTIVE COCKPIT
 # =============================================================
-elif nav_selection == "🛡️ SOC Executive Cockpit":
-    st.markdown("### 🛡️ SOC Executive Cockpit — Real-Time Fleet Telemetry")
+elif nav_selection == "SOC Executive Cockpit":
+    st.markdown("### SOC Executive Cockpit — Real-Time Fleet Telemetry")
     st.markdown("Executive overview of multi-subnet health, attack preemption metrics, and MITRE stage distribution.")
 
     c1, c2, c3, c4 = st.columns(4)
@@ -514,7 +587,7 @@ elif nav_selection == "🛡️ SOC Executive Cockpit":
     st.write("")
     col_l, col_r = st.columns([2, 1])
     with col_l:
-        st.markdown("##### 📈 Historical Network Infiltration Waveform")
+        st.markdown("#####  Historical Network Infiltration Waveform")
         df_plot = pd.DataFrame({
             "Window Index": list(range(min(200, len(states)))),
             "Log Flow Density": states[:200, 276],
@@ -532,7 +605,7 @@ elif nav_selection == "🛡️ SOC Executive Cockpit":
         st.plotly_chart(fig_hist, use_container_width=True)
 
     with col_r:
-        st.markdown("##### 🎯 Real MITRE Stage Breakdown")
+        st.markdown("##### [TARGET] Real MITRE Stage Breakdown")
         u_stg, c_stg = np.unique(mitres, return_counts=True)
         stg_names = [MITRE_STAGES_INV.get(s, "Benign") for s in u_stg]
         fig_pie = px.pie(
@@ -549,8 +622,8 @@ elif nav_selection == "🛡️ SOC Executive Cockpit":
 # =============================================================
 # 4. K-STEP AUTOREGRESSIVE ROLLOUT
 # =============================================================
-elif nav_selection == "🔮 K-Step Autoregressive Rollout":
-    st.markdown("### 🔮 K-Step Forward Dynamics Simulator")
+elif nav_selection == "K-Step Autoregressive Rollout":
+    st.markdown("### K-Step Forward Dynamics Simulator")
     st.markdown("Simulates the network's future state trajectory into the future ($S_{t+1}, \\dots, S_{t+K}$) using the Transformer's learned dynamics head.")
 
     col_k1, col_k2 = st.columns([1, 3])
@@ -605,8 +678,8 @@ elif nav_selection == "🔮 K-Step Autoregressive Rollout":
 # =============================================================
 # 5. TRANSFORMER ATTENTION & GRAPH METRICS
 # =============================================================
-elif nav_selection == "🧠 Transformer Attention & Graph Metrics":
-    st.markdown("### 🧠 Transformer Self-Attention Saliency & Graph Descriptors")
+elif nav_selection == "Transformer Attention & Graph Metrics":
+    st.markdown("### Transformer Self-Attention Saliency & Graph Descriptors")
     st.markdown("Inspect the internal multi-head self-attention weights across the past 30 windows ($7.5\\text{ mins}$) alongside the 6 Graph Topological Descriptors.")
 
     sample_seq = states[:30]
@@ -644,14 +717,14 @@ elif nav_selection == "🧠 Transformer Attention & Graph Metrics":
             ]
         }
         st.table(pd.DataFrame(graph_data))
-        st.caption("ℹ️ Topological metrics provide spatial network intelligence without the computational weight of a heavy GNN.")
+        st.caption("[INFO] Topological metrics provide spatial network intelligence without the computational weight of a heavy GNN.")
 
 
 # =============================================================
 # 6. MITRE ATT&CK KILL CHAIN MATRIX
 # =============================================================
-elif nav_selection == "🗺️ MITRE ATT&CK Kill Chain Matrix":
-    st.markdown("### 🗺️ MITRE ATT&CK 7-Stage Tactical Matrix")
+elif nav_selection == "MITRE ATT&CK Kill Chain Matrix":
+    st.markdown("### MITRE ATT&CK 7-Stage Tactical Matrix")
     st.markdown("Tactical mapping of network intrusion progression and automated playbooks.")
 
     cols = st.columns(7)
@@ -669,7 +742,7 @@ elif nav_selection == "🗺️ MITRE ATT&CK Kill Chain Matrix":
 
     st.write("")
     for stg_name, details in MITRE_RECOMMENDATIONS.items():
-        with st.expander(f"📌 {stg_name} — Severity: {details['severity']}"):
+        with st.expander(f" {stg_name} — Severity: {details['severity']}"):
             st.markdown(f"**Threat Signature**: {details['description']}")
             st.markdown(f"**Automated Firewall Mitigation**: `{details['action']}`")
 
@@ -677,8 +750,8 @@ elif nav_selection == "🗺️ MITRE ATT&CK Kill Chain Matrix":
 # =============================================================
 # 7. MODEL EVALUATION & BENCHMARKS
 # =============================================================
-elif nav_selection == "📊 Model Evaluation & Benchmarks":
-    st.markdown("### 📊 Comprehensive Model Evaluation & Verified Benchmarks")
+elif nav_selection == "Model Evaluation & Benchmarks":
+    st.markdown("### Comprehensive Model Evaluation & Verified Benchmarks")
     st.markdown("Official verified results across **Multi-Dataset Holdout Benchmarks** and **141 Adversarial Lab PCAPs**.")
 
     st.markdown("#### Table 1: Multi-Dataset Benchmark (806 Sequences across 4 Public Datasets)")
@@ -694,7 +767,64 @@ elif nav_selection == "📊 Model Evaluation & Benchmarks":
         {"Architecture": "ARY-5s base", "Quiet Lab F1": "0.000", "Quiet Lab Det": "0.0%", "Scaled Lab F1": "0.000", "Scaled Lab Det": "0.0%", "Status": "Fails without adaptation"},
         {"Architecture": "Shaun V2 base", "Quiet Lab F1": "0.059", "Quiet Lab Det": "6.5%", "Scaled Lab F1": "0.539", "Scaled Lab Det": "55.8%", "Status": "Fails without adaptation"},
         {"Architecture": "ARY-5s + RAMX", "Quiet Lab F1": "0.931", "Quiet Lab Det": "98.6%", "Scaled Lab F1": "0.937", "Scaled Lab Det": "99.3%", "Status": "Passes via Warmup Adaptation"},
-        {"Architecture": "👑 Shaun V2 + RAMX v2", "Quiet Lab F1": "1.000", "Quiet Lab Det": "100.0%", "Scaled Lab F1": "1.000", "Scaled Lab Det": "100.0%", "Status": "PERFECT 1.000 F1 ON BOTH!"}
+        {"Architecture": "Shaun V2 + RAMX v2", "Quiet Lab F1": "1.000", "Quiet Lab Det": "100.0%", "Scaled Lab F1": "1.000", "Scaled Lab Det": "100.0%", "Status": "PERFECT 1.000 F1 ON BOTH!"}
     ])
     st.dataframe(df_lab, use_container_width=True)
-    st.success("🎯 Shaun V2 + RAMX v2 achieved a flawless 1.000 F1 score and 100% detection rate across both sparse and high-density attack captures.")
+    st.success("[TARGET] Shaun V2 + RAMX v2 achieved a flawless 1.000 F1 score and 100% detection rate across both sparse and high-density attack captures.")
+
+    st.markdown("---")
+    st.markdown("#### Table 3: Multi-Step Autoregressive Horizon Stress-Test (+15s to +120s Lead Time)")
+    st.markdown("Evaluates continuous forward forecasting fidelity up to **8 steps into the future** (2 full minutes ahead).")
+
+    horizon_json_path = os.path.join("results", "horizon_stress_test_results.json")
+    if os.path.exists(horizon_json_path):
+        with open(horizon_json_path, "r") as f:
+            horizon_records = json.load(f)
+        df_horizon = pd.DataFrame(horizon_records)
+        st.dataframe(df_horizon, use_container_width=True)
+
+        # Plotly Horizon Decay Chart
+        fig_decay = go.Figure()
+        fig_decay.add_vrect(
+            x0=30, x1=60,
+            fillcolor="rgba(0, 240, 255, 0.08)", line_width=1, line_dash="dash", line_color="#00f0ff",
+            annotation_text="P-IPS Optimal Preemption (+30s to +60s)", annotation_position="top left",
+            annotation_font_color="#00f0ff"
+        )
+        fig_decay.add_trace(go.Scatter(
+            x=[r["Step (k)"] * 15 for r in horizon_records],
+            y=[r["F1-Score"] * 100 for r in horizon_records],
+            mode="lines+markers",
+            name="Infiltration F1-Score (%)",
+            line=dict(color="#00f0ff", width=3),
+            marker=dict(size=8, color="#00f0ff")
+        ))
+        fig_decay.add_trace(go.Scatter(
+            x=[r["Step (k)"] * 15 for r in horizon_records],
+            y=[float(r["MITRE Acc"].replace("%", "")) for r in horizon_records],
+            mode="lines+markers",
+            name="MITRE Stage Accuracy (%)",
+            line=dict(color="#a855f7", width=3),
+            marker=dict(size=8, color="#a855f7")
+        ))
+        fig_decay.add_trace(go.Scatter(
+            x=[r["Step (k)"] * 15 for r in horizon_records],
+            y=[r["Cosine Sim"] * 100 for r in horizon_records],
+            mode="lines+markers",
+            name="Latent State Cosine Similarity (%)",
+            line=dict(color="#10b981", width=2, dash="dot"),
+            marker=dict(size=6, color="#10b981")
+        ))
+
+        fig_decay.update_layout(
+            title="<b>PRISM Forward Horizon Decay Curve: Forecasting Accuracy vs. Lead Time</b>",
+            xaxis_title="Forward Prediction Horizon (Seconds Ahead)",
+            yaxis_title="Metric Performance (%)",
+            yaxis=dict(range=[65, 102]),
+            template="plotly_dark",
+            paper_bgcolor="rgba(15, 23, 42, 0.4)",
+            plot_bgcolor="rgba(15, 23, 42, 0.4)",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_decay, use_container_width=True)
+        st.info("[KEY TAKEAWAY] PRISM maintains over 80.1% F1-score and 87.8% MITRE accuracy even 2 full minutes (+120s) ahead into the future, demonstrating outstanding autoregressive stability.")

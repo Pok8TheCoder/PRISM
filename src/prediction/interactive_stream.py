@@ -15,12 +15,12 @@ class ScenarioGenerator:
     @staticmethod
     def get_available_scenarios() -> List[str]:
         return [
-            "⚡ Scenario A: Stealth Reconnaissance → SSH Brute Force Infiltration (CIC-IDS2018)",
-            "⚡ Scenario B: Low-and-Slow PortScan → Volumetric DDoS Attack (CIC-IDS2017)",
-            "⚡ Scenario C: IoT Botnet Infiltration → Mirai DDoS Surge (CICIoT2023)",
-            "⚡ Scenario D: Web Application Exploit → Data Exfiltration (UNSW-NB15)",
-            "⚡ Scenario E: Pure Benign Enterprise Day (Baseline Stability)",
-            "⚡ Scenario F: Custom Interactive Attack Injector (User Controlled)"
+            "Scenario A: Stealth Reconnaissance → SSH Brute Force Infiltration (CIC-IDS2018)",
+            "Scenario B: Low-and-Slow PortScan → Volumetric DDoS Attack (CIC-IDS2017)",
+            "Scenario C: IoT Botnet Infiltration → Mirai DDoS Surge (CICIoT2023)",
+            "Scenario D: Web Application Exploit → Data Exfiltration (UNSW-NB15)",
+            "Scenario E: Pure Benign Enterprise Day (Baseline Stability)",
+            "Scenario F: Custom Interactive Attack Injector (User Controlled)"
         ]
 
     @staticmethod
