@@ -5,11 +5,11 @@ New lab UI replacing the Streamlit dashboard (`run_dashboard.py`). UI-first phas
 ## Quick start
 
 ```bash
-# From repo root
-python run_lab_console.py
-
-# With API stubs (proxied at /api in dev)
+# From repo root — UI + FastAPI BFF (recommended; UI shows green "API" badge)
 python run_lab_console.py --api
+
+# Frontend only — falls back to in-app mocks when BFF is offline
+python run_lab_console.py
 ```
 
 Frontend only: `cd apps/lab-console/frontend && npm install && npm run dev`

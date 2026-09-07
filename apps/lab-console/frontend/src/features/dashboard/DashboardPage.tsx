@@ -8,22 +8,27 @@ import {
   GraduationCap,
   Activity,
 } from 'lucide-react'
-import { mockDashboard } from '../../mocks/dashboard'
 import { StatCard } from '../../components/dashboard/StatCard'
 import { MetricTile } from '../../components/dashboard/MetricTile'
 import { AreaChart } from '../../components/dashboard/AreaChart'
 import { Badge } from '../../components/common/Badge'
+import { ApiSourceBadge } from '../../components/common/ApiSourceBadge'
 import { TopBar } from '../../app/TopBar'
+import { useDashboardData } from '../../hooks/useLabApi'
 
 export function DashboardPage() {
-  const d = mockDashboard
+  const { data: d, source } = useDashboardData()
   const runningCount = d.containers.filter((c) => c.status === 'running').length
   const loadedModels = d.models.filter((m) => m.loaded).length
   const latestP = d.metricsTimeseries[d.metricsTimeseries.length - 1]?.pAttack ?? 0
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <TopBar title="Dashboard" subtitle="Live network activity & background job insights" />
+      <TopBar
+        title="Dashboard"
+        subtitle="Live network activity & background job insights"
+        right={<ApiSourceBadge source={source} />}
+      />
       <div className="flex-1 overflow-y-auto p-6">
         {/* KPI row */}
         <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

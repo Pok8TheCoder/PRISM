@@ -1,21 +1,27 @@
 import { useState } from 'react'
 import { BrainCircuit, X, Layers, Cpu, Tag as TagIcon, Calendar } from 'lucide-react'
-import { mockModelRegistry } from '../../mocks/models'
 import type { ModelRegistryEntry } from '../../types/models'
 import { TopBar } from '../../app/TopBar'
 import { IconTile } from '../../components/common/IconTile'
 import { Badge } from '../../components/common/Badge'
+import { ApiSourceBadge } from '../../components/common/ApiSourceBadge'
+import { useModelRegistry } from '../../hooks/useLabApi'
 
 export function AdversarialPage() {
+  const { models, source } = useModelRegistry()
   const [selected, setSelected] = useState<ModelRegistryEntry | null>(null)
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <TopBar title="Adversarial Lab" subtitle="Model registry — agent-ready metadata for versions & checkpoints" />
+      <TopBar
+        title="Adversarial Lab"
+        subtitle="Model registry — agent-ready metadata for versions & checkpoints"
+        right={<ApiSourceBadge source={source} />}
+      />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="flex-1 overflow-auto p-6">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {mockModelRegistry.map((m, i) => (
+            {models.map((m, i) => (
               <button
                 key={m.id}
                 type="button"

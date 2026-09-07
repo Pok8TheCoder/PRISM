@@ -28,10 +28,14 @@ When BFF endpoints are fully wired:
 
 ## Phase 2 checklist
 
-- [ ] Extract scorer from `demo_forecast.py` → `src/lab/forecast_session.py`
-- [ ] Wire `GET /api/sessions/:id/state` to live scorer
+- [x] BFF services for dashboard, session, models, scripts, logs
+- [x] Frontend hooks — poll `/api/*` with mock fallback
+- [ ] Extract scorer loop fully into `src/lab/forecast_session.py` (session still reads `demo_forecast.json`)
+- [ ] Wire `GET /api/sessions/:id/state` to in-process scorer (not file poll)
 - [ ] WebSocket stream for live playhead + model ticks
 - [ ] PTY bridge for `/api/terminal`
-- [ ] Script runner for `demo_killchain.py`, `lab_ctl.py`, bench scripts
+- [ ] Recorded mode from `reports/lab/hx/recordings/` manifests
 - [ ] SHAP panel on IPS block → `/explain` route
-- [ ] Recordings scanner → `/recordings` route
+- [ ] Recordings scanner UI → `/recordings` route
+
+See [MISSING.md](./MISSING.md) for the full gap list vs Streamlit.
