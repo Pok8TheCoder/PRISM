@@ -43,3 +43,10 @@ archive/
 .cursor-backup/
 .DS_Store
 Thumbs.db
+
+# Lab Console (Node)
+apps/lab-console/frontend/node_modules/
+apps/lab-console/frontend/dist/
+
+# Lab recordings (runtime captures, can be large video files)
+reports/lab/hx/recordings/

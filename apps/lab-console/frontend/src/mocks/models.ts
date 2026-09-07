@@ -1,0 +1,43 @@
+import type { ModelRegistryEntry } from '../types/models'
+
+export const mockModelRegistry: ModelRegistryEntry[] = [
+  {
+    id: 'shaun_v3',
+    name: 'Shaun v3',
+    version: 'w5s',
+    checkpointPath: 'PRISM-shaun/weights/w5s/world_model.pt',
+    sizeMb: 48.2,
+    parameters: 1_240_000,
+    classes: ['benign', 'T1046_service_scan', 'T1110_ssh_bruteforce', 'T1190_web_exploit_probe'],
+    featureDim: 292,
+    seqLen: 12,
+    lastTrained: '2026-08-15',
+    tags: ['forecast', 'ips', 'lab'],
+  },
+  {
+    id: 'hx_c',
+    name: 'HX-C',
+    version: 'lab',
+    checkpointPath: 'Automode/train/checkpoints/hx_c_w5s_lab.pt',
+    sizeMb: 22.6,
+    parameters: 580_000,
+    classes: ['benign', 'recon', 'enum', 'spray', 'loot'],
+    featureDim: 128,
+    seqLen: 8,
+    lastTrained: '2026-09-06',
+    tags: ['forecast', 'kill-chain', 'lab-adapt'],
+  },
+  {
+    id: 'ary_5s',
+    name: 'ARY 5s',
+    version: 'ramx-v2',
+    checkpointPath: 'models/checkpoints/ary_5s_ramx.pt',
+    sizeMb: 31.4,
+    parameters: 890_000,
+    classes: Array.from({ length: 33 }, (_, i) => `class_${i}`),
+    featureDim: 242,
+    seqLen: 10,
+    lastTrained: '2026-07-20',
+    tags: ['multiclass', 'cic-ids'],
+  },
+]

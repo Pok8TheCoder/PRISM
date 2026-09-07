@@ -1,0 +1,555 @@
+{
+  "blocker": "hx_c",
+  "blocker_label": "HX-C",
+  "p_attack": 0.9989,
+  "predicted_class": "T1046_service_scan",
+  "ground_truth_class": "T1046_service_scan",
+  "class_match": true,
+  "method": "integrated_gradients",
+  "full_shap": true,
+  "top_features": [
+    {
+      "feature": "flow_44_min",
+      "importance": 0.2562,
+      "shap_value": 0.004994,
+      "value": 0.0,
+      "index": 236
+    },
+    {
+      "feature": "flow_41_min",
+      "importance": 0.21637,
+      "shap_value": 0.004217,
+      "value": 0.0,
+      "index": 233
+    },
+    {
+      "feature": "flow_42_mean",
+      "importance": 0.05365,
+      "shap_value": -0.001046,
+      "value": 0.4667,
+      "index": 42
+    },
+    {
+      "feature": "flow_15_mean",
+      "importance": 0.05039,
+      "shap_value": -0.000982,
+      "value": 195.1667,
+      "index": 15
+    },
+    {
+      "feature": "flow_44_mean",
+      "importance": 0.02777,
+      "shap_value": -0.000541,
+      "value": 2.3,
+      "index": 44
+    },
+    {
+      "feature": "flow_44_max",
+      "importance": 0.02638,
+      "shap_value": -0.000514,
+      "value": 5.0,
+      "index": 172
+    },
+    {
+      "feature": "flow_43_min",
+      "importance": 0.02574,
+      "shap_value": -0.000502,
+      "value": 0.0,
+      "index": 235
+    },
+    {
+      "feature": "flow_43_mean",
+      "importance": 0.02539,
+      "shap_value": 0.000495,
+      "value": 0.5667,
+      "index": 43
+    },
+    {
+      "feature": "flow_22_mean",
+      "importance": 0.02161,
+      "shap_value": -0.000421,
+      "value": 101.4278,
+      "index": 22
+    },
+    {
+      "feature": "flow_40_mean",
+      "importance": 0.01886,
+      "shap_value": -0.000368,
+      "value": 0.4667,
+      "index": 40
+    },
+    {
+      "feature": "flow_10_mean",
+      "importance": 0.01867,
+      "shap_value": -0.000364,
+      "value": 349.9,
+      "index": 10
+    },
+    {
+      "feature": "flow_8_min",
+      "importance": 0.01729,
+      "shap_value": 0.000337,
+      "value": 1.0,
+      "index": 200
+    }
+  ],
+  "top_blocks": [
+    {
+      "block": "flow_mins",
+      "importance": 0.008709999732673168
+    },
+    {
+      "block": "flow_means",
+      "importance": 0.004029999952763319
+    },
+    {
+      "block": "macro_graph",
+      "importance": 0.00171999994199723
+    },
+    {
+      "block": "flow_medians",
+      "importance": 0.0014100000262260437
+    },
+    {
+      "block": "flow_stds",
+      "importance": 0.001339999958872795
+    },
+    {
+      "block": "flow_maxs",
+      "importance": 0.0006799999973736703
+    }
+  ],
+  "waterfall": {
+    "base_value": 0.994775,
+    "output_value": 0.998947,
+    "steps": [
+      {
+        "feature": "flow_44_min",
+        "shap_value": 0.004994,
+        "feature_value": 0.0,
+        "cumulative": 0.999769,
+        "index": 236
+      },
+      {
+        "feature": "flow_41_min",
+        "shap_value": 0.004217,
+        "feature_value": 0.0,
+        "cumulative": 1.003986,
+        "index": 233
+      },
+      {
+        "feature": "flow_42_mean",
+        "shap_value": -0.001046,
+        "feature_value": 0.4667,
+        "cumulative": 1.00294,
+        "index": 42
+      },
+      {
+        "feature": "flow_15_mean",
+        "shap_value": -0.000982,
+        "feature_value": 195.1667,
+        "cumulative": 1.001958,
+        "index": 15
+      },
+      {
+        "feature": "flow_44_mean",
+        "shap_value": -0.000541,
+        "feature_value": 2.3,
+        "cumulative": 1.001417,
+        "index": 44
+      },
+      {
+        "feature": "flow_44_max",
+        "shap_value": -0.000514,
+        "feature_value": 5.0,
+        "cumulative": 1.000903,
+        "index": 172
+      },
+      {
+        "feature": "flow_43_min",
+        "shap_value": -0.000502,
+        "feature_value": 0.0,
+        "cumulative": 1.000401,
+        "index": 235
+      },
+      {
+        "feature": "flow_43_mean",
+        "shap_value": 0.000495,
+        "feature_value": 0.5667,
+        "cumulative": 1.000896,
+        "index": 43
+      },
+      {
+        "feature": "flow_22_mean",
+        "shap_value": -0.000421,
+        "feature_value": 101.4278,
+        "cumulative": 1.000475,
+        "index": 22
+      },
+      {
+        "feature": "flow_40_mean",
+        "shap_value": -0.000368,
+        "feature_value": 0.4667,
+        "cumulative": 1.000107,
+        "index": 40
+      },
+      {
+        "feature": "flow_10_mean",
+        "shap_value": -0.000364,
+        "feature_value": 349.9,
+        "cumulative": 0.999743,
+        "index": 10
+      },
+      {
+        "feature": "flow_8_min",
+        "shap_value": 0.000337,
+        "feature_value": 1.0,
+        "cumulative": 1.00008,
+        "index": 200
+      }
+    ]
+  },
+  "class_analysis": {
+    "top_probs": [
+      {
+        "class": "T1046_service_scan",
+        "p": 0.9528,
+        "index": 1
+      },
+      {
+        "class": "T1071_dns_tunnel",
+        "p": 0.0386,
+        "index": 15
+      },
+      {
+        "class": "T1595_active_scan",
+        "p": 0.0054,
+        "index": 2
+      },
+      {
+        "class": "T1573_encrypted_channel",
+        "p": 0.0006,
+        "index": 18
+      },
+      {
+        "class": "T1205_traffic_signaling",
+        "p": 0.0003,
+        "index": 31
+      },
+      {
+        "class": "T1071_http_beacon",
+        "p": 0.0003,
+        "index": 14
+      }
+    ],
+    "predicted_class_shap": [
+      {
+        "feature": "flow_41_min",
+        "importance": 0.09874,
+        "shap_value": 0.367172,
+        "value": 0.0,
+        "index": 233
+      },
+      {
+        "feature": "flow_22_mean",
+        "importance": 0.09091,
+        "shap_value": -0.338055,
+        "value": 101.4278,
+        "index": 22
+      },
+      {
+        "feature": "flow_42_mean",
+        "importance": 0.07295,
+        "shap_value": 0.271281,
+        "value": 0.4667,
+        "index": 42
+      },
+      {
+        "feature": "flow_44_min",
+        "importance": 0.05897,
+        "shap_value": 0.219303,
+        "value": 0.0,
+        "index": 236
+      },
+      {
+        "feature": "flow_44_mean",
+        "importance": 0.05283,
+        "shap_value": 0.196456,
+        "value": 2.3,
+        "index": 44
+      },
+      {
+        "feature": "flow_61_max",
+        "importance": 0.05217,
+        "shap_value": 0.193982,
+        "value": 15.0,
+        "index": 189
+      },
+      {
+        "feature": "flow_21_mean",
+        "importance": 0.04777,
+        "shap_value": -0.177627,
+        "value": 195.1667,
+        "index": 21
+      },
+      {
+        "feature": "flow_15_std",
+        "importance": 0.04152,
+        "shap_value": -0.154412,
+        "value": 380.1058,
+        "index": 79
+      }
+    ],
+    "ground_truth_class_shap": [
+      {
+        "feature": "flow_41_min",
+        "importance": 0.09874,
+        "shap_value": 0.367172,
+        "value": 0.0,
+        "index": 233
+      },
+      {
+        "feature": "flow_22_mean",
+        "importance": 0.09091,
+        "shap_value": -0.338055,
+        "value": 101.4278,
+        "index": 22
+      },
+      {
+        "feature": "flow_42_mean",
+        "importance": 0.07295,
+        "shap_value": 0.271281,
+        "value": 0.4667,
+        "index": 42
+      },
+      {
+        "feature": "flow_44_min",
+        "importance": 0.05897,
+        "shap_value": 0.219303,
+        "value": 0.0,
+        "index": 236
+      },
+      {
+        "feature": "flow_44_mean",
+        "importance": 0.05283,
+        "shap_value": 0.196456,
+        "value": 2.3,
+        "index": 44
+      },
+      {
+        "feature": "flow_61_max",
+        "importance": 0.05217,
+        "shap_value": 0.193982,
+        "value": 15.0,
+        "index": 189
+      },
+      {
+        "feature": "flow_21_mean",
+        "importance": 0.04777,
+        "shap_value": -0.177627,
+        "value": 195.1667,
+        "index": 21
+      },
+      {
+        "feature": "flow_15_std",
+        "importance": 0.04152,
+        "shap_value": -0.154412,
+        "value": 380.1058,
+        "index": 79
+      }
+    ],
+    "contrast": []
+  },
+  "temporal": {
+    "lookback": 30,
+    "steps": [
+      {
+        "step": 0,
+        "t_rel_sec": -29,
+        "label": "-29s",
+        "importance": 0.03386
+      },
+      {
+        "step": 1,
+        "t_rel_sec": -28,
+        "label": "-28s",
+        "importance": 0.02818
+      },
+      {
+        "step": 2,
+        "t_rel_sec": -27,
+        "label": "-27s",
+        "importance": 0.02747
+      },
+      {
+        "step": 3,
+        "t_rel_sec": -26,
+        "label": "-26s",
+        "importance": 0.08158
+      },
+      {
+        "step": 4,
+        "t_rel_sec": -25,
+        "label": "-25s",
+        "importance": 0.01704
+      },
+      {
+        "step": 5,
+        "t_rel_sec": -24,
+        "label": "-24s",
+        "importance": 0.01463
+      },
+      {
+        "step": 6,
+        "t_rel_sec": -23,
+        "label": "-23s",
+        "importance": 0.04357
+      },
+      {
+        "step": 7,
+        "t_rel_sec": -22,
+        "label": "-22s",
+        "importance": 0.01341
+      },
+      {
+        "step": 8,
+        "t_rel_sec": -21,
+        "label": "-21s",
+        "importance": 0.05827
+      },
+      {
+        "step": 9,
+        "t_rel_sec": -20,
+        "label": "-20s",
+        "importance": 0.02821
+      },
+      {
+        "step": 10,
+        "t_rel_sec": -19,
+        "label": "-19s",
+        "importance": 0.01319
+      },
+      {
+        "step": 11,
+        "t_rel_sec": -18,
+        "label": "-18s",
+        "importance": 0.01144
+      },
+      {
+        "step": 12,
+        "t_rel_sec": -17,
+        "label": "-17s",
+        "importance": 0.02613
+      },
+      {
+        "step": 13,
+        "t_rel_sec": -16,
+        "label": "-16s",
+        "importance": 0.02751
+      },
+      {
+        "step": 14,
+        "t_rel_sec": -15,
+        "label": "-15s",
+        "importance": 0.01043
+      },
+      {
+        "step": 15,
+        "t_rel_sec": -14,
+        "label": "-14s",
+        "importance": 0.0386
+      },
+      {
+        "step": 16,
+        "t_rel_sec": -13,
+        "label": "-13s",
+        "importance": 0.00881
+      },
+      {
+        "step": 17,
+        "t_rel_sec": -12,
+        "label": "-12s",
+        "importance": 0.00976
+      },
+      {
+        "step": 18,
+        "t_rel_sec": -11,
+        "label": "-11s",
+        "importance": 0.02657
+      },
+      {
+        "step": 19,
+        "t_rel_sec": -10,
+        "label": "-10s",
+        "importance": 0.02836
+      },
+      {
+        "step": 20,
+        "t_rel_sec": -9,
+        "label": "-9s",
+        "importance": 0.01079
+      },
+      {
+        "step": 21,
+        "t_rel_sec": -8,
+        "label": "-8s",
+        "importance": 0.04179
+      },
+      {
+        "step": 22,
+        "t_rel_sec": -7,
+        "label": "-7s",
+        "importance": 0.02125
+      },
+      {
+        "step": 23,
+        "t_rel_sec": -6,
+        "label": "-6s",
+        "importance": 0.009
+      },
+      {
+        "step": 24,
+        "t_rel_sec": -5,
+        "label": "-5s",
+        "importance": 0.00855
+      },
+      {
+        "step": 25,
+        "t_rel_sec": -4,
+        "label": "-4s",
+        "importance": 0.00764
+      },
+      {
+        "step": 26,
+        "t_rel_sec": -3,
+        "label": "-3s",
+        "importance": 0.0076
+      },
+      {
+        "step": 27,
+        "t_rel_sec": -2,
+        "label": "-2s",
+        "importance": 0.07287
+      },
+      {
+        "step": 28,
+        "t_rel_sec": -1,
+        "label": "-1s",
+        "importance": 0.03282
+      },
+      {
+        "step": 29,
+        "t_rel_sec": 0,
+        "label": "NOW",
+        "importance": 0.24067
+      }
+    ]
+  },
+  "narrative": "HX-C triggered IPS at P(attack)=0.999 (2 consecutive windows >= 0.5). Top traffic features: flow_44_min (25.6%), flow_41_min (21.6%), flow_42_mean (5.4%), flow_15_mean (5.0%), flow_44_mean (2.8%). Strongest blocks: flow_mins (0.9%), flow_means (0.4%), macro_graph (0.2%). Predicted class: T1046_service_scan. Ground truth: T1046_service_scan.",
+  "scores_at_block": {
+    "sn2rx3": 0.6,
+    "hx_c": 0.9989
+  },
+  "runner_up": "Shaun v3",
+  "runner_up_p": 0.6
+}

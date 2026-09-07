@@ -1,0 +1,604 @@
+{
+  "blocker": "hx_c",
+  "blocker_label": "HX-C",
+  "p_attack": 0.6756,
+  "predicted_class": "Reconnaissance",
+  "ground_truth_class": "T1190_web_exploit_probe",
+  "class_match": false,
+  "method": "integrated_gradients",
+  "full_shap": true,
+  "top_features": [
+    {
+      "feature": "flow_40_mean",
+      "importance": 0.23642,
+      "shap_value": 0.001934,
+      "value": 0.8333,
+      "index": 40
+    },
+    {
+      "feature": "flow_44_min",
+      "importance": 0.2323,
+      "shap_value": -0.0019,
+      "value": 4.0,
+      "index": 236
+    },
+    {
+      "feature": "flow_41_min",
+      "importance": 0.13697,
+      "shap_value": -0.00112,
+      "value": 1.0,
+      "index": 233
+    },
+    {
+      "feature": "flow_42_mean",
+      "importance": 0.09325,
+      "shap_value": 0.000763,
+      "value": 0.1667,
+      "index": 42
+    },
+    {
+      "feature": "flow_43_min",
+      "importance": 0.04218,
+      "shap_value": 0.000345,
+      "value": 1.0,
+      "index": 235
+    },
+    {
+      "feature": "flow_42_std",
+      "importance": 0.02397,
+      "shap_value": 0.000196,
+      "value": 0.3727,
+      "index": 106
+    },
+    {
+      "feature": "flow_62_max",
+      "importance": 0.019,
+      "shap_value": -0.000155,
+      "value": 6.0,
+      "index": 190
+    },
+    {
+      "feature": "flow_44_mean",
+      "importance": 0.01768,
+      "shap_value": 0.000145,
+      "value": 5.0,
+      "index": 44
+    },
+    {
+      "feature": "flow_8_min",
+      "importance": 0.01759,
+      "shap_value": -0.000144,
+      "value": 4.0,
+      "index": 200
+    },
+    {
+      "feature": "flow_44_max",
+      "importance": 0.015,
+      "shap_value": 0.000123,
+      "value": 6.0,
+      "index": 172
+    },
+    {
+      "feature": "flow_40_std",
+      "importance": 0.01416,
+      "shap_value": 0.000116,
+      "value": 0.3727,
+      "index": 104
+    },
+    {
+      "feature": "flow_62_std",
+      "importance": 0.01333,
+      "shap_value": -0.000109,
+      "value": 0.0,
+      "index": 126
+    }
+  ],
+  "top_blocks": [
+    {
+      "block": "flow_mins",
+      "importance": 0.007189999800175428
+    },
+    {
+      "block": "flow_means",
+      "importance": 0.005859999917447567
+    },
+    {
+      "block": "macro_graph",
+      "importance": 0.002259999979287386
+    },
+    {
+      "block": "flow_stds",
+      "importance": 0.0013000000035390258
+    },
+    {
+      "block": "flow_maxs",
+      "importance": 0.0005499999970197678
+    },
+    {
+      "block": "flow_medians",
+      "importance": 0.0005300000193528831
+    }
+  ],
+  "waterfall": {
+    "base_value": 0.998897,
+    "output_value": 0.675554,
+    "steps": [
+      {
+        "feature": "flow_40_mean",
+        "shap_value": 0.001934,
+        "feature_value": 0.8333,
+        "cumulative": 1.000831,
+        "index": 40
+      },
+      {
+        "feature": "flow_44_min",
+        "shap_value": -0.0019,
+        "feature_value": 4.0,
+        "cumulative": 0.998931,
+        "index": 236
+      },
+      {
+        "feature": "flow_41_min",
+        "shap_value": -0.00112,
+        "feature_value": 1.0,
+        "cumulative": 0.99781,
+        "index": 233
+      },
+      {
+        "feature": "flow_42_mean",
+        "shap_value": 0.000763,
+        "feature_value": 0.1667,
+        "cumulative": 0.998573,
+        "index": 42
+      },
+      {
+        "feature": "flow_43_min",
+        "shap_value": 0.000345,
+        "feature_value": 1.0,
+        "cumulative": 0.998918,
+        "index": 235
+      },
+      {
+        "feature": "flow_42_std",
+        "shap_value": 0.000196,
+        "feature_value": 0.3727,
+        "cumulative": 0.999114,
+        "index": 106
+      },
+      {
+        "feature": "flow_62_max",
+        "shap_value": -0.000155,
+        "feature_value": 6.0,
+        "cumulative": 0.998959,
+        "index": 190
+      },
+      {
+        "feature": "flow_44_mean",
+        "shap_value": 0.000145,
+        "feature_value": 5.0,
+        "cumulative": 0.999103,
+        "index": 44
+      },
+      {
+        "feature": "flow_8_min",
+        "shap_value": -0.000144,
+        "feature_value": 4.0,
+        "cumulative": 0.99896,
+        "index": 200
+      },
+      {
+        "feature": "flow_44_max",
+        "shap_value": 0.000123,
+        "feature_value": 6.0,
+        "cumulative": 0.999082,
+        "index": 172
+      },
+      {
+        "feature": "flow_40_std",
+        "shap_value": 0.000116,
+        "feature_value": 0.3727,
+        "cumulative": 0.999198,
+        "index": 104
+      },
+      {
+        "feature": "flow_62_std",
+        "shap_value": -0.000109,
+        "feature_value": 0.0,
+        "cumulative": 0.999089,
+        "index": 126
+      }
+    ]
+  },
+  "class_analysis": {
+    "top_probs": [
+      {
+        "class": "T1071_dns_tunnel",
+        "p": 0.6891,
+        "index": 15
+      },
+      {
+        "class": "T1046_service_scan",
+        "p": 0.2571,
+        "index": 1
+      },
+      {
+        "class": "T1210_exploit_remote",
+        "p": 0.0104,
+        "index": 11
+      },
+      {
+        "class": "T1573_encrypted_channel",
+        "p": 0.0083,
+        "index": 18
+      },
+      {
+        "class": "T1595_active_scan",
+        "p": 0.0069,
+        "index": 2
+      },
+      {
+        "class": "Benign",
+        "p": 0.0039,
+        "index": 0
+      }
+    ],
+    "predicted_class_shap": [
+      {
+        "feature": "flow_40_mean",
+        "importance": 0.22167,
+        "shap_value": 0.200328,
+        "value": 0.8333,
+        "index": 40
+      },
+      {
+        "feature": "flow_42_mean",
+        "importance": 0.13967,
+        "shap_value": 0.126222,
+        "value": 0.1667,
+        "index": 42
+      },
+      {
+        "feature": "flow_1_min",
+        "importance": 0.11111,
+        "shap_value": 0.100407,
+        "value": 24084.6133,
+        "index": 193
+      },
+      {
+        "feature": "flow_41_std",
+        "importance": 0.07364,
+        "shap_value": -0.066546,
+        "value": 0.0,
+        "index": 105
+      },
+      {
+        "feature": "flow_41_min",
+        "importance": 0.05595,
+        "shap_value": 0.050564,
+        "value": 1.0,
+        "index": 233
+      },
+      {
+        "feature": "flow_43_min",
+        "importance": 0.0554,
+        "shap_value": 0.050067,
+        "value": 1.0,
+        "index": 235
+      },
+      {
+        "feature": "flow_15_min",
+        "importance": 0.03594,
+        "shap_value": -0.032479,
+        "value": 189.0,
+        "index": 207
+      },
+      {
+        "feature": "flow_44_std",
+        "importance": 0.03579,
+        "shap_value": -0.032347,
+        "value": 0.8165,
+        "index": 108
+      }
+    ],
+    "ground_truth_class_shap": [
+      {
+        "feature": "flow_44_min",
+        "importance": 0.21631,
+        "shap_value": 5.2e-05,
+        "value": 4.0,
+        "index": 236
+      },
+      {
+        "feature": "flow_40_mean",
+        "importance": 0.21008,
+        "shap_value": -5e-05,
+        "value": 0.8333,
+        "index": 40
+      },
+      {
+        "feature": "flow_41_min",
+        "importance": 0.10599,
+        "shap_value": 2.5e-05,
+        "value": 1.0,
+        "index": 233
+      },
+      {
+        "feature": "flow_42_mean",
+        "importance": 0.07808,
+        "shap_value": -1.9e-05,
+        "value": 0.1667,
+        "index": 42
+      },
+      {
+        "feature": "flow_44_std",
+        "importance": 0.04338,
+        "shap_value": 1e-05,
+        "value": 0.8165,
+        "index": 108
+      },
+      {
+        "feature": "flow_42_std",
+        "importance": 0.02806,
+        "shap_value": -7e-06,
+        "value": 0.3727,
+        "index": 106
+      },
+      {
+        "feature": "flow_8_min",
+        "importance": 0.02215,
+        "shap_value": 5e-06,
+        "value": 4.0,
+        "index": 200
+      },
+      {
+        "feature": "flow_1_min",
+        "importance": 0.02139,
+        "shap_value": -5e-06,
+        "value": 24084.6133,
+        "index": 193
+      }
+    ],
+    "contrast": [
+      {
+        "feature": "flow_40_mean",
+        "predicted_shap": 0.200328,
+        "ground_truth_shap": -5e-05,
+        "delta": 0.200378
+      },
+      {
+        "feature": "flow_42_mean",
+        "predicted_shap": 0.126222,
+        "ground_truth_shap": -1.9e-05,
+        "delta": 0.126241
+      },
+      {
+        "feature": "flow_1_min",
+        "predicted_shap": 0.100407,
+        "ground_truth_shap": -5e-06,
+        "delta": 0.100412
+      },
+      {
+        "feature": "flow_41_std",
+        "predicted_shap": -0.066546,
+        "ground_truth_shap": 0.0,
+        "delta": -0.066546
+      },
+      {
+        "feature": "flow_41_min",
+        "predicted_shap": 0.050564,
+        "ground_truth_shap": 2.5e-05,
+        "delta": 0.050539
+      },
+      {
+        "feature": "flow_43_min",
+        "predicted_shap": 0.050067,
+        "ground_truth_shap": 0.0,
+        "delta": 0.050067
+      },
+      {
+        "feature": "flow_15_min",
+        "predicted_shap": -0.032479,
+        "ground_truth_shap": 0.0,
+        "delta": -0.032479
+      },
+      {
+        "feature": "flow_44_std",
+        "predicted_shap": -0.032347,
+        "ground_truth_shap": 1e-05,
+        "delta": -0.032357
+      }
+    ]
+  },
+  "temporal": {
+    "lookback": 30,
+    "steps": [
+      {
+        "step": 0,
+        "t_rel_sec": -29,
+        "label": "-29s",
+        "importance": 0.0234
+      },
+      {
+        "step": 1,
+        "t_rel_sec": -28,
+        "label": "-28s",
+        "importance": 0.0154
+      },
+      {
+        "step": 2,
+        "t_rel_sec": -27,
+        "label": "-27s",
+        "importance": 0.01214
+      },
+      {
+        "step": 3,
+        "t_rel_sec": -26,
+        "label": "-26s",
+        "importance": 0.01313
+      },
+      {
+        "step": 4,
+        "t_rel_sec": -25,
+        "label": "-25s",
+        "importance": 0.01172
+      },
+      {
+        "step": 5,
+        "t_rel_sec": -24,
+        "label": "-24s",
+        "importance": 0.01225
+      },
+      {
+        "step": 6,
+        "t_rel_sec": -23,
+        "label": "-23s",
+        "importance": 0.01292
+      },
+      {
+        "step": 7,
+        "t_rel_sec": -22,
+        "label": "-22s",
+        "importance": 0.0626
+      },
+      {
+        "step": 8,
+        "t_rel_sec": -21,
+        "label": "-21s",
+        "importance": 0.04554
+      },
+      {
+        "step": 9,
+        "t_rel_sec": -20,
+        "label": "-20s",
+        "importance": 0.04666
+      },
+      {
+        "step": 10,
+        "t_rel_sec": -19,
+        "label": "-19s",
+        "importance": 0.06315
+      },
+      {
+        "step": 11,
+        "t_rel_sec": -18,
+        "label": "-18s",
+        "importance": 0.0103
+      },
+      {
+        "step": 12,
+        "t_rel_sec": -17,
+        "label": "-17s",
+        "importance": 0.05188
+      },
+      {
+        "step": 13,
+        "t_rel_sec": -16,
+        "label": "-16s",
+        "importance": 0.00796
+      },
+      {
+        "step": 14,
+        "t_rel_sec": -15,
+        "label": "-15s",
+        "importance": 0.01012
+      },
+      {
+        "step": 15,
+        "t_rel_sec": -14,
+        "label": "-14s",
+        "importance": 0.02666
+      },
+      {
+        "step": 16,
+        "t_rel_sec": -13,
+        "label": "-13s",
+        "importance": 0.00693
+      },
+      {
+        "step": 17,
+        "t_rel_sec": -12,
+        "label": "-12s",
+        "importance": 0.00915
+      },
+      {
+        "step": 18,
+        "t_rel_sec": -11,
+        "label": "-11s",
+        "importance": 0.00951
+      },
+      {
+        "step": 19,
+        "t_rel_sec": -10,
+        "label": "-10s",
+        "importance": 0.01134
+      },
+      {
+        "step": 20,
+        "t_rel_sec": -9,
+        "label": "-9s",
+        "importance": 0.04309
+      },
+      {
+        "step": 21,
+        "t_rel_sec": -8,
+        "label": "-8s",
+        "importance": 0.00924
+      },
+      {
+        "step": 22,
+        "t_rel_sec": -7,
+        "label": "-7s",
+        "importance": 0.04135
+      },
+      {
+        "step": 23,
+        "t_rel_sec": -6,
+        "label": "-6s",
+        "importance": 0.00977
+      },
+      {
+        "step": 24,
+        "t_rel_sec": -5,
+        "label": "-5s",
+        "importance": 0.01109
+      },
+      {
+        "step": 25,
+        "t_rel_sec": -4,
+        "label": "-4s",
+        "importance": 0.03037
+      },
+      {
+        "step": 26,
+        "t_rel_sec": -3,
+        "label": "-3s",
+        "importance": 0.0197
+      },
+      {
+        "step": 27,
+        "t_rel_sec": -2,
+        "label": "-2s",
+        "importance": 0.0585
+      },
+      {
+        "step": 28,
+        "t_rel_sec": -1,
+        "label": "-1s",
+        "importance": 0.04337
+      },
+      {
+        "step": 29,
+        "t_rel_sec": 0,
+        "label": "NOW",
+        "importance": 0.27073
+      }
+    ]
+  },
+  "narrative": "HX-C triggered IPS at P(attack)=0.676 (2 consecutive windows >= 0.5). Top traffic features: flow_40_mean (23.6%), flow_44_min (23.2%), flow_41_min (13.7%), flow_42_mean (9.3%), flow_43_min (4.2%). Strongest blocks: flow_mins (0.7%), flow_means (0.6%), macro_graph (0.2%). Predicted class: Reconnaissance. Ground truth for this kill-chain phase: T1190_web_exploit_probe \u2014 class-specific SHAP below contrasts the two labels.",
+  "scores_at_block": {
+    "sn2rx3": 0.1118,
+    "hx_c": 0.6756
+  },
+  "runner_up": "Shaun v3",
+  "runner_up_p": 0.1118
+}

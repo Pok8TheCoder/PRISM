@@ -1,0 +1,8 @@
+{
+  "containers": [
+    { "name": "harborline-site", "status": "running", "image": "prism/harborline:latest" },
+    { "name": "attacker-bot", "status": "running", "image": "prism/attacker:latest" }
+  ],
+  "training": { "active": false, "message": "Idle" },
+  "device": { "cuda": true, "deviceName": "NVIDIA GeForce RTX 4070", "vramGb": 12 }
+}

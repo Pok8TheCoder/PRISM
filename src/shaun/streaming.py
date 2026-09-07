@@ -10,6 +10,8 @@ from typing import Any
 import numpy as np
 import torch
 
+from src.aryan.constants import MITRE_STAGES_INV
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 SHAUN_ROOT = ROOT.parent / "PRISM-shaun"
 LOOKBACK = 30
@@ -234,6 +236,8 @@ class StreamingShaunRamxV3:
         self.buf.append(raw)
         traj = _padded_raw(self.buf)
         res = self.predictor.predict_state(traj, device=str(self.device))
+        stage = int(res.get("mitre_stage", 0))
+        stage_name = MITRE_STAGES_INV.get(stage, "Benign")
         return {
             "p_att": float(res["p_attack"]),
             "raw_p_att": float(res["raw_p_attack"]),
@@ -243,6 +247,50 @@ class StreamingShaunRamxV3:
             "alert_suppressed": bool(res.get("alert_suppressed", False)),
             "raw_offset": float(res.get("raw_offset", 0.0)),
             "ramx_version": str(res.get("ramx_version", "3.0")),
+            "mitre_stage": stage,
+            "mitre_stage_name": stage_name,
+            "label": stage_name if float(res["p_attack"]) >= 0.5 else None,
+        }
+
+    def rollout(self, horizon: int = 6) -> dict[str, Any]:
+        """Open-loop K-step forecast on the Shaun world-model state head."""
+        if not self.buf or horizon <= 0:
+            return {"forecast": [], "forecast_max": 0.0, "forecast_labels": []}
+
+        buf = list(self.buf)
+        m, s = self.mean.reshape(-1), self.std.reshape(-1)
+        device = str(self.device)
+        gated = self.predictor.step_count <= self.predictor.context_skip_steps
+        future: list[float] = []
+        labels: list[str] = []
+        for _ in range(horizon):
+            traj = _padded_raw(buf)
+            norm_seq = (traj - self.mean) / self.std
+            norm_seq = np.nan_to_num(norm_seq, nan=0.0)
+            t_seq = torch.tensor(norm_seq, dtype=torch.float32).unsqueeze(0).to(self.device)
+            self.model.eval()
+            with torch.no_grad():
+                pred_mean, _, atk_logits, mitre_logits, _, _ = self.model(t_seq)
+                raw_p = float(torch.softmax(atk_logits, dim=-1)[0, 1].item())
+                mitre_probs = torch.softmax(mitre_logits, dim=-1)[0].cpu().numpy()
+                pred_stage = int(np.argmax(mitre_probs))
+            calibrated = self.predictor.raw_calibrator.adjust(raw_p)
+            if gated:
+                p = min(raw_p, self.predictor.alert_cap_during_gate)
+            elif self.predictor.calibrator.calibrated:
+                rel = self.predictor.calibrator.get_relative_anomaly_score(buf[-1])
+                p = float(max(calibrated, 0.4 * calibrated + 0.6 * rel))
+            else:
+                p = float(calibrated)
+            p = float(np.clip(p, 0.0, 1.0))
+            future.append(p)
+            labels.append(MITRE_STAGES_INV.get(pred_stage, "Benign"))
+            pred_raw = (pred_mean.squeeze(0).cpu().numpy() * s + m).astype(np.float32)
+            buf.append(pred_raw)
+        return {
+            "forecast": future,
+            "forecast_max": float(max(future) if future else 0.0),
+            "forecast_labels": labels,
         }
 
 

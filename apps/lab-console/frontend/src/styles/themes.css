@@ -1,0 +1,205 @@
+/* ============================================================
+   Shared semantic tokens — vary by light/dark, NOT by style.
+   Status colors, chart lines, region bands stay consistent
+   whether the UI is in "Aurora" or "Mono" appearance.
+   ============================================================ */
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --chart-actual: #f4f6ff;
+  --chart-predicted: #34d399;
+  --chart-predicted-glow: rgba(52, 211, 153, 0.35);
+  --chart-actual-glow: rgba(244, 246, 255, 0.16);
+  --chart-grid: rgba(148, 163, 216, 0.08);
+
+  --region-suspicious: rgba(250, 204, 21, 0.2);
+  --region-suspicious-border: rgba(250, 204, 21, 0.62);
+  --region-attack: rgba(248, 113, 113, 0.2);
+  --region-attack-border: rgba(248, 113, 113, 0.68);
+  --region-suspicious-resolved: rgba(34, 211, 238, 0.2);
+  --region-suspicious-resolved-border: rgba(34, 211, 238, 0.58);
+  --region-attack-resolved: rgba(56, 89, 168, 0.38);
+  --region-attack-resolved-border: rgba(96, 130, 214, 0.58);
+  --region-gt: rgba(192, 132, 252, 0.2);
+  --region-gt-border: rgba(192, 132, 252, 0.62);
+  --region-overlap: rgba(244, 114, 182, 0.26);
+  --region-overlap-border: rgba(244, 114, 182, 0.72);
+
+  --playhead: #f4f6ff;
+  --terminal-bg: #05070d;
+  --terminal-fg: #cdd6f4;
+
+  --badge-ok: #34d399;
+  --badge-ok-soft: rgba(52, 211, 153, 0.15);
+  --badge-warn: #fbbf24;
+  --badge-warn-soft: rgba(251, 191, 36, 0.15);
+  --badge-error: #f87171;
+  --badge-error-soft: rgba(248, 113, 113, 0.15);
+  --badge-info: #60a5fa;
+  --badge-info-soft: rgba(96, 165, 250, 0.15);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --chart-actual: #171a2e;
+  --chart-predicted: #059669;
+  --chart-predicted-glow: rgba(5, 150, 105, 0.22);
+  --chart-actual-glow: rgba(23, 26, 46, 0.1);
+  --chart-grid: rgba(76, 81, 130, 0.1);
+
+  --region-suspicious: rgba(202, 138, 4, 0.15);
+  --region-suspicious-border: rgba(202, 138, 4, 0.52);
+  --region-attack: rgba(220, 38, 38, 0.13);
+  --region-attack-border: rgba(220, 38, 38, 0.52);
+  --region-suspicious-resolved: rgba(8, 145, 178, 0.15);
+  --region-suspicious-resolved-border: rgba(8, 145, 178, 0.48);
+  --region-attack-resolved: rgba(30, 58, 138, 0.15);
+  --region-attack-resolved-border: rgba(30, 58, 138, 0.42);
+  --region-gt: rgba(147, 51, 234, 0.13);
+  --region-gt-border: rgba(147, 51, 234, 0.48);
+  --region-overlap: rgba(219, 39, 119, 0.15);
+  --region-overlap-border: rgba(219, 39, 119, 0.52);
+
+  --playhead: #171a2e;
+  --terminal-bg: #14172a;
+  --terminal-fg: #dbe0f5;
+
+  --badge-ok: #059669;
+  --badge-ok-soft: rgba(5, 150, 105, 0.12);
+  --badge-warn: #b45309;
+  --badge-warn-soft: rgba(180, 83, 9, 0.12);
+  --badge-error: #dc2626;
+  --badge-error-soft: rgba(220, 38, 38, 0.12);
+  --badge-info: #2563eb;
+  --badge-info-soft: rgba(37, 99, 235, 0.12);
+}
+
+/* ============================================================
+   Style variants — the "brand identity" layer: surfaces, text,
+   accent color, gradients, shadows. This is what changes
+   between "Mono" (formal black & white, default) and
+   "Aurora" (violet/cyan gradient, saved as an alternate).
+   ============================================================ */
+
+/* ---------- Mono: formal, high-contrast, no color branding ---------- */
+
+:root,
+[data-theme='dark'][data-style='mono'] {
+  --bg-page: #0a0a0a;
+  --bg-page-2: #0d0d0d;
+  --bg-surface: #121212;
+  --bg-surface-2: #161616;
+  --bg-elevated: #1e1e1e;
+  --bg-glass: rgba(17, 17, 17, 0.86);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  --text-primary: #f2f2f2;
+  --text-secondary: #aaaaaa;
+  --text-muted: #6f6f6f;
+
+  --accent: #e8e8e8;
+  --accent-2: #8a8a8a;
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --accent-glow: rgba(255, 255, 255, 0.14);
+  --gradient-brand: linear-gradient(135deg, #f5f5f5 0%, #cfcfcf 100%);
+  --gradient-page: radial-gradient(ellipse 1400px 700px at 50% -8%, rgba(255, 255, 255, 0.035), transparent 62%);
+
+  --chart-fill-top: rgba(255, 255, 255, 0.1);
+  --chart-fill-bottom: rgba(255, 255, 255, 0);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 26px -16px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 1px rgba(255, 255, 255, 0.16), 0 10px 24px -14px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme='light'][data-style='mono'] {
+  --bg-page: #fafafa;
+  --bg-page-2: #f4f4f5;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #fbfbfb;
+  --bg-elevated: #efefef;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --border: rgba(0, 0, 0, 0.09);
+  --border-strong: rgba(0, 0, 0, 0.18);
+
+  --text-primary: #121212;
+  --text-secondary: #454545;
+  --text-muted: #767676;
+
+  --accent: #121212;
+  --accent-2: #6b7280;
+  --accent-soft: rgba(0, 0, 0, 0.05);
+  --accent-glow: rgba(0, 0, 0, 0.12);
+  --gradient-brand: linear-gradient(135deg, #1c1c1c 0%, #000000 100%);
+  --gradient-page: radial-gradient(ellipse 1400px 700px at 50% -8%, rgba(0, 0, 0, 0.02), transparent 62%);
+
+  --chart-fill-top: rgba(0, 0, 0, 0.07);
+  --chart-fill-bottom: rgba(0, 0, 0, 0);
+
+  --shadow-card: 0 1px 2px rgba(23, 26, 46, 0.04), 0 10px 24px -16px rgba(23, 26, 46, 0.14);
+  --shadow-glow: 0 0 0 1px rgba(0, 0, 0, 0.14), 0 10px 22px -14px rgba(0, 0, 0, 0.16);
+}
+
+/* ---------- Aurora: original violet/cyan gradient identity (saved) ---------- */
+
+[data-theme='dark'][data-style='aurora'] {
+  --bg-page: #05070d;
+  --bg-page-2: #0a0e1a;
+  --bg-surface: #0f1420;
+  --bg-surface-2: #131a2b;
+  --bg-elevated: #1a2236;
+  --bg-glass: rgba(19, 26, 43, 0.7);
+  --border: rgba(148, 163, 216, 0.12);
+  --border-strong: rgba(148, 163, 216, 0.22);
+
+  --text-primary: #eef1fb;
+  --text-secondary: #b7c0da;
+  --text-muted: #7580a3;
+
+  --accent: #8b5cf6;
+  --accent-2: #22d3ee;
+  --accent-soft: rgba(139, 92, 246, 0.16);
+  --accent-glow: rgba(139, 92, 246, 0.45);
+  --gradient-brand: linear-gradient(135deg, #8b5cf6 0%, #6366f1 45%, #22d3ee 100%);
+  --gradient-page: radial-gradient(ellipse 1200px 600px at 15% -10%, rgba(139, 92, 246, 0.16), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 100% 0%, rgba(34, 211, 238, 0.1), transparent 55%),
+    radial-gradient(ellipse 900px 900px at 50% 120%, rgba(236, 72, 153, 0.06), transparent 55%);
+
+  --chart-fill-top: rgba(139, 92, 246, 0.18);
+  --chart-fill-bottom: rgba(139, 92, 246, 0);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 0 0 1px rgba(139, 92, 246, 0.25), 0 8px 30px -8px rgba(139, 92, 246, 0.35);
+}
+
+[data-theme='light'][data-style='aurora'] {
+  --bg-page: #f3f4fb;
+  --bg-page-2: #eef0fa;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #f8f9ff;
+  --bg-elevated: #f1f2fc;
+  --bg-glass: rgba(255, 255, 255, 0.72);
+  --border: rgba(76, 81, 130, 0.12);
+  --border-strong: rgba(76, 81, 130, 0.2);
+
+  --text-primary: #171a2e;
+  --text-secondary: #454a6b;
+  --text-muted: #767ca0;
+
+  --accent: #7c3aed;
+  --accent-2: #0891b2;
+  --accent-soft: rgba(124, 58, 237, 0.1);
+  --accent-glow: rgba(124, 58, 237, 0.28);
+  --gradient-brand: linear-gradient(135deg, #7c3aed 0%, #6366f1 45%, #0891b2 100%);
+  --gradient-page: radial-gradient(ellipse 1200px 600px at 15% -10%, rgba(124, 58, 237, 0.09), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 100% 0%, rgba(8, 145, 178, 0.08), transparent 55%),
+    radial-gradient(ellipse 900px 900px at 50% 120%, rgba(219, 39, 119, 0.05), transparent 55%);
+
+  --chart-fill-top: rgba(124, 58, 237, 0.12);
+  --chart-fill-bottom: rgba(124, 58, 237, 0);
+
+  --shadow-card: 0 1px 2px rgba(23, 26, 46, 0.04), 0 12px 32px -16px rgba(23, 26, 46, 0.18);
+  --shadow-glow: 0 0 0 1px rgba(124, 58, 237, 0.16), 0 8px 30px -10px rgba(124, 58, 237, 0.25);
+}
