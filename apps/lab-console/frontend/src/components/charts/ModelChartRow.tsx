@@ -44,7 +44,7 @@ export function ModelChartRow({ model, session, playheadSec }: ModelChartRowProp
         modelRegions={model.regions}
         groundTruthRegions={session.groundTruthRegions}
         playheadSec={playheadSec}
-        tMax={session.durationSec}
+        windowSec={26}
         accuracy={model.accuracy}
         height={200}
       />

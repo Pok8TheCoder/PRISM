@@ -7,10 +7,22 @@ export interface TimeSeriesChartProps {
   modelRegions: ModelRegion[]
   groundTruthRegions: ModelRegion[]
   playheadSec: number
-  tMin?: number
-  tMax?: number
+  /** Visible time span (seconds), centered on playheadSec. The "now" line stays fixed
+   *  in the middle of the chart and the data scrolls underneath it, like a live monitor. */
+  windowSec?: number
   accuracy?: ModelAccuracy
   height?: number
+}
+
+/** Pick a "nice" tick step so we get roughly 2 gridlines on each side of "now". */
+function niceTickStep(halfWindow: number): number {
+  const target = halfWindow / 2
+  const candidates = [1, 2, 5, 10, 15, 20, 30, 60, 120, 300]
+  let best = candidates[0]
+  for (const c of candidates) {
+    if (c <= target) best = c
+  }
+  return best
 }
 
 function cssVar(name: string): string {
@@ -57,8 +69,7 @@ export function TimeSeriesChart({
   modelRegions,
   groundTruthRegions,
   playheadSec,
-  tMin,
-  tMax,
+  windowSec = 24,
   accuracy,
   height = 220,
 }: TimeSeriesChartProps) {
@@ -82,13 +93,14 @@ export function TimeSeriesChart({
       ctx.scale(dpr, dpr)
       ctx.clearRect(0, 0, width, height)
 
-      const pad = { l: 40, r: 14, t: 30, b: 16 }
+      const pad = { l: 40, r: 14, t: 30, b: 26 }
       const plotW = width - pad.l - pad.r
       const plotH = height - pad.t - pad.b
 
-      const allT = [...actual.map((p) => p.t), ...predicted.map((p) => p.t)]
-      const minT = tMin ?? Math.min(...allT, 0)
-      const maxT = tMax ?? Math.max(...allT, 1)
+      // "Now" is always dead-center: the window scrolls underneath the fixed playhead line.
+      const halfWindow = windowSec / 2
+      const minT = playheadSec - halfWindow
+      const maxT = playheadSec + halfWindow
       const allY = [...actual.map((p) => p.y), ...predicted.map((p) => p.y)]
       const minY = Math.min(...allY, 0) - 0.05
       const maxY = Math.max(...allY, 1) + 0.05
@@ -110,6 +122,32 @@ export function TimeSeriesChart({
         const val = maxY - ((maxY - minY) * i) / 3
         ctx.fillText(val.toFixed(2), 4, y + 3)
       }
+
+      // Everything time-based gets clipped to the plot column so it scrolls cleanly
+      // underneath the fixed "now" line instead of bleeding into the axis gutters.
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(pad.l, 0, plotW, height)
+      ctx.clip()
+
+      // Time axis — relative gridlines/labels ("-10s", "now", "+10s"…) scrolling with data
+      const tickStep = niceTickStep(halfWindow)
+      ctx.font = '9.5px Inter, sans-serif'
+      ctx.textAlign = 'center'
+      for (let offset = 0; offset <= halfWindow; offset += tickStep) {
+        for (const o of offset === 0 ? [0] : [-offset, offset]) {
+          const x = xScale(playheadSec + o)
+          ctx.strokeStyle = cssVar('--chart-grid')
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(x, pad.t)
+          ctx.lineTo(x, pad.t + plotH)
+          ctx.stroke()
+          ctx.fillStyle = cssVar('--text-muted')
+          ctx.fillText(o === 0 ? 'now' : `${o > 0 ? '+' : ''}${o}s`, x, pad.t + plotH + 16)
+        }
+      }
+      ctx.textAlign = 'left'
 
       // Ground truth regions (rounded, with border + label chip)
       const drawRegion = (
@@ -218,12 +256,13 @@ export function TimeSeriesChart({
         ctx.shadowBlur = 0
       }
 
-      // Playhead — dotted vertical + marker dot at top
-      const px = xScale(playheadSec)
+      // Playhead — fixed dead-center dotted vertical + marker dots top & bottom.
+      // The window scrolls underneath this line, so px is always the plot's midpoint.
+      const px = pad.l + plotW / 2
       ctx.strokeStyle = cssVar('--playhead')
       ctx.lineWidth = 1.25
       ctx.setLineDash([4, 4])
-      ctx.globalAlpha = 0.8
+      ctx.globalAlpha = 0.85
       ctx.beginPath()
       ctx.moveTo(px, pad.t)
       ctx.lineTo(px, pad.t + plotH)
@@ -231,13 +270,17 @@ export function TimeSeriesChart({
       ctx.setLineDash([])
       ctx.globalAlpha = 1
 
-      ctx.beginPath()
-      ctx.arc(px, pad.t, 3.5, 0, Math.PI * 2)
-      ctx.fillStyle = cssVar('--playhead')
-      ctx.shadowColor = cssVar('--playhead')
-      ctx.shadowBlur = 6
-      ctx.fill()
-      ctx.shadowBlur = 0
+      for (const cy of [pad.t, pad.t + plotH]) {
+        ctx.beginPath()
+        ctx.arc(px, cy, 3.5, 0, Math.PI * 2)
+        ctx.fillStyle = cssVar('--playhead')
+        ctx.shadowColor = cssVar('--playhead')
+        ctx.shadowBlur = 6
+        ctx.fill()
+        ctx.shadowBlur = 0
+      }
+
+      ctx.restore()
 
       // Accuracy HUD chip bottom-right
       if (accuracy) {
@@ -262,7 +305,7 @@ export function TimeSeriesChart({
     const ro = new ResizeObserver(draw)
     ro.observe(container)
     return () => ro.disconnect()
-  }, [actual, predicted, modelRegions, groundTruthRegions, playheadSec, tMin, tMax, accuracy, height])
+  }, [actual, predicted, modelRegions, groundTruthRegions, playheadSec, windowSec, accuracy, height])
 
   return (
     <div
