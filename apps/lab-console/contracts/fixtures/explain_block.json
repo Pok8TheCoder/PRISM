@@ -1,0 +1,22 @@
+{
+  "id": "shap-demo-035",
+  "window": 35,
+  "blocker": "hx_c",
+  "method": "integrated_gradients",
+  "p_attack": 0.5893,
+  "predicted_class": "Lateral Movement",
+  "ground_truth": "T1190_web_exploit_probe",
+  "waterfall": [
+    { "feature": "flow_41_min", "shap": -0.007219, "value": 1.0, "cumulative": 0.9915 },
+    { "feature": "flow_44_min", "shap": -0.005253, "value": 4.0, "cumulative": 0.9862 },
+    { "feature": "flow_43_min", "shap": 0.002849, "value": 1.0, "cumulative": 0.9891 },
+    { "feature": "flow_40_mean", "shap": -0.002654, "value": 0.2727, "cumulative": 0.9864 },
+    { "feature": "flow_25_min", "shap": -0.001404, "value": 105.57, "cumulative": 0.985 }
+  ],
+  "class_probs": [
+    { "label": "T1021_remote_services", "p": 0.5711 },
+    { "label": "T1046_service_scan", "p": 0.1302 },
+    { "label": "T1573_encrypted_channel", "p": 0.055 }
+  ],
+  "markdown_path": "reports/lab/hx/shap/forecast_shap_w00035_20260906_125607.md"
+}

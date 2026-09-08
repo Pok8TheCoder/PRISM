@@ -1,0 +1,42 @@
+{
+  "recordings": [
+    {
+      "id": "rec-demo-001",
+      "basename": "forecast_dual_v2.2_take03_20260906_142200",
+      "title": "Harborline kill-chain — IPS block @ enum",
+      "layout": "dual",
+      "demo_version": "v2.2",
+      "take": 3,
+      "recorded_at": "2026-09-06T14:22:00",
+      "duration_sec": 92,
+      "webm_path": "reports/lab/hx/recordings/forecast_dual_v2.2_take03_20260906_142200.webm",
+      "manifest_path": "reports/lab/hx/recordings/forecast_dual_v2.2_take03_20260906_142200.json",
+      "blocker": "hx_c",
+      "block_at_sec": 42.1,
+      "block_window": 38,
+      "blocked": true,
+      "attack_phase": "complete",
+      "p_hx_c": 0.589,
+      "p_sn2rx3": 0.21,
+      "models": ["shaun_v3", "hx_c"],
+      "has_shap": true
+    },
+    {
+      "id": "rec-demo-002",
+      "basename": "forecast_dual_v2.2_take01_20260905_091000",
+      "title": "Benign baseline + RAMX episodic only",
+      "layout": "dual",
+      "demo_version": "v2.2",
+      "take": 1,
+      "recorded_at": "2026-09-05T09:10:00",
+      "duration_sec": 120,
+      "webm_path": "reports/lab/hx/recordings/forecast_dual_v2.2_take01_20260905_091000.webm",
+      "manifest_path": "reports/lab/hx/recordings/forecast_dual_v2.2_take01_20250905_091000.json",
+      "blocker": null,
+      "blocked": false,
+      "attack_phase": "complete",
+      "models": ["hx_c"],
+      "has_shap": false
+    }
+  ]
+}

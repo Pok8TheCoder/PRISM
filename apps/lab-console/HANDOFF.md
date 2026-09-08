@@ -1,19 +1,18 @@
 # Handoff — Lab Console UI
 
-Quick guide for handing the **UI package** to another developer.
+**For AI agents:** start at [docs/AGENT-HANDOFF.md](./docs/AGENT-HANDOFF.md) (full read order + specs).
 
-## What to share
+**For humans:** quick setup below.
 
-| Path | Role |
-|------|------|
-| `apps/lab-console/frontend/` | **Standalone npm app** — all UI work happens here |
-| `apps/lab-console/docs/API.md` | REST contract the UI expects |
-| `apps/lab-console/docs/UI-ARCHITECTURE.md` | Folder conventions & extension points |
-| `apps/lab-console/contracts/` | OpenAPI + JSON fixtures |
+## UI/UX demo (this branch)
 
-They do **not** need the full PRISM repo, Docker, or ML code to iterate on layout/visuals.
+```bash
+python run_lab_console_ui.py
+```
 
-## 5-minute setup (UI only)
+Stub backend + Vite on LAN. No Docker or models.
+
+## UI-only (mocks, no Python)
 
 ```bash
 cd apps/lab-console/frontend
@@ -21,39 +20,35 @@ npm install
 npm run dev:mock
 ```
 
-→ http://localhost:5173 with mock data.
+## Full stack (lab team)
 
-## When they need live data
+```bash
+python run_lab_console.py --api
+```
 
-1. Install BFF deps: `pip install -r apps/lab-console/requirements-bff.txt`
-2. Run BFF: `python apps/lab-console/api/main.py` (port **8790**)
-3. Run UI: `npm run dev` in `frontend/`
+## Documentation
+
+| Doc | Contents |
+|-----|----------|
+| [docs/README.md](./docs/README.md) | **Index of all docs** |
+| [docs/AGENT-HANDOFF.md](./docs/AGENT-HANDOFF.md) | Master agent onboarding |
+| [docs/PRODUCT-SPEC.md](./docs/PRODUCT-SPEC.md) | Every tab + user journeys |
+| [docs/FUTURE-TABS.md](./docs/FUTURE-TABS.md) | Explain, Recordings, MITRE, Missed specs |
+| [docs/DOMAIN-CONCEPTS.md](./docs/DOMAIN-CONCEPTS.md) | Charts, IDS/IPS, scorer glossary |
+| [frontend/README.md](./frontend/README.md) | npm install, env vars |
 
 ## Boundaries
 
-| Layer | Owner | Location |
-|-------|-------|----------|
-| **UI** | Frontend dev | `frontend/src/` |
-| **API client** | Shared contract | `frontend/src/api/` + `contracts/` |
-| **BFF** | Backend / lab team | `api/` |
-| **Scorer / Docker** | Lab team | `scripts/demo_forecast.py`, `run_lab_console.py` |
+| Layer | Location |
+|-------|----------|
+| UI | `frontend/src/` |
+| Stub API | `api/stub_*.py` |
+| Real API | `api/main.py` |
+| Contracts | `contracts/` |
 
-UI dev should **not** import from `src/` (Python) or change scorer logic. New screens → add route in `app/routes.tsx`, page in `features/`, types in `types/`, optional mock in `mocks/`.
+## Adding a tab
 
-## Adding a new tab
-
-1. `features/my-tab/MyTabPage.tsx`
-2. Route in `app/routes.tsx`
-3. Nav item in `app/Sidebar.tsx`
-4. Types + mock data if needed
-5. `api/client.ts` + `docs/API.md` when backend exists
-
-## Status badge
-
-`ApiSourceBadge` shows **API** vs **mock**. Controlled by `useLabApi` hooks — if BFF is down or `VITE_FORCE_MOCK=true`, mocks are used automatically.
-
-## Questions?
-
-- API shapes → `docs/API.md`, `contracts/openapi.yaml`
-- UI structure → `docs/UI-ARCHITECTURE.md`
-- Missing features → `MISSING.md`
+1. `features/<name>/<Name>Page.tsx`
+2. `app/routes.tsx` + `app/Sidebar.tsx`
+3. Types + mocks + stub endpoint
+4. Document in `docs/PRODUCT-SPEC.md`

@@ -16,6 +16,8 @@ TypeScript types in `../frontend/src/types/` are the source of truth for the UI.
 | `dashboard.json` | Partial dashboard snapshot |
 | `session.json` | Minimal session metadata |
 | `session_full.json` | Full Lab Session chart payload |
+| `explain_block.json` | SHAP / Explain tab example |
+| `recordings_list.json` | Recordings library example |
 
 ## Validate (optional)
 
