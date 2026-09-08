@@ -2,11 +2,14 @@
 
 New lab UI replacing the Streamlit dashboard (`run_dashboard.py`).
 
+**Install & run (UI/UX branch):** [QUICKSTART-UI.md](../../QUICKSTART-UI.md)
+
 ## UI/UX demo (stub backend)
 
 Design review — no Docker, models, or scorer:
 
 ```bash
+cd apps/lab-console/frontend && npm install && cd ../../..
 python run_lab_console_ui.py
 ```
 

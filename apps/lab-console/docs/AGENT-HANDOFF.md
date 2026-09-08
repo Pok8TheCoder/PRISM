@@ -13,9 +13,10 @@
 7. [BACKEND-INTEGRATION.md](./BACKEND-INTEGRATION.md) — Real BFF vs stub; Python integration map
 8. [UI-BRANCH.md](./UI-BRANCH.md) — How to run demo mode on this branch
 
-**Quick start (no backend):**
+**Quick start:** [QUICKSTART-UI.md](../../../QUICKSTART-UI.md)
 
 ```bash
+cd apps/lab-console/frontend && npm install && cd ../../..
 python run_lab_console_ui.py
 # → http://localhost:5173/session
 ```

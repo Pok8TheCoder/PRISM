@@ -2,15 +2,16 @@
 
 **For AI agents:** start at [docs/AGENT-HANDOFF.md](./docs/AGENT-HANDOFF.md) (full read order + specs).
 
-**For humans:** quick setup below.
+**For humans:** [QUICKSTART-UI.md](../../QUICKSTART-UI.md) at repo root (install + run).
 
 ## UI/UX demo (this branch)
 
 ```bash
+cd apps/lab-console/frontend && npm install && cd ../../..
 python run_lab_console_ui.py
 ```
 
-Stub backend + Vite on LAN. No Docker or models.
+Stub backend + Vite on LAN. No Docker or models. Open http://localhost:5173/session
 
 ## UI-only (mocks, no Python)
 

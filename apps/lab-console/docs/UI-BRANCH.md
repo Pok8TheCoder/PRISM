@@ -2,6 +2,8 @@
 
 Branch: **`UI/UX`** on `origin` (github.com/Pok8TheCoder/PRISM)
 
+**Quick start:** [QUICKSTART-UI.md](../../../QUICKSTART-UI.md) at repo root.
+
 ## Purpose
 
 Isolate **visual design and UX iteration** from backend/scorer work. Models and Docker are **not required**.
@@ -18,11 +20,17 @@ Isolate **visual design and UX iteration** from backend/scorer work. Models and 
 
 ## Run locally
 
-```bash
-# Recommended — stub API + Vite on LAN
-python run_lab_console_ui.py
+See [QUICKSTART-UI.md](../../../QUICKSTART-UI.md) for the full install steps. Short version:
 
-# Frontend only (no API badge / mock fallback)
+```bash
+git checkout UI/UX
+cd apps/lab-console/frontend && npm install && cd ../../..
+python run_lab_console_ui.py
+```
+
+UI only (no Python):
+
+```bash
 cd apps/lab-console/frontend
 npm install
 npm run dev:mock

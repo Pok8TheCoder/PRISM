@@ -3,6 +3,8 @@
 
 No Docker, scorer, or model weights required — for design review only.
 
+Install & run: see QUICKSTART-UI.md in repo root.
+
 Usage:
   python run_lab_console_ui.py
   python run_lab_console_ui.py --port 5173
