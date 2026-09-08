@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -64,6 +65,9 @@ _LOG_LINES: list[dict[str, Any]] = [
 ]
 _LOG_LOCK = threading.Lock()
 _SEQ = 1
+_TAIL_THREAD: threading.Thread | None = None
+_TAIL_LOCK = threading.Lock()
+_SCORER_LINE = re.compile(r"\bw\d+\b")
 
 
 def list_scripts() -> list[dict[str, str]]:
@@ -113,35 +117,78 @@ def _clear_stale_pid() -> None:
         PID_PATH.unlink(missing_ok=True)
 
 
+def _classify_log_line(text: str) -> str:
+    kind = "info"
+    if "FORECAST" in text or _SCORER_LINE.search(text):
+        kind = "scorer"
+    if "ALERT" in text or "IPS" in text:
+        kind = "alert"
+    if "[auto-attack]" in text or "phase=" in text:
+        kind = "phase"
+    return kind
+
+
+def _ingest_log_line(text: str) -> None:
+    if not text or text.startswith("--- ["):
+        return
+    _append_log(text, kind=_classify_log_line(text))
+
+
+def _seed_recent_scorer_log(max_lines: int = 50) -> None:
+    if not SCORER_LOG.exists():
+        return
+    try:
+        lines = SCORER_LOG.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return
+    with _LOG_LOCK:
+        recent_texts = {ln.get("text") for ln in _LOG_LINES[-max_lines:]}
+    for line in lines[-max_lines:]:
+        text = line.rstrip()
+        if not text or text in recent_texts:
+            continue
+        _ingest_log_line(text)
+
+
 def _tail_file(path: Path) -> None:
-    """Stream scorer log lines into the API log buffer."""
-    deadline = time.time() + 600
+    """Stream scorer log lines into the API log buffer until the scorer exits."""
+    idle_ticks = 0
     try:
         with path.open("a+", encoding="utf-8", errors="replace") as f:
             f.seek(0, os.SEEK_END)
-            while time.time() < deadline:
+            while True:
                 line = f.readline()
                 if not line:
-                    if PID_PATH.exists():
-                        try:
-                            pid = int(PID_PATH.read_text(encoding="utf-8").strip() or "0")
-                        except ValueError:
-                            pid = 0
-                        if pid > 0 and not _pid_alive(pid):
-                            break
+                    if _scorer_running():
+                        idle_ticks = 0
+                        time.sleep(0.25)
+                        continue
+                    idle_ticks += 1
+                    if idle_ticks >= 8:
+                        break
                     time.sleep(0.25)
                     continue
-                text = line.rstrip()
-                if not text or text.startswith("--- ["):
-                    continue
-                kind = "scorer" if "FORECAST" in text or " w0" in text else "info"
-                if "ALERT" in text or "IPS" in text:
-                    kind = "alert"
-                if "[auto-attack]" in text or "phase=" in text:
-                    kind = "phase"
-                _append_log(text, kind=kind)
+                idle_ticks = 0
+                _ingest_log_line(line.rstrip())
     except Exception as exc:
         _append_log(f"[scorer log] tail stopped: {exc}", kind="alert")
+
+
+def ensure_scorer_log_tail(seed: bool = False) -> bool:
+    """Attach to scorer_bff.log (idempotent). Seeds recent lines when requested."""
+    global _TAIL_THREAD
+    with _TAIL_LOCK:
+        alive = _TAIL_THREAD is not None and _TAIL_THREAD.is_alive()
+        if seed and not alive:
+            _seed_recent_scorer_log()
+        if alive:
+            return True
+        if not SCORER_LOG.exists() and not _scorer_running():
+            return False
+        EVENTS.mkdir(parents=True, exist_ok=True)
+        _TAIL_THREAD = threading.Thread(target=_tail_file, args=(SCORER_LOG,), daemon=True)
+        _TAIL_THREAD.start()
+        return True
 
 
 def _launch_scorer_detached(script_id: str, cmd: list[str]) -> None:
@@ -176,7 +223,7 @@ def _launch_scorer_detached(script_id: str, cmd: list[str]) -> None:
         log_file.close()
 
     _append_log(f"[script] launched {script_id} (log: {SCORER_LOG.name})", kind="phase")
-    threading.Thread(target=_tail_file, args=(SCORER_LOG,), daemon=True).start()
+    ensure_scorer_log_tail(seed=False)
 
 
 def _run_subprocess(script_id: str, cmd: list[str]) -> None:
@@ -268,6 +315,13 @@ _KILLCHAIN_PHASES = {
 }
 
 
+def _run_lab_down() -> None:
+    if _scorer_running():
+        _append_log("lab down — stopping forecast scorer first", kind="phase")
+        _stop_scorer()
+    _run_subprocess("lab-down", _SCRIPT_CMDS["lab-down"])
+
+
 def append_log(text: str, kind: str = "info") -> None:
     _append_log(text, kind=kind)
 
@@ -276,6 +330,10 @@ def run_script(script_id: str, delay_sec: float | None = None) -> dict[str, Any]
     if script_id == "scorer-stop":
         threading.Thread(target=_stop_scorer, daemon=True).start()
         return {"job_id": f"job-{script_id}", "status": "queued"}
+
+    if script_id == "lab-down":
+        threading.Thread(target=_run_lab_down, daemon=True).start()
+        return {"job_id": f"job-{script_id}-{int(time.time())}", "status": "queued"}
 
     if script_id in _KILLCHAIN_PHASES:
         from services.attack_scheduler import schedule_attack
@@ -294,6 +352,15 @@ def run_script(script_id: str, delay_sec: float | None = None) -> dict[str, Any]
     _chart_script_hint(script_id)
     if script_id in _SCORER_SCRIPTS:
         if _scorer_running():
+            try:
+                pid = int(PID_PATH.read_text(encoding="utf-8").strip() or "0")
+            except (OSError, ValueError):
+                pid = 0
+            _append_log(
+                f"scorer already running (pid {pid}) — streaming from {SCORER_LOG.name}",
+                kind="info",
+            )
+            ensure_scorer_log_tail(seed=True)
             return {"job_id": job_id, "status": "already_running"}
         threading.Thread(target=_launch_scorer_detached, args=(script_id, cmd), daemon=True).start()
     else:

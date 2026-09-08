@@ -308,7 +308,7 @@ class StreamingHXC:
         tech, tech_p, stage = self._emit_technique(fwd["class_probs"], confirmed)
         if confirmed and stage == 0:
             stage = 1
-        fused = self.ramx.maybe_memory(
+        fused, memory_written = self.ramx.maybe_memory(
             fwd["traj"], fused, confirmed, stage, in_gate, in_cd,
         )
         self.ramx.after_alert(confirmed, fused)
@@ -337,4 +337,5 @@ class StreamingHXC:
             "technique": tech,
             "technique_p": tech_p,
             "ramx_version": "hx-c-1.0",
+            "memory_written": bool(memory_written),
         }

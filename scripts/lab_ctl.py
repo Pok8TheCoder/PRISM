@@ -11,10 +11,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 COMPOSE = ROOT / "docker" / "docker-compose.yml"
+COMPOSE_FORECAST = ROOT / "docker" / "docker-compose.forecast.yml"
 
 
-def _compose_cmd(*args: str) -> list[str]:
-    return ["docker", "compose", "-f", str(COMPOSE), "-p", "prism", *args]
+def _compose_cmd(*args: str, forecast: bool = True) -> list[str]:
+    cmd = ["docker", "compose", "-f", str(COMPOSE)]
+    if forecast and COMPOSE_FORECAST.exists():
+        cmd.extend(["-f", str(COMPOSE_FORECAST)])
+    cmd.extend(["-p", "prism", *args])
+    return cmd
 
 
 def _remove_conflicting_containers() -> None:
@@ -41,7 +46,10 @@ def cmd_up(_: argparse.Namespace) -> int:
     print("\nLab containers:")
     subprocess.run(_compose_cmd("ps"), cwd=str(ROOT))
     print("\nTarget DNS: target-server  |  Attacker: attacker-bot  |  Benign: benign-client  |  Red team: redteam")
-    print("No ports are published to your host.")
+    if COMPOSE_FORECAST.exists():
+        print("Forecast site: http://127.0.0.1:8080  (Harbor profile, benign traffic)")
+    else:
+        print("No ports are published to your host.")
     return 0
 
 

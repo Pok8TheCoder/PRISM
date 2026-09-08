@@ -63,6 +63,8 @@ def _load_shaun_model_modules():
     finally:
         os.chdir(prev_cwd)
         sys.path = prev_path
+        _clear_src_modules()
+        _ensure_prism_path()
     return StateTransformerWorldModel, RAMXPredictor
 
 

@@ -39,16 +39,20 @@ def _log(text: str, kind: str = "phase") -> None:
         _LOG_FN(text, kind=kind)
 
 
-def _forecast_elapsed() -> float:
+def _forecast_data_sec() -> float:
     if not FORECAST_STATE.exists():
         return 0.0
     try:
         data = json.loads(FORECAST_STATE.read_text(encoding="utf-8"))
         ws = float(data.get("window_sec", 1.0))
-        w = int(data.get("window", 0))
-        return float(data.get("elapsed_sec") or w * ws)
+        return int(data.get("window", 0)) * ws
     except Exception:
         return 0.0
+
+
+def _forecast_elapsed() -> float:
+    """Scored timeline position (matches chart playhead), not wall-clock elapsed."""
+    return _forecast_data_sec()
 
 
 def _run_phase(phase: str, job: dict[str, Any] | None = None) -> None:

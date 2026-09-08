@@ -40,12 +40,14 @@ export function ModelChartRow({ model, session, playheadSec }: ModelChartRowProp
       </div>
       <TimeSeriesChart
         actual={session.actual}
+        observed={model.observed}
         predicted={model.predicted}
         modelRegions={model.regions}
         groundTruthRegions={session.groundTruthRegions}
         memoryRegions={session.memoryRegions}
         playheadSec={playheadSec}
         windowSec={26}
+        dataStepSec={session.windowSec ?? 1}
         accuracy={model.accuracy}
         height={200}
       />

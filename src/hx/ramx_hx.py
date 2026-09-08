@@ -259,9 +259,10 @@ class RAMXHXPredictor:
         pred_stage: int,
         in_context_gate: bool,
         in_cooldown: bool,
-    ) -> float:
+    ) -> tuple[float, bool]:
         if in_context_gate or in_cooldown:
-            return fused
+            return fused, False
+        written = False
         matches = self.memory_bank.query(traj, k=1)
         if matches and matches[0][1] < self.memory_dist:
             match_stage = int(matches[0][0].get("stage", 0))
@@ -270,7 +271,8 @@ class RAMXHXPredictor:
                 fused = max(fused, self.memory_boost)
         if confirmed and fused >= self.memory_write_thresh and pred_stage > 0:
             self.memory_bank.add(traj, label=1, stage=pred_stage)
-        return fused
+            written = True
+        return fused, written
 
     def after_alert(self, confirmed: bool, fused: float) -> None:
         if self.cooldown_steps <= 0:

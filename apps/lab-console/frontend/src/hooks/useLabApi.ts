@@ -109,7 +109,7 @@ export function useSessionData(sessionId: string, mode: SessionMode) {
 }
 
 export function useLogStream() {
-  const [logs, setLogs] = useState<LogLine[]>(mockLogs)
+  const [logs, setLogs] = useState<LogLine[]>(() => (FORCE_MOCK ? mockLogs : []))
   const sinceRef = useRef(0)
 
   useEffect(() => {

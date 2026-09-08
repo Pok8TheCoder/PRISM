@@ -1,4 +1,4 @@
-const items: { color: string; label: string; dashed?: boolean }[] = [
+const items: { color: string; label: string }[] = [
   { color: 'var(--chart-predicted)', label: 'Model prediction' },
   { color: 'var(--chart-actual)', label: 'Actual network' },
   { color: 'var(--region-suspicious-border)', label: 'Suspicious' },

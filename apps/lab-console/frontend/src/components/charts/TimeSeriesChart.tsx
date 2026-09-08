@@ -3,6 +3,8 @@ import type { ModelAccuracy, ModelRegion, SeriesPoint } from '../../types/sessio
 
 export interface TimeSeriesChartProps {
   actual: SeriesPoint[]
+  /** Per-model retrospective scored line (left of playhead). */
+  observed?: SeriesPoint[]
   predicted: SeriesPoint[]
   modelRegions: ModelRegion[]
   groundTruthRegions: ModelRegion[]
@@ -11,6 +13,8 @@ export interface TimeSeriesChartProps {
   /** Visible time span (seconds), centered on playheadSec. The "now" line stays fixed
    *  in the middle of the chart and the data scrolls underneath it, like a live monitor. */
   windowSec?: number
+  /** Scorer window length — used to step future actual padding in live mode. */
+  dataStepSec?: number
   accuracy?: ModelAccuracy
   height?: number
 }
@@ -54,6 +58,47 @@ function overlaps(a: ModelRegion, b: ModelRegion): boolean {
   return a.start < b.end && b.start < a.end
 }
 
+/** Observed past + flat continuation through the visible window (attacks shown as region bands). */
+function buildActualLine(
+  actual: SeriesPoint[],
+  playheadSec: number,
+  minT: number,
+  maxT: number,
+  stepSec: number,
+): SeriesPoint[] {
+  const step = Math.max(stepSec * 0.5, 0.25)
+  const past = actual.filter((p) => p.t <= playheadSec + 0.02).sort((a, b) => a.t - b.t)
+
+  const out: SeriesPoint[] = []
+  for (const p of past) {
+    if (out.length && Math.abs(out[out.length - 1].t - p.t) < step * 0.2) continue
+    out.push(p)
+  }
+
+  const baseline = out.at(-1)?.y ?? 0.06
+
+  const lastT = out.at(-1)?.t
+  if (lastT !== undefined && lastT < playheadSec - 0.01) {
+    out.push({ t: playheadSec, y: baseline })
+  }
+
+  let t = Math.max(out.at(-1)?.t ?? playheadSec, playheadSec)
+  while (t < maxT - 0.01) {
+    t = Math.round((t + step) * 1000) / 1000
+    if (out.some((p) => Math.abs(p.t - t) < step * 0.35)) continue
+    out.push({ t, y: baseline })
+  }
+
+  return out.filter((p) => p.t >= minT - step && p.t <= maxT + step)
+}
+
+function modelPastPoints(observed: SeriesPoint[], predicted: SeriesPoint[], playheadSec: number): SeriesPoint[] {
+  if (observed.length > 0) {
+    return observed.filter((p) => p.t <= playheadSec + 0.05).sort((a, b) => a.t - b.t)
+  }
+  return predicted.filter((p) => p.t <= playheadSec + 0.05).sort((a, b) => a.t - b.t)
+}
+
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   const rr = Math.min(r, Math.abs(w) / 2, h / 2)
   ctx.beginPath()
@@ -67,12 +112,14 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 
 export function TimeSeriesChart({
   actual,
+  observed = [],
   predicted,
   modelRegions,
   groundTruthRegions,
   memoryRegions = [],
   playheadSec,
   windowSec = 24,
+  dataStepSec = 1,
   accuracy,
   height = 220,
 }: TimeSeriesChartProps) {
@@ -104,9 +151,25 @@ export function TimeSeriesChart({
       const halfWindow = windowSec / 2
       const minT = playheadSec - halfWindow
       const maxT = playheadSec + halfWindow
-      const allY = [...actual.map((p) => p.y), ...predicted.map((p) => p.y)]
-      const minY = allY.length ? Math.min(...allY, 0) - 0.05 : -0.05
-      const maxY = allY.length ? Math.max(...allY, 1) + 0.05 : 1.05
+
+      const pastModel = modelPastPoints(observed, predicted, playheadSec).filter(
+        (p) => p.t >= minT - 0.5,
+      )
+      const futureForecast = predicted
+        .filter((p) => p.t > playheadSec + 0.001 && p.t <= maxT + 0.5)
+        .sort((a, b) => a.t - b.t)
+
+      const fullActual = buildActualLine(actual, playheadSec, minT, maxT, dataStepSec)
+      const pastActual = fullActual.filter((p) => p.t <= playheadSec + 0.02)
+
+      // Scale from model lines + measured actual (not synthetic GT future spikes).
+      const scaleYs = [
+        ...pastModel.map((p) => p.y),
+        ...futureForecast.map((p) => p.y),
+        ...pastActual.map((p) => p.y),
+      ]
+      const minY = scaleYs.length ? Math.min(...scaleYs, 0) - 0.05 : -0.05
+      const maxY = scaleYs.length ? Math.max(...scaleYs, 1) + 0.05 : 1.05
 
       const xScale = (t: number) => pad.l + ((t - minT) / (maxT - minT || 1)) * plotW
       const yScale = (y: number) => pad.t + plotH - ((y - minY) / (maxY - minY || 1)) * plotH
@@ -253,58 +316,94 @@ export function TimeSeriesChart({
         ctx.shadowBlur = 0
       }
 
-      // Actual line — filled area + solid line
-      if (actual.length > 1) {
+      const strokeSeries = (
+        points: SeriesPoint[],
+        stroke: string,
+        width: number,
+        opts?: { dash?: number[]; alpha?: number; glow?: string },
+      ) => {
+        if (points.length < 2) {
+          drawLine(points, stroke, width, opts?.glow)
+          return
+        }
+        ctx.beginPath()
+        points.forEach((p, i) => {
+          const x = xScale(p.t)
+          const y = yScale(p.y)
+          if (i === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        })
+        ctx.strokeStyle = stroke
+        ctx.lineWidth = width
+        ctx.lineJoin = 'round'
+        ctx.globalAlpha = opts?.alpha ?? 1
+        if (opts?.dash) ctx.setLineDash(opts.dash)
+        if (opts?.glow) {
+          ctx.shadowColor = opts.glow
+          ctx.shadowBlur = 10
+        }
+        ctx.stroke()
+        ctx.setLineDash([])
+        ctx.shadowBlur = 0
+        ctx.globalAlpha = 1
+      }
+
+      const px = pad.l + plotW / 2
+
+      // Actual network — white solid through and past "now" (includes scheduled GT future)
+      const pastForFill = fullActual.filter((p) => p.t <= playheadSec + 0.02)
+      if (pastForFill.length > 1) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(pad.l, pad.t, plotW / 2, plotH)
+        ctx.clip()
         const fillGrad = ctx.createLinearGradient(0, pad.t, 0, pad.t + plotH)
         fillGrad.addColorStop(0, cssVar('--chart-fill-top'))
         fillGrad.addColorStop(1, cssVar('--chart-fill-bottom'))
         ctx.beginPath()
-        ctx.moveTo(xScale(actual[0].t), pad.t + plotH)
-        actual.forEach((p) => ctx.lineTo(xScale(p.t), yScale(p.y)))
-        ctx.lineTo(xScale(actual[actual.length - 1].t), pad.t + plotH)
+        ctx.moveTo(xScale(pastForFill[0].t), pad.t + plotH)
+        pastForFill.forEach((p) => ctx.lineTo(xScale(p.t), yScale(p.y)))
+        ctx.lineTo(xScale(pastForFill[pastForFill.length - 1].t), pad.t + plotH)
         ctx.closePath()
         ctx.fillStyle = fillGrad
         ctx.fill()
-
-        ctx.beginPath()
-        actual.forEach((p, i) => {
-          const x = xScale(p.t)
-          const y = yScale(p.y)
-          if (i === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
-        })
-        ctx.strokeStyle = cssVar('--chart-actual')
-        ctx.lineWidth = 1.75
-        ctx.globalAlpha = 0.85
-        ctx.stroke()
-        ctx.globalAlpha = 1
-      } else {
-        drawLine(actual, cssVar('--chart-actual'), 1.75)
+        ctx.restore()
       }
 
-      // Predicted line — glowing green
-      if (predicted.length > 1) {
-        ctx.beginPath()
-        predicted.forEach((p, i) => {
-          const x = xScale(p.t)
-          const y = yScale(p.y)
-          if (i === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
-        })
-        ctx.strokeStyle = cssVar('--chart-predicted')
-        ctx.lineWidth = 2.25
-        ctx.lineJoin = 'round'
-        ctx.shadowColor = cssVar('--chart-predicted-glow')
-        ctx.shadowBlur = 10
-        ctx.stroke()
-        ctx.shadowBlur = 0
+      if (fullActual.length > 1) {
+        strokeSeries(fullActual, cssVar('--chart-actual'), 2.25)
       } else {
-        drawLine(predicted, cssVar('--chart-predicted'), 2.25, cssVar('--chart-predicted-glow'))
+        drawLine(fullActual, cssVar('--chart-actual'), 2.25)
+      }
+
+      // Model track — solid retrospective, dashed forecast (drawn on top of actual).
+      const modelColor = cssVar('--chart-predicted')
+      const modelGlow = cssVar('--chart-predicted-glow')
+
+      if (pastModel.length > 1) {
+        strokeSeries(pastModel, modelColor, 2.5, { glow: modelGlow })
+      } else if (pastModel.length === 1) {
+        drawLine(pastModel, modelColor, 2.5, modelGlow)
+      }
+
+      const yAtNow =
+        pastModel.at(-1)?.y ??
+        futureForecast[0]?.y ??
+        pastActual.at(-1)?.y ??
+        0
+      const forecastLine: SeriesPoint[] =
+        futureForecast.length > 0
+          ? [{ t: playheadSec, y: yAtNow }, ...futureForecast]
+          : []
+
+      if (forecastLine.length > 1) {
+        strokeSeries(forecastLine, modelColor, 2.75, {
+          dash: [7, 5],
+          glow: modelGlow,
+        })
       }
 
       // Playhead — fixed dead-center dotted vertical + marker dots top & bottom.
-      // The window scrolls underneath this line, so px is always the plot's midpoint.
-      const px = pad.l + plotW / 2
       ctx.strokeStyle = cssVar('--playhead')
       ctx.lineWidth = 1.25
       ctx.setLineDash([4, 4])
@@ -351,7 +450,7 @@ export function TimeSeriesChart({
     const ro = new ResizeObserver(draw)
     ro.observe(container)
     return () => ro.disconnect()
-  }, [actual, predicted, modelRegions, groundTruthRegions, memoryRegions, playheadSec, windowSec, accuracy, height])
+  }, [actual, observed, predicted, modelRegions, groundTruthRegions, memoryRegions, playheadSec, windowSec, dataStepSec, accuracy, height])
 
   return (
     <div

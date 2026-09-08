@@ -8,6 +8,8 @@
   color-scheme: dark;
 
   --chart-actual: #f4f6ff;
+  --chart-gt-future: #fbbf24;
+  --chart-scored: #94a3b8;
   --chart-predicted: #34d399;
   --chart-predicted-glow: rgba(52, 211, 153, 0.35);
   --chart-actual-glow: rgba(244, 246, 255, 0.16);
@@ -46,6 +48,8 @@
   color-scheme: light;
 
   --chart-actual: #171a2e;
+  --chart-gt-future: #b45309;
+  --chart-scored: #64748b;
   --chart-predicted: #059669;
   --chart-predicted-glow: rgba(5, 150, 105, 0.22);
   --chart-actual-glow: rgba(23, 26, 46, 0.1);

@@ -77,6 +77,14 @@ def main() -> int:
         check("session.recorded", False, str(exc))
 
     try:
+        cfg = get("/lab-config")
+        check("lab-config.horizon", cfg.get("horizonSec") == 60 or cfg.get("horizonSec") == 60.0)
+        cfg2 = patch("/lab-config", {"horizonSec": 60})
+        check("lab-config.patch", "horizonSec" in cfg2)
+    except Exception as exc:
+        check("lab-config", False, str(exc))
+
+    try:
         live = get("/sessions/default/state?mode=live")
         check("session.live", "mode" in live, f"mode={live.get('mode')}")
     except Exception as exc:

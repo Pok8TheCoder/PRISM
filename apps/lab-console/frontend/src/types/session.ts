@@ -27,6 +27,8 @@ export interface ModelAccuracy {
 export interface ModelSlot {
   id: string
   name: string
+  /** Retrospective scored P(attack) for this model (up to playhead). */
+  observed?: SeriesPoint[]
   predicted: SeriesPoint[]
   regions: ModelRegion[]
   accuracy: ModelAccuracy

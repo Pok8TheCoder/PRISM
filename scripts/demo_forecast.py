@@ -62,6 +62,7 @@ STATE_PATH = EVENTS / "demo_forecast.json"
 HIST_PATH = EVENTS / "demo_forecast.jsonl"
 PID_PATH = EVENTS / "demo_forecast.pid"
 PCAP_DIR = EVENTS / "demo_forecast_pcaps"
+CONFIG_PATH = EVENTS / "lab_console_config.json"
 ATTACK_THRESHOLD = 0.5
 SUSPICIOUS_THRESHOLD = 0.35
 WINDOW_SEC = 1.0
@@ -601,6 +602,37 @@ def bump_phase_regions(
     return regions
 
 
+def read_horizon_windows(window_sec: float, fallback: int = HORIZON) -> int:
+    if not CONFIG_PATH.exists():
+        return fallback
+    try:
+        cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        sec = float(cfg.get("horizonSec", fallback * window_sec))
+        windows = max(1, int(round(sec / max(window_sec, 0.1))))
+        # Rollout is O(horizon); cap to keep live scoring responsive on CPU.
+        return min(windows, 15)
+    except Exception:
+        return fallback
+
+
+def bump_memory_regions(
+    regions: list[dict[str, Any]],
+    window_idx: int,
+    *,
+    system: str,
+) -> list[dict[str, Any]]:
+    if regions and regions[-1].get("system") == system and int(regions[-1]["end_w"]) == window_idx - 1:
+        regions[-1]["end_w"] = window_idx
+        return regions
+    regions.append({
+        "start_w": window_idx,
+        "end_w": window_idx,
+        "system": system,
+        "label": "RAMX episodic",
+    })
+    return regions
+
+
 def level_from_p(p: float) -> str:
     if p >= ATTACK_THRESHOLD:
         return "attack"
@@ -686,6 +718,7 @@ class LiveState:
             "scores_at_block": None,
             "block_explanation": None,
             "phase_regions": [],
+            "memory_regions": [],
             "ips_armed": False,
             "models": {"shaun_v3": {"retrospective": [], "prospective": []}, "hx_c": {"retrospective": [], "prospective": []}},
         }
@@ -1017,7 +1050,12 @@ def run_loop(
 ) -> None:
     if not no_up:
         up_lab()
-    wait_http(SITE_URL)
+        wait_http(SITE_URL)
+    else:
+        try:
+            wait_http(SITE_URL, timeout=8.0)
+        except RuntimeError as exc:
+            tlog(f"  WARNING: {exc} — continuing without live site traffic", kind="alert")
     clear_blocks()
     if HIST_PATH.exists():
         HIST_PATH.write_text("", encoding="utf-8")
@@ -1065,8 +1103,10 @@ def run_loop(
     adapt_samples: list[dict[str, Any]] = []
     prev_attack_phase = "idle"
     phase_regions: list[dict[str, Any]] = []
+    memory_regions: list[dict[str, Any]] = []
     try:
         while True:
+            horizon = read_horizon_windows(window_sec, horizon)
             window_idx += 1
             if phase == "warmup" and warmup_n >= warmup_windows:
                 phase = "live"
@@ -1099,6 +1139,8 @@ def run_loop(
                 v3_label = None
             v3_hist.append({"w": window_idx, "p": p3, "label": v3_label})
             hx_hist.append({"w": window_idx, "p": ph, "label": hx_label})
+            if out_hx.get("memory_written"):
+                memory_regions = bump_memory_regions(memory_regions, window_idx, system="hx_c")
             models = {
                 "shaun_v3": build_timeline(v3_hist, roll_v3, window_idx=window_idx, window_sec=window_sec, horizon=horizon),
                 "hx_c": build_timeline(hx_hist, roll_hx, window_idx=window_idx, window_sec=window_sec, horizon=horizon),
@@ -1177,6 +1219,7 @@ def run_loop(
                 ips_confirm=IPS_ATTACK_CONFIRM,
                 ips_armed=ips_armed,
                 phase_regions=phase_regions,
+                memory_regions=memory_regions,
                 models=models,
             )
             tlog(

@@ -25,7 +25,13 @@ sys.path.insert(0, str(API_DIR))
 from services.dashboard_service import build_dashboard  # noqa: E402
 from services.lab_config_service import get_config, patch_config  # noqa: E402
 from services.models_service import list_model_registry  # noqa: E402
-from services.scripts_service import append_log, get_logs, list_scripts, run_script  # noqa: E402
+from services.scripts_service import (  # noqa: E402
+    append_log,
+    ensure_scorer_log_tail,
+    get_logs,
+    list_scripts,
+    run_script,
+)
 from services.session_service import build_session, set_policy_mode  # noqa: E402
 from services.terminal_service import relay_terminal  # noqa: E402
 from services.attack_scheduler import set_log_fn, start_scheduler  # noqa: E402
@@ -59,6 +65,8 @@ class LabConfigBody(BaseModel):
 def _startup() -> None:
     set_log_fn(append_log)
     start_scheduler()
+    if ensure_scorer_log_tail(seed=True):
+        append_log("attached to running scorer log stream", kind="info")
 
 
 @app.get("/api/health")

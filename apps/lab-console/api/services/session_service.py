@@ -157,23 +157,32 @@ def _recorded_fallback() -> dict[str, Any]:
     }
 
 
-def _timeline_to_series(timeline: dict[str, Any], window_sec: float, elapsed: float) -> list[dict[str, float]]:
-    """Map scorer windows to absolute session time (stable across polls)."""
+def _timeline_observed(timeline: dict[str, Any], window_sec: float) -> list[dict[str, float]]:
+    """Retrospective (scored) points on the session timeline."""
     points: list[dict[str, float]] = []
     for pt in timeline.get("retrospective") or []:
         w = pt.get("w")
         if w is not None:
             t = float(w) * window_sec
         else:
-            t = elapsed + float(pt.get("t_rel", 0))
+            t = float(pt.get("t_rel", 0))
         points.append({"t": round(t, 3), "y": float(pt.get("p", 0))})
+    if points:
+        points.sort(key=lambda p: p["t"])
+    return points
+
+
+def _timeline_forecast(timeline: dict[str, Any], window_sec: float, data_sec: float) -> list[dict[str, float]]:
+    """Prospective (forecast) points ahead of the scored playhead."""
+    points: list[dict[str, float]] = []
     for pt in timeline.get("prospective") or []:
         w = pt.get("w")
         if w is not None:
             t = float(w) * window_sec
         else:
-            t = elapsed + float(pt.get("t_rel", 0))
-        points.append({"t": round(t, 3), "y": float(pt.get("p", 0))})
+            t = data_sec + float(pt.get("t_rel", 0))
+        if t > data_sec + 0.001:
+            points.append({"t": round(t, 3), "y": float(pt.get("p", 0))})
     if points:
         points.sort(key=lambda p: p["t"])
     return points
@@ -260,6 +269,42 @@ def _merge_gt_regions(
     return merged
 
 
+def _gt_p_attack_at(t: float, regions: list[dict[str, Any]]) -> float:
+    """Synthetic P(attack) from scheduled / known ground-truth regions (lab generator)."""
+    for r in regions:
+        start = float(r.get("start", 0))
+        end = float(r.get("end", 0))
+        if start <= t <= end:
+            label = str(r.get("label") or r.get("classId") or "").upper()
+            if "RECON" in label or r.get("kind") == "recon":
+                return 0.28
+            return 0.92
+    return 0.06
+
+
+def _build_actual_series(
+    observed: list[dict[str, float]],
+    ground_truth: list[dict[str, Any]],
+    data_sec: float,
+    window_sec: float,
+    horizon: int,
+) -> list[dict[str, float]]:
+    """Observed retrospective + known/scheduled future (lab controls traffic)."""
+    past = [p for p in observed if p["t"] <= data_sec + 0.01]
+    baseline = past[-1]["y"] if past else 0.06
+    # Cover the chart's visible future half-window (~13s) plus scorer horizon.
+    future_end = data_sec + max(float(horizon) * window_sec, 15.0, window_sec * 14)
+    step = max(window_sec * 0.5, 0.25)
+    future: list[dict[str, float]] = []
+    t = data_sec + step
+    while t <= future_end + 0.01:
+        future.append({"t": round(t, 3), "y": baseline})
+        t += step
+    if past and future and past[-1]["t"] < data_sec + 0.01:
+        past = past + [{"t": round(data_sec, 3), "y": past[-1]["y"]}]
+    return past + future
+
+
 def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     window_sec = float(state.get("window_sec", 1.0))
     window_idx = int(state.get("window", 0))
@@ -276,17 +321,27 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     models: list[dict[str, Any]] = []
     actual: list[dict[str, float]] = []
 
+    scorer_gt = _gt_regions(state.get("phase_regions") or [], window_sec)
+    try:
+        from services.attack_scheduler import ui_attack_regions
+
+        ground_truth = _merge_gt_regions(scorer_gt, ui_attack_regions())
+    except Exception:
+        ground_truth = scorer_gt
+
     for mid, name in model_defs:
         timeline = models_raw.get(mid) or {}
-        predicted = _timeline_to_series(timeline, window_sec, elapsed)
+        observed = _timeline_observed(timeline, window_sec)
+        forecast = _timeline_forecast(timeline, window_sec, data_sec)
         if mid == "shaun_v3" and not actual:
-            actual = [{"t": p["t"], "y": p["y"]} for p in predicted if p["t"] <= data_sec + window_sec + 0.01]
+            actual = _build_actual_series(observed, ground_truth, data_sec, window_sec, horizon)
         models.append(
             {
                 "id": mid,
                 "name": name,
-                "predicted": predicted,
-                "regions": _regions_from_points(predicted),
+                "observed": observed,
+                "predicted": forecast,
+                "regions": _regions_from_points(observed + forecast),
                 "accuracy": {"lineMae": 0.04, "regionPrecision": 0.75, "regionRecall": 0.70},
             }
         )
@@ -297,14 +352,6 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     }
     attack_phase = state.get("attack_phase", "idle")
     ips_armed = bool(state.get("ips_armed")) or attack_phase in {"enum", "spray", "loot"}
-
-    scorer_gt = _gt_regions(state.get("phase_regions") or [], window_sec)
-    try:
-        from services.attack_scheduler import ui_attack_regions
-
-        ground_truth = _merge_gt_regions(scorer_gt, ui_attack_regions())
-    except Exception:
-        ground_truth = scorer_gt
 
     return {
         "id": "live",
