@@ -23,6 +23,7 @@ class DataConfig:
     use_packet_features: bool = True
     max_flows_per_window: int = 10000
     num_workers: int = 0
+    stride: int = 2
 
 
 @dataclass

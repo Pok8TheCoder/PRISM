@@ -443,15 +443,14 @@ class MultiScaleTemporalConvBlock(nn.Module):
 class AsymmetricFocalLoss(nn.Module):
     """
     Asymmetric Cost-Sensitive Focal Loss for Threat Detection.
-    Applies asymmetric penalty weights: False Negatives (missed attacks) carry a
-    higher penalty weight w_fn (e.g. 3.0) than False Positives (w_fp = 1.0).
-    Includes active label smoothing and stage-aware cost scaling.
+    Applies focal loss with modulating factor (1 - p_t)^gamma and label smoothing.
+    When stage_escalation or weight is provided, scales loss accordingly.
     """
 
     def __init__(
         self,
-        gamma: float = 2.0,
-        fn_weight: float = 3.0,
+        gamma: float = 1.5,
+        fn_weight: float = 1.0,
         weight: Optional[torch.Tensor] = None,
         stage_escalation: Optional[list[float]] = None,
         label_smoothing: float = 0.01,
@@ -469,35 +468,26 @@ class AsymmetricFocalLoss(nn.Module):
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         num_classes = logits.size(-1)
         probs = torch.softmax(logits, dim=-1)
-        log_probs = torch.log_softmax(logits, dim=-1)
-        
-        # Prob of the true target class
-        p_t = probs.gather(1, targets.unsqueeze(1)).squeeze(1)
-        p_t = torch.clamp(p_t, min=1e-7, max=1.0)
-        
-        # Focal modulating factor
+        p_t = probs.gather(1, targets.unsqueeze(1)).squeeze(1).clamp(min=1e-7, max=1.0)
         focal_mod = (1.0 - p_t) ** self.gamma
         
-        # Smooth CE computation
-        if self.label_smoothing > 0.0:
-            target_one_hot = F.one_hot(targets, num_classes=num_classes).float()
-            smooth_targets = (1.0 - self.label_smoothing) * target_one_hot + (self.label_smoothing / num_classes)
-            ce_loss = -(smooth_targets * log_probs).sum(dim=-1)
-        else:
-            ce_loss = -log_probs.gather(1, targets.unsqueeze(1)).squeeze(1)
+        ce_loss = F.cross_entropy(logits, targets, label_smoothing=self.label_smoothing, reduction="none")
 
-        # Asymmetric cost weights
+        loss = focal_mod * ce_loss
+
         if self.stage_escalation is not None and self.stage_escalation.size(0) == num_classes:
             esc = self.stage_escalation.to(targets.device)
-            cost_weights = esc[targets]
-        else:
+            loss = loss * esc[targets]
+        elif self.fn_weight > 1.0:
             is_positive = (targets > 0).float()
             cost_weights = 1.0 + (self.fn_weight - 1.0) * is_positive
+            loss = loss * cost_weights
         
         if self.weight is not None:
             w_class = self.weight.to(targets.device)[targets]
-            return (w_class * cost_weights * focal_mod * ce_loss).mean()
-        return (cost_weights * focal_mod * ce_loss).mean()
+            loss = loss * w_class
+
+        return loss.mean()
 
 
 class SupConLoss(nn.Module):
@@ -563,16 +553,16 @@ class MultiTaskLoss(nn.Module):
 
     def __init__(
         self,
-        lambda_dynamics: float = 0.005,
-        lambda_infiltration: float = 4.0,
-        lambda_mitre: float = 2.0,
+        lambda_dynamics: float = 0.1,
+        lambda_infiltration: float = 2.0,
+        lambda_mitre: float = 5.0,
         lambda_contrastive: float = 0.0,
         binary_class_weights: Optional[torch.Tensor] = None,
         mitre_class_weights: Optional[torch.Tensor] = None,
         mitre_stage_escalation: Optional[list[float]] = None,
         use_focal: bool = True,
-        focal_gamma: float = 2.0,
-        asymmetric_fn_weight: float = 3.5,
+        focal_gamma: float = 1.5,
+        asymmetric_fn_weight: float = 1.0,
         label_smoothing: float = 0.01,
         max_sq_err: float = 5.0,
         contrastive_temp: float = 0.07,
@@ -591,13 +581,9 @@ class MultiTaskLoss(nn.Module):
                 weight=binary_class_weights,
                 label_smoothing=label_smoothing,
             )
-            # Balanced escalating weights for MITRE stages to achieve 90%+ Macro F1:
-            # Benign: 0.5 (prevents domination), Recon: 3.5, InitialAccess: 3.5, LateralMovement: 4.5, C2: 1.5, Exfiltration: 4.5, Impact: 1.5
-            if mitre_stage_escalation is None:
-                mitre_stage_escalation = [0.5, 3.5, 3.5, 4.5, 1.5, 4.5, 1.5]
             self.mitre_loss = AsymmetricFocalLoss(
                 gamma=focal_gamma,
-                fn_weight=asymmetric_fn_weight,
+                fn_weight=1.0,
                 weight=mitre_class_weights,
                 stage_escalation=mitre_stage_escalation,
                 label_smoothing=label_smoothing,

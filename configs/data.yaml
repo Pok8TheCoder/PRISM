@@ -1,7 +1,7 @@
 data:
   raw_dir: "data/raw"
   processed_dir: "data/processed"
-  splits_dir: "data/splits"
+  splits_dir: "data/splits_universal_gen8_5s"
   dataset: "cicids2018"
   supported_datasets:
     - "cicids2018"
@@ -10,7 +10,7 @@ data:
     - "ciciot2023"
     - "lanl"
     - "darpa"
-  window_size_seconds: 30
+  window_size_seconds: 5
   lookback: 20
   train_ratio: 0.70
   val_ratio: 0.15

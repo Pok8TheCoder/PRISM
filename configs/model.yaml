@@ -1,5 +1,5 @@
 model:
-  architecture: "transformer"
+  architecture: "gen8"
   d_state: 110
   d_model: 256
   n_layers: 4
@@ -15,3 +15,6 @@ model:
   # LSTM-specific
   lstm_hidden: 256
   lstm_layers: 2
+  # TimesFM / Gen 6 specific
+  patch_len: 4
+  patch_stride: 2

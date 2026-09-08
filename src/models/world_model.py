@@ -434,7 +434,9 @@ class LSTMWorldModel(nn.Module):
 # ===========================================================================
 from src.models.timesfm_model import Gen6_TimesFMWorldModel, TimesFMWorldModel
 from src.models.gen7_world_model import Gen7DecoupledWorldModel
+from src.models.gen8_world_model import Gen8DecoupledMLPWorldModel
 
+Gen8_DecoupledMLPWorldModel = Gen8DecoupledMLPWorldModel
 Gen7_DecoupledTemporalTransformer = Gen7DecoupledWorldModel
 Gen6_TimesFMCyberWorldModel = Gen6_TimesFMWorldModel
 Gen5_MultiScaleTemporalTransformer = TemporalTransformerWorldModel
@@ -454,7 +456,17 @@ def build_world_model(cfg) -> nn.Module:
     """
     arch = getattr(cfg, "architecture", "transformer").lower()
 
-    if arch in ("gen7", "gen7_world_model", "gen7_decoupled", "gen7_contrastive"):
+    if arch in ("gen8", "gen8_world_model", "gen8_mlp", "gen8_decoupled"):
+        return Gen8DecoupledMLPWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            lookback=getattr(cfg, "lookback", 20),
+            dropout=cfg.dropout,
+            residual_dynamics=getattr(cfg, "residual_dynamics", True),
+        )
+    elif arch in ("gen7", "gen7_world_model", "gen7_decoupled", "gen7_contrastive"):
         return Gen7DecoupledWorldModel(
             d_state=cfg.d_state,
             d_model=cfg.d_model,

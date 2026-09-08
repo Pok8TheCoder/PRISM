@@ -88,6 +88,7 @@ def compute_mitre_metrics(
     """
     f1_macro = f1_score(y_true, y_pred, average="macro", zero_division=0)
     f1_weighted = f1_score(y_true, y_pred, average="weighted", zero_division=0)
+    f1_per_stage = f1_score(y_true, y_pred, average=None, zero_division=0)
     prec_macro = precision_score(y_true, y_pred, average="macro", zero_division=0)
     rec_macro = recall_score(y_true, y_pred, average="macro", zero_division=0)
 
@@ -97,6 +98,7 @@ def compute_mitre_metrics(
         "accuracy": acc,
         "f1_macro": float(f1_macro),
         "f1_weighted": float(f1_weighted),
+        "f1_per_stage": [float(x) for x in f1_per_stage],
         "precision_macro": float(prec_macro),
         "recall_macro": float(rec_macro),
         "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
@@ -195,15 +197,17 @@ def _collect_logits(
     all_binary_prob, all_mitre_prob = [], []
     all_binary_true, all_mitre_true = [], []
     all_pred_states, all_true_states = [], []
+    dev = torch.device(device) if isinstance(device, str) else device
+    use_amp = (dev.type == "cuda")
 
     with torch.no_grad():
         for batch in dataloader:
-            state_seq = batch["state_seq"].to(device)
-            next_state = batch["next_state"].to(device)
-            y_binary = batch["label_binary"].cpu().numpy()
-            y_mitre = batch["label_mitre"].cpu().numpy()
+            state_seq = batch["state_seq"].to(dev)
+            next_state = batch["next_state"].to(dev)
+            y_binary = batch["label_binary"].to(dev)
+            y_mitre = batch["label_mitre"].to(dev)
 
-            if (torch.device(device).type == "cuda" if isinstance(device, (str, torch.device)) else False):
+            if use_amp:
                 with torch.amp.autocast("cuda"):
                     out = model(state_seq)
             else:
@@ -212,20 +216,20 @@ def _collect_logits(
             binary_probs = torch.softmax(out["pred_binary"], dim=-1)[:, 1]   # P(attack)
             mitre_probs = torch.softmax(out["pred_mitre"], dim=-1)           # (B, 7)
 
-            all_binary_prob.append(binary_probs.cpu().numpy())
-            all_mitre_prob.append(mitre_probs.cpu().numpy())
+            all_binary_prob.append(binary_probs)
+            all_mitre_prob.append(mitre_probs)
             all_binary_true.append(y_binary)
             all_mitre_true.append(y_mitre)
-            all_pred_states.append(out["pred_state_mean"].cpu().numpy())
-            all_true_states.append(next_state.cpu().numpy())
+            all_pred_states.append(out["pred_state_mean"])
+            all_true_states.append(next_state)
 
     return (
-        np.concatenate(all_binary_prob),
-        np.concatenate(all_mitre_prob, axis=0),
-        np.concatenate(all_binary_true),
-        np.concatenate(all_mitre_true),
-        np.vstack(all_pred_states),
-        np.vstack(all_true_states),
+        torch.cat(all_binary_prob).cpu().numpy(),
+        torch.cat(all_mitre_prob, dim=0).cpu().numpy(),
+        torch.cat(all_binary_true).cpu().numpy(),
+        torch.cat(all_mitre_true).cpu().numpy(),
+        torch.cat(all_pred_states, dim=0).cpu().numpy(),
+        torch.cat(all_true_states, dim=0).cpu().numpy(),
     )
 
 

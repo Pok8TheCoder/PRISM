@@ -1,22 +1,36 @@
+data:
+  splits_dir: "data/splits_universal_gen8_5s"
+  lookback: 20
+  stride: 2
+  num_workers: 0
+
+model:
+  architecture: "gen8"
+  d_state: 242
+  d_model: 256
+  n_layers: 4
+  n_heads: 8
+  dropout: 0.1
+
 train:
-  batch_size: 1024
-  learning_rate: 0.0003
+  batch_size: 2048
+  learning_rate: 0.0005
   weight_decay: 0.0001
-  epochs: 60
-  patience: 60
+  epochs: 40
+  patience: 40
   grad_clip: 1.0
-  lambda_dynamics: 0.3      # Fix A: was 1.0 — dynamics converges fast, reduce dominance
-  lambda_infiltration: 3.0
-  lambda_mitre: 15.0        # Fix A: was 5.0 — force MITRE head to learn
-  lambda_contrastive: 2.0   # Fix B: was 1.0 — better inter-stage separation
-  asymmetric_fn_weight: 4.0
+  lambda_dynamics: 0.1
+  lambda_infiltration: 2.0
+  lambda_mitre: 5.0
+  lambda_contrastive: 0.0
+  asymmetric_fn_weight: 1.0
   use_focal: true
   use_stop_gradient: true
   max_sq_err: 5.0
   label_smoothing: 0.01
   balanced_sampling: true
   scheduler: "cosine"
-  warmup_steps: 300
+  warmup_steps: 0
   device: "cuda"
   seed: 42
   checkpoint_dir: "weights"
