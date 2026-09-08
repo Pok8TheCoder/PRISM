@@ -23,11 +23,16 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(API_DIR))
 
 from services.dashboard_service import build_dashboard  # noqa: E402
+from services.lab_config_service import get_config, patch_config  # noqa: E402
 from services.models_service import list_model_registry  # noqa: E402
-from services.scripts_service import get_logs, list_scripts, run_script  # noqa: E402
+from services.scripts_service import append_log, get_logs, list_scripts, run_script  # noqa: E402
 from services.session_service import build_session, set_policy_mode  # noqa: E402
+from services.terminal_service import relay_terminal  # noqa: E402
+from services.attack_scheduler import set_log_fn, start_scheduler  # noqa: E402
 
-app = FastAPI(title="PRISM Lab Console API", version="0.2.0")
+API_VERSION = "0.3.0"
+
+app = FastAPI(title="PRISM Lab Console API", version=API_VERSION)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,11 +47,27 @@ class PolicyBody(BaseModel):
 
 class ScriptBody(BaseModel):
     script_id: str
+    delay_sec: float | None = None
+
+
+class LabConfigBody(BaseModel):
+    horizonSec: float | None = None
+    attackDelaySec: float | None = None
+
+
+@app.on_event("startup")
+def _startup() -> None:
+    set_log_fn(append_log)
+    start_scheduler()
 
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"ok": True}
+    return {
+        "ok": True,
+        "apiVersion": API_VERSION,
+        "features": {"terminalPty": True, "liveCharts": True},
+    }
 
 
 @app.get("/api/dashboard")
@@ -77,7 +98,18 @@ def api_scripts() -> dict:
 
 @app.post("/api/scripts/run")
 def api_run_script(body: ScriptBody) -> dict:
-    return run_script(body.script_id)
+    return run_script(body.script_id, delay_sec=body.delay_sec)
+
+
+@app.get("/api/lab-config")
+def api_get_lab_config() -> dict:
+    return get_config()
+
+
+@app.patch("/api/lab-config")
+def api_patch_lab_config(body: LabConfigBody) -> dict:
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    return patch_config(**updates)
 
 
 @app.get("/api/scripts/jobs/{job_id}")
@@ -107,9 +139,7 @@ def list_recordings() -> dict:
 
 @app.websocket("/api/terminal")
 async def terminal_ws(ws: WebSocket) -> None:
-    await ws.accept()
-    await ws.send_text("Terminal PTY not wired yet — use Log tab for script output\r\n")
-    await ws.close()
+    await relay_terminal(ws)
 
 
 def main() -> None:

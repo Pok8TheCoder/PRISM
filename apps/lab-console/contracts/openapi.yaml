@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  title: PRISM Lab Console BFF
+  version: 0.3.0
+  description: Backend-for-Frontend for the Lab Console React UI
+
+servers:
+  - url: http://127.0.0.1:8790/api
+    description: Local BFF
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  apiVersion: { type: string }
+
+  /dashboard:
+    get:
+      summary: Dashboard state
+      responses:
+        '200':
+          description: DashboardState
+
+  /sessions/{sessionId}/state:
+    get:
+      summary: Lab session charts
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: mode
+          in: query
+          schema: { type: string, enum: [live, recorded] }
+      responses:
+        '200':
+          description: SessionState
+
+  /sessions/{sessionId}/policy:
+    patch:
+      summary: Set IDS/IPS policy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                policyMode: { type: string, enum: [ids, ips] }
+      responses:
+        '200':
+          description: Updated policy
+
+  /logs:
+    get:
+      summary: Terminal log stream
+      parameters:
+        - name: since
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Log lines
+
+  /scripts:
+    get:
+      summary: Script launcher catalog
+      responses:
+        '200':
+          description: Script list
+
+  /scripts/run:
+    post:
+      summary: Run a lab script
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [script_id]
+              properties:
+                script_id: { type: string }
+                delay_sec: { type: number, nullable: true }
+      responses:
+        '200':
+          description: Job queued
+
+  /lab-config:
+    get:
+      summary: Lab session config
+      responses:
+        '200':
+          description: LabConfig
+    patch:
+      summary: Update lab config
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                horizonSec: { type: number }
+                attackDelaySec: { type: number, nullable: true }
+
+  /models:
+    get:
+      summary: Model registry
+      responses:
+        '200':
+          description: Model list
+
+  /recordings:
+    get:
+      summary: Recording manifests (stub)
+      responses:
+        '200':
+          description: Recordings list
+
+components:
+  schemas:
+    SeriesPoint:
+      type: object
+      properties:
+        t: { type: number }
+        y: { type: number }
+    ModelRegion:
+      type: object
+      properties:
+        start: { type: number }
+        end: { type: number }
+        kind: { type: string }
+        label: { type: string }
+        classId: { type: string }

@@ -1,0 +1,8 @@
+{
+  "id": "demo-001",
+  "playheadSec": 38,
+  "durationSec": 70,
+  "mode": "recorded",
+  "policyMode": "ips",
+  "ips": { "armed": true, "streaks": { "shaun_v3": 1, "hx_c": 0 } }
+}

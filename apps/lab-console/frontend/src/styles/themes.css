@@ -25,6 +25,8 @@
   --region-gt-border: rgba(192, 132, 252, 0.62);
   --region-overlap: rgba(244, 114, 182, 0.26);
   --region-overlap-border: rgba(244, 114, 182, 0.72);
+  --region-episodic: rgba(255, 255, 255, 0.14);
+  --region-episodic-border: rgba(255, 255, 255, 0.55);
 
   --playhead: #f4f6ff;
   --terminal-bg: #05070d;
@@ -61,6 +63,8 @@
   --region-gt-border: rgba(147, 51, 234, 0.48);
   --region-overlap: rgba(219, 39, 119, 0.15);
   --region-overlap-border: rgba(219, 39, 119, 0.52);
+  --region-episodic: rgba(255, 255, 255, 0.35);
+  --region-episodic-border: rgba(100, 100, 120, 0.45);
 
   --playhead: #171a2e;
   --terminal-bg: #14172a;

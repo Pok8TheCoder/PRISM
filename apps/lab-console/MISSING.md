@@ -1,6 +1,8 @@
 # Lab Console — missing features (vs old Streamlit UI)
 
-Tracked gaps between the **current Lab Console** and the legacy `run_dashboard.py` / `src/ui/app.py` dashboard.  
+**UI handoff:** see [HANDOFF.md](./HANDOFF.md) and [frontend/README.md](./frontend/README.md) for standalone UI dev setup.
+
+Tracked gaps between the **current Lab Console** and the legacy `run_dashboard.py` / `src/ui/app.py` dashboard.
 **Priority 1 (in progress):** wire existing tabs to the FastAPI BFF so Dashboard, Lab Session, and Adversarial Lab use real backend data.
 
 ## Priority 1 — Backend wiring (current sprint)
@@ -11,7 +13,7 @@ Tracked gaps between the **current Lab Console** and the legacy `run_dashboard.p
 - [x] `GET /api/logs` + `POST /api/scripts/run` — terminal log stream & script launcher
 - [x] `GET /api/models` — model registry for Adversarial Lab
 - [x] Frontend hooks + API badge (`API` vs `mock` fallback)
-- [ ] WebSocket `/api/terminal` — real xterm PTY (still stub)
+- [x] WebSocket `/api/terminal` — xterm PTY via `pywinpty` (Windows) / subprocess (Unix)
 - [ ] Live session: start/stop scorer from UI without manual `demo_forecast.py`
 - [ ] Recorded mode: load timeline from `reports/lab/hx/recordings/*.json` manifests
 

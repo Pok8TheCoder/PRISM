@@ -2,13 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   checkApiHealth,
   fetchDashboard,
+  fetchLabConfig,
   fetchLogs,
   fetchModels,
   fetchScripts,
   fetchSession,
+  patchLabConfig,
   patchSessionPolicy,
   runScript,
-} from '../api/client'
+  FORCE_MOCK,
+} from '../api'
 import { mockDashboard } from '../mocks/dashboard'
 import { mockModelRegistry } from '../mocks/models'
 import { mockLogs, mockScripts, mockSession } from '../mocks/session'
@@ -32,6 +35,12 @@ export function useDashboardData() {
   const [source, setSource] = useState<'api' | 'mock'>('mock')
 
   const refresh = useCallback(async () => {
+    if (FORCE_MOCK) {
+      setData(mockDashboard)
+      setSource('mock')
+      setLoading(false)
+      return
+    }
     try {
       const d = await fetchDashboard()
       setData(d)
@@ -59,6 +68,12 @@ export function useSessionData(sessionId: string, mode: SessionMode) {
   const [source, setSource] = useState<'api' | 'mock'>('mock')
 
   const refresh = useCallback(async () => {
+    if (FORCE_MOCK) {
+      setSession({ ...mockSession, mode })
+      setSource('mock')
+      setLoading(false)
+      return
+    }
     try {
       const s = await fetchSession(sessionId, mode)
       setSession(s)
@@ -73,7 +88,7 @@ export function useSessionData(sessionId: string, mode: SessionMode) {
 
   useEffect(() => {
     refresh()
-    const ms = mode === 'live' ? 1000 : 5000
+    const ms = mode === 'live' ? 250 : 5000
     const id = window.setInterval(refresh, ms)
     return () => window.clearInterval(id)
   }, [refresh, mode])
@@ -138,15 +153,37 @@ export function useScripts() {
       .catch(() => setScripts(mockScripts))
   }, [])
 
-  const launch = useCallback(async (id: string) => {
+  const launch = useCallback(async (id: string, delaySec?: number) => {
     try {
-      await runScript(id)
+      await runScript(id, { delaySec })
     } catch {
       /* ignore */
     }
   }, [])
 
   return { scripts, launch }
+}
+
+export function useLabConfig() {
+  const [config, setConfig] = useState({ horizonSec: 60, attackDelaySec: null as number | null })
+
+  useEffect(() => {
+    fetchLabConfig()
+      .then((c) => setConfig({ horizonSec: c.horizonSec ?? 60, attackDelaySec: c.attackDelaySec ?? null }))
+      .catch(() => {})
+  }, [])
+
+  const update = useCallback(async (patch: { horizonSec?: number; attackDelaySec?: number | null }) => {
+    setConfig((prev) => ({ ...prev, ...patch }))
+    try {
+      const c = await patchLabConfig(patch)
+      setConfig({ horizonSec: c.horizonSec ?? 60, attackDelaySec: c.attackDelaySec ?? null })
+    } catch {
+      /* local-only */
+    }
+  }, [])
+
+  return { config, update }
 }
 
 export function useModelRegistry() {

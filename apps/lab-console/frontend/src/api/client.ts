@@ -1,8 +1,7 @@
 import type { DashboardState } from '../types/dashboard'
 import type { ModelRegistryEntry } from '../types/models'
 import type { LogLine, ScriptDef, SessionState } from '../types/session'
-
-const API_BASE = '/api'
+import { API_BASE } from './config'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -43,10 +42,31 @@ export async function fetchScripts(): Promise<ScriptDef[]> {
   return data.scripts
 }
 
-export async function runScript(scriptId: string): Promise<{ job_id: string; status: string }> {
+export async function runScript(
+  scriptId: string,
+  opts?: { delaySec?: number },
+): Promise<{ job_id: string; status: string }> {
   return request('/scripts/run', {
     method: 'POST',
-    body: JSON.stringify({ script_id: scriptId }),
+    body: JSON.stringify({ script_id: scriptId, delay_sec: opts?.delaySec }),
+  })
+}
+
+export interface LabConfig {
+  horizonSec: number
+  attackDelaySec: number | null
+  attackDelayMinSec?: number
+  attackDelayMaxSec?: number
+}
+
+export async function fetchLabConfig(): Promise<LabConfig> {
+  return request<LabConfig>('/lab-config')
+}
+
+export async function patchLabConfig(patch: Partial<LabConfig>): Promise<LabConfig> {
+  return request<LabConfig>('/lab-config', {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
   })
 }
 
@@ -55,11 +75,27 @@ export async function fetchModels(): Promise<ModelRegistryEntry[]> {
   return data.models
 }
 
+export interface ApiHealth {
+  ok: boolean
+  apiVersion?: string
+  features?: { terminalPty?: boolean; liveCharts?: boolean }
+}
+
+export async function fetchApiHealth(): Promise<ApiHealth> {
+  return request<ApiHealth>('/health')
+}
+
 export async function checkApiHealth(): Promise<boolean> {
   try {
-    await request<{ ok: boolean }>('/health')
-    return true
+    const h = await fetchApiHealth()
+    return Boolean(h.ok)
   } catch {
     return false
   }
+}
+
+/** WebSocket URL for interactive shell (proxied via Vite in dev). */
+export function terminalWsUrl(): string {
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${proto}//${window.location.host}/api/terminal`
 }

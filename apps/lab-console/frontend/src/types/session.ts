@@ -1,7 +1,7 @@
 export type PolicyMode = 'ids' | 'ips'
 export type SessionMode = 'live' | 'recorded'
 export type LayoutMode = 'charts-only' | 'split' | 'terminal-focus'
-export type RegionKind = 'suspicious' | 'attack' | 'ground_truth'
+export type RegionKind = 'suspicious' | 'attack' | 'ground_truth' | 'episodic'
 
 export interface SeriesPoint {
   t: number
@@ -42,6 +42,10 @@ export interface IpsStatus {
 export interface SessionState {
   id: string
   playheadSec: number
+  /** Wall-clock elapsed since scorer start (live only). */
+  elapsedSec?: number
+  /** Scorer capture window length in seconds (live only). */
+  windowSec?: number
   durationSec: number
   mode: SessionMode
   policyMode: PolicyMode
@@ -49,11 +53,12 @@ export interface SessionState {
   actual: SeriesPoint[]
   models: ModelSlot[]
   groundTruthRegions: ModelRegion[]
+  memoryRegions?: ModelRegion[]
 }
 
 export interface LogLine {
   ts: number
-  kind: 'info' | 'phase' | 'alert' | 'block' | 'scorer'
+  kind: 'info' | 'phase' | 'alert' | 'block' | 'scorer' | 'attack'
   text: string
 }
 

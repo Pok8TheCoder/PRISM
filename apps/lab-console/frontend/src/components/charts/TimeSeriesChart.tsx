@@ -6,6 +6,7 @@ export interface TimeSeriesChartProps {
   predicted: SeriesPoint[]
   modelRegions: ModelRegion[]
   groundTruthRegions: ModelRegion[]
+  memoryRegions?: ModelRegion[]
   playheadSec: number
   /** Visible time span (seconds), centered on playheadSec. The "now" line stays fixed
    *  in the middle of the chart and the data scrolls underneath it, like a live monitor. */
@@ -31,6 +32,7 @@ function cssVar(name: string): string {
 
 function regionFill(region: ModelRegion, playhead: number, isOverlap: boolean): { fill: string; border: string } {
   if (isOverlap) return { fill: cssVar('--region-overlap'), border: cssVar('--region-overlap-border') }
+  if (region.kind === 'episodic') return { fill: cssVar('--region-episodic'), border: cssVar('--region-episodic-border') }
   if (region.kind === 'ground_truth') return { fill: cssVar('--region-gt'), border: cssVar('--region-gt-border') }
   const past = region.end <= playhead
   if (region.kind === 'suspicious') {
@@ -68,6 +70,7 @@ export function TimeSeriesChart({
   predicted,
   modelRegions,
   groundTruthRegions,
+  memoryRegions = [],
   playheadSec,
   windowSec = 24,
   accuracy,
@@ -102,8 +105,8 @@ export function TimeSeriesChart({
       const minT = playheadSec - halfWindow
       const maxT = playheadSec + halfWindow
       const allY = [...actual.map((p) => p.y), ...predicted.map((p) => p.y)]
-      const minY = Math.min(...allY, 0) - 0.05
-      const maxY = Math.max(...allY, 1) + 0.05
+      const minY = allY.length ? Math.min(...allY, 0) - 0.05 : -0.05
+      const maxY = allY.length ? Math.max(...allY, 1) + 0.05 : 1.05
 
       const xScale = (t: number) => pad.l + ((t - minT) / (maxT - minT || 1)) * plotW
       const yScale = (y: number) => pad.t + plotH - ((y - minY) / (maxY - minY || 1)) * plotH
@@ -186,6 +189,11 @@ export function TimeSeriesChart({
         }
       }
 
+      for (const mem of memoryRegions) {
+        const { fill, border } = regionFill(mem, playheadSec, false)
+        drawRegion(mem, fill, border, mem.label, true)
+      }
+
       for (const gt of groundTruthRegions) {
         const overlapMr = modelRegions.find((mr) => overlaps(mr, gt))
         if (overlapMr) continue
@@ -209,6 +217,40 @@ export function TimeSeriesChart({
           const { fill, border } = regionFill(merged, playheadSec, true)
           drawRegion(merged, fill, border, `${mr.label} / ${gt.label}`, true)
         }
+      }
+
+      const drawLine = (points: SeriesPoint[], stroke: string, width: number, glow?: string) => {
+        if (points.length === 0) return
+        if (points.length === 1) {
+          const x = xScale(points[0].t)
+          const y = yScale(points[0].y)
+          ctx.beginPath()
+          ctx.arc(x, y, 3, 0, Math.PI * 2)
+          ctx.fillStyle = stroke
+          if (glow) {
+            ctx.shadowColor = glow
+            ctx.shadowBlur = 8
+          }
+          ctx.fill()
+          ctx.shadowBlur = 0
+          return
+        }
+        ctx.beginPath()
+        points.forEach((p, i) => {
+          const x = xScale(p.t)
+          const y = yScale(p.y)
+          if (i === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        })
+        ctx.strokeStyle = stroke
+        ctx.lineWidth = width
+        ctx.lineJoin = 'round'
+        if (glow) {
+          ctx.shadowColor = glow
+          ctx.shadowBlur = 10
+        }
+        ctx.stroke()
+        ctx.shadowBlur = 0
       }
 
       // Actual line — filled area + solid line
@@ -236,6 +278,8 @@ export function TimeSeriesChart({
         ctx.globalAlpha = 0.85
         ctx.stroke()
         ctx.globalAlpha = 1
+      } else {
+        drawLine(actual, cssVar('--chart-actual'), 1.75)
       }
 
       // Predicted line — glowing green
@@ -254,6 +298,8 @@ export function TimeSeriesChart({
         ctx.shadowBlur = 10
         ctx.stroke()
         ctx.shadowBlur = 0
+      } else {
+        drawLine(predicted, cssVar('--chart-predicted'), 2.25, cssVar('--chart-predicted-glow'))
       }
 
       // Playhead — fixed dead-center dotted vertical + marker dots top & bottom.
@@ -305,7 +351,7 @@ export function TimeSeriesChart({
     const ro = new ResizeObserver(draw)
     ro.observe(container)
     return () => ro.disconnect()
-  }, [actual, predicted, modelRegions, groundTruthRegions, playheadSec, windowSec, accuracy, height])
+  }, [actual, predicted, modelRegions, groundTruthRegions, memoryRegions, playheadSec, windowSec, accuracy, height])
 
   return (
     <div

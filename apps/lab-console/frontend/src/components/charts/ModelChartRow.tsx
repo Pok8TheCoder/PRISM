@@ -43,6 +43,7 @@ export function ModelChartRow({ model, session, playheadSec }: ModelChartRowProp
         predicted={model.predicted}
         modelRegions={model.regions}
         groundTruthRegions={session.groundTruthRegions}
+        memoryRegions={session.memoryRegions}
         playheadSec={playheadSec}
         windowSec={26}
         accuracy={model.accuracy}

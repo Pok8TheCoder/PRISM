@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Navigate, Routes, Route } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { LabSessionPage } from '../features/lab-session/LabSessionPage'
@@ -11,6 +11,7 @@ export function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
         <Route path="session" element={<LabSessionPage />} />
+        <Route path="lab-session" element={<Navigate to="/session" replace />} />
         <Route path="adversarial" element={<AdversarialPage />} />
         <Route
           path="explain"

@@ -1,21 +1,20 @@
 import { useState } from 'react'
 import clsx from 'clsx'
-import { ChevronLeft, ChevronRight, ScrollText, TerminalSquare, Rows3, Columns2, PanelRight } from 'lucide-react'
-import type { LayoutMode, LogLine, PolicyMode, ScriptDef } from '../../types/session'
-import { LogStream } from './LogStream'
-import { MockTerminal } from './MockTerminal'
-import { ScriptLauncher } from './ScriptLauncher'
+import { ChevronLeft, ChevronRight, TerminalSquare, Rows3, Columns2, PanelRight } from 'lucide-react'
+import type { LayoutMode, PolicyMode, ScriptDef } from '../../types/session'
+import { ScriptLauncher, type LabConfigState } from './ScriptLauncher'
 import { Badge } from '../common/Badge'
 
 interface TerminalRailProps {
-  logs: LogLine[]
   scripts: ScriptDef[]
   layout: LayoutMode
   policyMode: PolicyMode
   collapsed: boolean
   onCollapse: () => void
   onLayoutChange: (layout: LayoutMode) => void
-  onRunScript: (id: string) => void
+  onRunScript: (id: string, delaySec?: number) => void
+  labConfig: LabConfigState
+  onLabConfigChange: (patch: Partial<LabConfigState>) => void
 }
 
 const layoutOptions: { mode: LayoutMode; icon: typeof Rows3; title: string }[] = [
@@ -25,7 +24,6 @@ const layoutOptions: { mode: LayoutMode; icon: typeof Rows3; title: string }[] =
 ]
 
 export function TerminalRail({
-  logs,
   scripts,
   layout,
   policyMode,
@@ -33,13 +31,14 @@ export function TerminalRail({
   onCollapse,
   onLayoutChange,
   onRunScript,
+  labConfig,
+  onLabConfigChange,
 }: TerminalRailProps) {
-  const [tab, setTab] = useState<'log' | 'shell'>('log')
   const [running, setRunning] = useState<string | null>(null)
 
-  const handleRun = (id: string) => {
+  const handleRun = (id: string, delaySec?: number) => {
     setRunning(id)
-    onRunScript(id)
+    onRunScript(id, delaySec)
     setTimeout(() => setRunning(null), 1500)
   }
 
@@ -49,7 +48,7 @@ export function TerminalRail({
         type="button"
         onClick={onCollapse}
         className="flex w-9 shrink-0 flex-col items-center gap-2 border-l border-[var(--border)] bg-[var(--bg-surface)]/70 py-4 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
-        title="Expand terminal"
+        title="Expand scripts panel"
       >
         <ChevronLeft size={15} />
         <TerminalSquare size={15} />
@@ -58,11 +57,11 @@ export function TerminalRail({
   }
 
   return (
-    <aside className="flex w-[340px] min-w-[300px] max-w-[420px] shrink-0 flex-col border-l border-[var(--border)] bg-[var(--bg-surface)]/70 backdrop-blur-xl">
-      <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
+    <aside className="flex h-full min-h-0 w-[340px] min-w-[300px] max-w-[420px] shrink-0 flex-col border-l border-[var(--border)] bg-[var(--bg-surface)]/70 backdrop-blur-xl">
+      <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
         <span className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-primary)]">
           <TerminalSquare size={15} style={{ color: 'var(--accent)' }} />
-          Terminal
+          Scripts
         </span>
         <div className="flex items-center gap-1">
           <div className="flex gap-0.5 rounded-lg bg-[var(--bg-elevated)] p-0.5">
@@ -92,42 +91,22 @@ export function TerminalRail({
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-3 py-2">
+      <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-3 py-2">
         <span className="text-[11px] text-[var(--text-muted)]">Policy</span>
         <Badge tone={policyMode === 'ips' ? 'error' : 'info'} dot>
           {policyMode.toUpperCase()}
         </Badge>
       </div>
 
-      <div className="mx-3 mb-2 flex gap-1 rounded-lg bg-[var(--bg-elevated)] p-1">
-        <button
-          type="button"
-          className={clsx(
-            'flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors',
-            tab === 'log' ? 'text-white' : 'text-[var(--text-muted)]',
-          )}
-          style={tab === 'log' ? { background: 'var(--gradient-brand)' } : undefined}
-          onClick={() => setTab('log')}
-        >
-          <ScrollText size={13} /> Log
-        </button>
-        <button
-          type="button"
-          className={clsx(
-            'flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors',
-            tab === 'shell' ? 'text-white' : 'text-[var(--text-muted)]',
-          )}
-          style={tab === 'shell' ? { background: 'var(--gradient-brand)' } : undefined}
-          onClick={() => setTab('shell')}
-        >
-          <TerminalSquare size={13} /> Shell
-        </button>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <ScriptLauncher
+          scripts={scripts}
+          labConfig={labConfig}
+          onLabConfigChange={onLabConfigChange}
+          onRun={handleRun}
+          running={running}
+        />
       </div>
-
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3">
-        {tab === 'log' ? <LogStream lines={logs} /> : <MockTerminal />}
-      </div>
-      <ScriptLauncher scripts={scripts} onRun={handleRun} running={running} />
     </aside>
   )
 }

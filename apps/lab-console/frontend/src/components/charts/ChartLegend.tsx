@@ -6,6 +6,7 @@ const items: { color: string; label: string; dashed?: boolean }[] = [
   { color: 'var(--region-suspicious-resolved-border)', label: 'Resolved (was sus.)' },
   { color: 'var(--region-attack-resolved-border)', label: 'Resolved (was attack)' },
   { color: 'var(--region-gt-border)', label: 'Ground truth' },
+  { color: 'var(--region-episodic-border)', label: 'RAMX episodic' },
   { color: 'var(--region-overlap-border)', label: 'Overlap' },
 ]
 

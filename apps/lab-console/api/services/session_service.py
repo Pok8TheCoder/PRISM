@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +29,7 @@ def set_policy_mode(mode: str) -> str:
 
 def scorer_running() -> bool:
     if not PID_PATH.exists():
-        return STATE_PATH.exists()
+        return False
     try:
         pid = int(PID_PATH.read_text(encoding="utf-8").strip() or "0")
     except ValueError:
@@ -36,34 +37,39 @@ def scorer_running() -> bool:
     if pid <= 0:
         return False
     import os
-    import signal
 
-    try:
-        os.kill(pid, 0)
-        return True
-    except (OSError, AttributeError):
-        # Windows: os.kill(pid, 0) works on py3
+    if os.name == "nt":
         try:
             import subprocess
 
             r = subprocess.run(
-                ["tasklist", "/FI", f"PID eq {pid}"],
+                ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
                 capture_output=True,
                 text=True,
                 timeout=5,
             )
-            return str(pid) in (r.stdout or "")
+            line = (r.stdout or "").strip().lower()
+            return bool(line) and str(pid) in line and "python" in line
         except Exception:
-            return STATE_PATH.exists()
+            return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
 
 
 def _read_forecast_state() -> dict[str, Any] | None:
     if not STATE_PATH.exists():
         return None
-    try:
-        return json.loads(STATE_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return None
+    for _ in range(4):
+        try:
+            return json.loads(STATE_PATH.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            time.sleep(0.05)
+        except Exception:
+            return None
+    return None
 
 
 def _series(n: int, base: float, amp: float, phase: float = 0) -> list[dict[str, float]]:
@@ -152,13 +158,22 @@ def _recorded_fallback() -> dict[str, Any]:
 
 
 def _timeline_to_series(timeline: dict[str, Any], window_sec: float, elapsed: float) -> list[dict[str, float]]:
+    """Map scorer windows to absolute session time (stable across polls)."""
     points: list[dict[str, float]] = []
     for pt in timeline.get("retrospective") or []:
-        t = elapsed + float(pt.get("t_rel", 0))
-        points.append({"t": round(t, 2), "y": float(pt.get("p", 0))})
+        w = pt.get("w")
+        if w is not None:
+            t = float(w) * window_sec
+        else:
+            t = elapsed + float(pt.get("t_rel", 0))
+        points.append({"t": round(t, 3), "y": float(pt.get("p", 0))})
     for pt in timeline.get("prospective") or []:
-        t = elapsed + float(pt.get("t_rel", 0))
-        points.append({"t": round(t, 2), "y": float(pt.get("p", 0))})
+        w = pt.get("w")
+        if w is not None:
+            t = float(w) * window_sec
+        else:
+            t = elapsed + float(pt.get("t_rel", 0))
+        points.append({"t": round(t, 3), "y": float(pt.get("p", 0))})
     if points:
         points.sort(key=lambda p: p["t"])
     return points
@@ -214,10 +229,44 @@ def _gt_regions(phase_regions: list[dict[str, Any]], window_sec: float) -> list[
     return out
 
 
+def _memory_regions(regions: list[dict[str, Any]], window_sec: float) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for r in regions:
+        start = float(r.get("start_w", 0)) * window_sec
+        end = (float(r.get("end_w", 0)) + 1) * window_sec
+        out.append({
+            "start": start,
+            "end": end,
+            "kind": "episodic",
+            "label": r.get("label") or "RAMX episodic",
+            "classId": r.get("system"),
+        })
+    return out
+
+
+def _merge_gt_regions(
+    scorer_regions: list[dict[str, Any]],
+    ui_regions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    merged = list(scorer_regions)
+    for ui in ui_regions:
+        duplicate = any(
+            abs(float(ui.get("start", 0)) - float(g.get("start", 0))) < 1.0
+            and str(ui.get("label", "")).upper() == str(g.get("label", "")).upper()
+            for g in merged
+        )
+        if not duplicate:
+            merged.append(ui)
+    return merged
+
+
 def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     window_sec = float(state.get("window_sec", 1.0))
-    elapsed = float(state.get("elapsed_sec", state.get("window", 0) * window_sec))
-    duration = max(elapsed + window_sec * float(state.get("horizon", 6)), elapsed + 10)
+    window_idx = int(state.get("window", 0))
+    data_sec = window_idx * window_sec
+    elapsed = float(state.get("elapsed_sec", data_sec))
+    horizon = int(state.get("horizon", 6))
+    duration = max(data_sec + window_sec * horizon, data_sec + window_sec, 10.0)
     models_raw = state.get("models") or {}
 
     model_defs = [
@@ -231,7 +280,7 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
         timeline = models_raw.get(mid) or {}
         predicted = _timeline_to_series(timeline, window_sec, elapsed)
         if mid == "shaun_v3" and not actual:
-            actual = [{"t": p["t"], "y": p["y"]} for p in predicted if p["t"] <= elapsed + 0.01]
+            actual = [{"t": p["t"], "y": p["y"]} for p in predicted if p["t"] <= data_sec + window_sec + 0.01]
         models.append(
             {
                 "id": mid,
@@ -249,9 +298,19 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     attack_phase = state.get("attack_phase", "idle")
     ips_armed = bool(state.get("ips_armed")) or attack_phase in {"enum", "spray", "loot"}
 
+    scorer_gt = _gt_regions(state.get("phase_regions") or [], window_sec)
+    try:
+        from services.attack_scheduler import ui_attack_regions
+
+        ground_truth = _merge_gt_regions(scorer_gt, ui_attack_regions())
+    except Exception:
+        ground_truth = scorer_gt
+
     return {
         "id": "live",
-        "playheadSec": elapsed,
+        "playheadSec": data_sec,
+        "elapsedSec": elapsed,
+        "windowSec": window_sec,
         "durationSec": duration,
         "mode": "live",
         "policyMode": get_policy_mode(),
@@ -263,7 +322,8 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
         },
         "actual": actual or _series(int(duration), 0.11, 0.03),
         "models": models,
-        "groundTruthRegions": _gt_regions(state.get("phase_regions") or [], window_sec),
+        "groundTruthRegions": ground_truth,
+        "memoryRegions": _memory_regions(state.get("memory_regions") or [], window_sec),
         "phase": state.get("phase"),
         "attackPhase": attack_phase,
         "scorerRunning": True,

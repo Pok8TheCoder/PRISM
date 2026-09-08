@@ -5,11 +5,13 @@ import { ModelChartRow } from '../../components/charts/ModelChartRow'
 import { ChartLegend } from '../../components/charts/ChartLegend'
 import { PlaybackBar } from '../../components/charts/PlaybackBar'
 import { TerminalRail } from '../../components/terminal/TerminalRail'
+import { TerminalDock } from '../../components/terminal/TerminalDock'
 import { Badge, LiveDot } from '../../components/common/Badge'
 import { ApiSourceBadge } from '../../components/common/ApiSourceBadge'
 import { TopBar } from '../../app/TopBar'
 import { usePlaybackClock } from '../../hooks/usePlaybackClock'
-import { useLogStream, useScripts, useSessionData } from '../../hooks/useLabApi'
+import { useLivePlayback } from '../../hooks/useLivePlayback'
+import { useLogStream, useLabConfig, useScripts, useSessionData } from '../../hooks/useLabApi'
 import type { LayoutMode, PolicyMode, SessionMode } from '../../types/session'
 
 const SESSION_ID = 'default'
@@ -24,6 +26,7 @@ export function LabSessionPage() {
   const { session, source, setPolicy } = useSessionData(SESSION_ID, sourceMode)
   const logs = useLogStream()
   const { scripts, launch } = useScripts()
+  const { config: labConfig, update: updateLabConfig } = useLabConfig()
 
   const live = sourceMode === 'live'
 
@@ -40,7 +43,14 @@ export function LabSessionPage() {
     speed: 1,
   })
 
-  const playheadSec = live ? session.playheadSec : clock.playheadSec
+  const livePlayback = useLivePlayback({
+    streamSec: session.playheadSec,
+    windowSec: session.windowSec ?? 1,
+    enabled: live,
+  })
+
+  const playheadSec = live ? livePlayback.viewSec : clock.playheadSec
+  const barDurationSec = live ? livePlayback.liveEdgeSec : session.durationSec
 
   const policyMode: PolicyMode = session.policyMode
 
@@ -54,8 +64,8 @@ export function LabSessionPage() {
   }
 
   const handleRunScript = useCallback(
-    (id: string) => {
-      launch(id)
+    (id: string, delaySec?: number) => {
+      launch(id, delaySec)
     },
     [launch],
   )
@@ -73,7 +83,7 @@ export function LabSessionPage() {
   const showRail = layout !== 'charts-only'
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="h-full overflow-y-auto">
       <TopBar
         title="Lab Session"
         subtitle="Multi-model playback, IDS/IPS testing & scripts"
@@ -192,11 +202,11 @@ export function LabSessionPage() {
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-0 overflow-hidden p-4">
+      <div className="flex min-h-[calc(100vh-12.5rem)] gap-0 px-4 pt-4">
         {showCharts && (
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
             <ChartLegend />
-            <div className="flex-1 overflow-y-auto pr-1">
+            <div className="max-h-[34rem] min-h-0 shrink-0 overflow-y-auto pr-1">
               {visibleModels.map((model) => (
                 <ModelChartRow key={model.id} model={model} session={session} playheadSec={playheadSec} />
               ))}
@@ -206,21 +216,22 @@ export function LabSessionPage() {
             </div>
             <PlaybackBar
               playheadSec={playheadSec}
-              durationSec={session.durationSec}
-              playing={live ? true : clock.playing}
+              durationSec={barDurationSec}
+              playing={live ? livePlayback.playing : clock.playing}
               speed={clock.playbackSpeed}
-              onToggle={live ? () => {} : clock.toggle}
-              onSeek={live ? () => {} : clock.seek}
-              onSkip={live ? () => {} : clock.skip}
+              timeMode={live ? 'live' : 'recorded'}
+              offsetSec={live ? livePlayback.offsetSec : undefined}
+              onToggle={live ? livePlayback.toggle : clock.toggle}
+              onSeek={live ? livePlayback.seek : clock.seek}
+              onSkip={live ? livePlayback.skip : clock.skip}
               onSpeedChange={clock.setPlaybackSpeed}
             />
           </div>
         )}
 
         {showRail && (
-          <div className="ml-4 flex">
+          <div className="ml-4 flex min-h-0 shrink-0 self-stretch">
             <TerminalRail
-              logs={logs}
               scripts={scripts}
               layout={layout}
               policyMode={policyMode}
@@ -228,9 +239,15 @@ export function LabSessionPage() {
               onCollapse={() => setRailCollapsed((c) => !c)}
               onLayoutChange={setLayout}
               onRunScript={handleRunScript}
+              labConfig={labConfig}
+              onLabConfigChange={updateLabConfig}
             />
           </div>
         )}
+      </div>
+
+      <div className="px-4 pb-4 pt-3">
+        <TerminalDock logs={logs} />
       </div>
     </div>
   )

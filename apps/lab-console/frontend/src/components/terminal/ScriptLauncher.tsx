@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Crosshair, Rocket, Power, PowerOff, FlaskConical, Disc, TerminalSquare } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ScriptDef } from '../../types/session'
@@ -12,15 +13,70 @@ const iconFor = (id: string): LucideIcon => {
   return TerminalSquare
 }
 
+const KILLCHAIN_IDS = new Set([
+  'killchain-recon',
+  'killchain-enum',
+  'killchain-spray',
+  'killchain-loot',
+  'killchain-all',
+])
+
+export interface LabConfigState {
+  horizonSec: number
+  attackDelaySec: number | null
+}
+
 interface ScriptLauncherProps {
   scripts: ScriptDef[]
-  onRun: (id: string) => void
+  labConfig: LabConfigState
+  onLabConfigChange: (patch: Partial<LabConfigState>) => void
+  onRun: (id: string, delaySec?: number) => void
   running?: string | null
 }
 
-export function ScriptLauncher({ scripts, onRun, running }: ScriptLauncherProps) {
+export function ScriptLauncher({ scripts, labConfig, onLabConfigChange, onRun, running }: ScriptLauncherProps) {
+  const [attackDelayInput, setAttackDelayInput] = useState(
+    labConfig.attackDelaySec != null ? String(labConfig.attackDelaySec) : '',
+  )
+
+  useEffect(() => {
+    setAttackDelayInput(labConfig.attackDelaySec != null ? String(labConfig.attackDelaySec) : '')
+  }, [labConfig.attackDelaySec])
+
+  const parseAttackDelay = (): number | undefined => {
+    const trimmed = attackDelayInput.trim()
+    if (!trimmed) return undefined
+    const n = Number(trimmed)
+    return Number.isFinite(n) && n >= 0 ? n : undefined
+  }
+
+  const handleRun = (id: string) => {
+    if (KILLCHAIN_IDS.has(id)) {
+      onRun(id, parseAttackDelay())
+      return
+    }
+    onRun(id)
+  }
+
   return (
-    <div className="border-t border-[var(--border)] p-3">
+    <div className="p-3">
+      <div className="mb-3 space-y-1">
+        <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+          Forecast horizon (s)
+        </label>
+        <input
+          type="number"
+          min={10}
+          max={600}
+          step={5}
+          value={labConfig.horizonSec}
+          onChange={(e) => onLabConfigChange({ horizonSec: Number(e.target.value) || 60 })}
+          className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-1.5 text-[11px] text-[var(--text-primary)]"
+          title="How far ahead each model forecasts (seconds)"
+        />
+        <p className="text-[10px] text-[var(--text-muted)]">Default 60s — applies on next scorer window.</p>
+      </div>
+
       <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
         Script launcher
       </p>
@@ -34,7 +90,7 @@ export function ScriptLauncher({ scripts, onRun, running }: ScriptLauncherProps)
               type="button"
               title={s.description}
               disabled={isRunning}
-              onClick={() => onRun(s.id)}
+              onClick={() => handleRun(s.id)}
               className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-1.5 text-left text-[11px] font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text-primary)] disabled:opacity-50"
             >
               <Icon size={13} className={isRunning ? 'animate-spin' : ''} style={{ color: 'var(--accent)' }} />
@@ -42,6 +98,26 @@ export function ScriptLauncher({ scripts, onRun, running }: ScriptLauncherProps)
             </button>
           )
         })}
+      </div>
+
+      <div className="mt-3 space-y-1">
+        <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+          Attack delay (s)
+        </label>
+        <input
+          type="number"
+          min={0}
+          step={1}
+          placeholder="30–60 random if empty"
+          value={attackDelayInput}
+          onChange={(e) => setAttackDelayInput(e.target.value)}
+          onBlur={() => {
+            const n = parseAttackDelay()
+            onLabConfigChange({ attackDelaySec: n ?? null })
+          }}
+          className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-1.5 text-[11px] text-[var(--text-primary)]"
+          title="Kill-chain attacks fire after this many seconds (empty = random 30–60s)"
+        />
       </div>
     </div>
   )

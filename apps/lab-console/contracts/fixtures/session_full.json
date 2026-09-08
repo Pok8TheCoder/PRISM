@@ -1,0 +1,18 @@
+{
+  "id": "demo-001",
+  "playheadSec": 38,
+  "durationSec": 70,
+  "mode": "recorded",
+  "policyMode": "ips",
+  "ips": {
+    "armed": true,
+    "streaks": { "shaun_v3": 1, "hx_c": 0 }
+  },
+  "groundTruthRegions": [
+    { "start": 18, "end": 28, "kind": "ground_truth", "label": "recon", "classId": "T1046" },
+    { "start": 30, "end": 42, "kind": "ground_truth", "label": "enum", "classId": "T1190" },
+    { "start": 44, "end": 55, "kind": "ground_truth", "label": "spray", "classId": "T1110" }
+  ],
+  "actual": [],
+  "models": []
+}
