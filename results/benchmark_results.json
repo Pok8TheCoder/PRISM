@@ -1,20 +1,20 @@
 [
   {
     "Model":"Logistic Regression \/ RF Baseline",
-    "F1 Score":0.0252,
-    "Precision":1.0,
-    "Recall":0.0128,
-    "FPR":0.0,
-    "ROC-AUC":0.5064,
-    "MITRE Accuracy":0.1067
+    "F1 Score":0.0672,
+    "Precision":0.963,
+    "Recall":0.0348,
+    "FPR":0.0008,
+    "ROC-AUC":0.4674,
+    "MITRE Accuracy":0.6398
   },
   {
     "Model":"PRISM StateTransformerWorldModel",
-    "F1 Score":0.9035,
-    "Precision":0.9321,
-    "Recall":0.8766,
-    "FPR":0.0263,
-    "ROC-AUC":0.9883,
-    "MITRE Accuracy":0.9293
+    "F1 Score":0.8784,
+    "Precision":0.9278,
+    "Recall":0.834,
+    "FPR":0.0366,
+    "ROC-AUC":0.9436,
+    "MITRE Accuracy":0.9046
   }
 ]

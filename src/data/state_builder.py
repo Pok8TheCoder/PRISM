@@ -64,10 +64,23 @@ class StateBuilder:
             )
 
         if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
-            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+
+        # Filter out missing or corrupted year outliers
+        valid_mask = df["timestamp"].notna() & (df["timestamp"].dt.year >= 2000) & (df["timestamp"].dt.year <= 2030)
+        df_valid = df[valid_mask].copy() if not valid_mask.all() else df.copy()
+        if df_valid.empty:
+            return (
+                np.empty((0, STATE_DIM), dtype=np.float32),
+                np.empty((0,), dtype=np.int64),
+                np.empty((0,), dtype=np.int64),
+                np.empty((0,), dtype=np.float32),
+                []
+            )
 
         resample_freq = freq or f"{self.window_size}s"
-        grouped = df.groupby(pd.Grouper(key="timestamp", freq=resample_freq))
+        df_valid["_window_bin"] = df_valid["timestamp"].dt.floor(resample_freq)
+        grouped = df_valid.groupby("_window_bin", sort=True)
 
         states_list = []
         attack_labels_list = []
@@ -85,6 +98,8 @@ class StateBuilder:
 
             # Ensure all 64 features are present, defaulting missing to 0.0
             feat_matrix = group.reindex(columns=self.features, fill_value=0.0).to_numpy(dtype=np.float32)
+            # Apply log1p dynamic range compression to preserve low-rate stealth attack signatures
+            feat_matrix = np.log1p(np.maximum(feat_matrix, 0.0))
             
             # 1. 64 Means, 64 Stds, 64 Maxs, 64 Mins (Total = 256)
             means = np.mean(feat_matrix, axis=0)
@@ -191,14 +206,20 @@ class StateBuilder:
             # Window-level labels
             is_attack_col = group["is_attack"].to_numpy() if "is_attack" in group.columns else np.zeros(num_flows)
             attack_count = np.sum(is_attack_col > 0)
-            attack_fraction = float(attack_count / num_flows)
-            is_attack_window = 1 if attack_count > 0 else 0
+            attack_fraction = float(attack_count / num_flows) if num_flows > 0 else 0.0
 
-            # Determine dominant MITRE stage
-            if attack_count > 0 and "mitre_code" in group.columns:
-                attack_mitre = group.loc[group["is_attack"] > 0, "mitre_code"].to_numpy()
-                dominant_mitre = int(pd.Series(attack_mitre).mode()[0])
+            # Purity check: A window is only designated an attack window if attack flows represent a genuine threat pattern
+            # (either at least 5 attack flows or at least 5% of window flows).
+            # This prevents 1 stray attack flow in 1,000 benign flows from corrupting baseline profiles.
+            if attack_count >= 5 or (num_flows > 0 and attack_fraction >= 0.05):
+                is_attack_window = 1
+                if "mitre_code" in group.columns:
+                    attack_mitre = group.loc[group["is_attack"] > 0, "mitre_code"].to_numpy()
+                    dominant_mitre = int(pd.Series(attack_mitre).mode()[0])
+                else:
+                    dominant_mitre = 0
             else:
+                is_attack_window = 0
                 dominant_mitre = 0
 
             states_list.append(state_vec)

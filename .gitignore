@@ -25,3 +25,8 @@ logs/
 Thumbs.db
 *.zip
 
+# Local experiment backups
+data/processed_backup/
+data/processed_focused/
+weights/*backup*.pt
+

@@ -115,41 +115,41 @@ def train_pipeline(epochs: int = 50, batch_size: int = 64, lr: float = 1e-4, loo
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"Training device: {device}")
 
-    # Gather representative files across all 4 datasets
-    selected_files = []
+    # Load preprocessed scaled dataset with leak-free stage-stratified split
+    split_indices_path = os.path.join(PROCESSED_DIR, "split_indices.npz")
+    if not os.path.exists(split_indices_path):
+        from scripts.prepare_scaled_dataset import build_scaled_dataset
+        logger.info("Scaled preprocessed dataset not found. Generating now...")
+        build_scaled_dataset(window_size=15)
 
-    # 1. CICIOT2023 (IoT Attacks, Mirai, Floods)
-    iot_train = os.path.join("data", "raw", "CICIOT23", "train", "train.csv")
-    if os.path.exists(iot_train):
-        selected_files.append(iot_train)
+    logger.info("Loading preprocessed scaled dataset and stage-stratified chronological splits...")
+    states = np.load(os.path.join(PROCESSED_DIR, "states.npy"))
+    atks = np.load(os.path.join(PROCESSED_DIR, "attack_labels.npy"))
+    mitres = np.load(os.path.join(PROCESSED_DIR, "mitre_labels.npy"))
+    fracs = np.load(os.path.join(PROCESSED_DIR, "attack_fractions.npy"))
+    scaler_mean = np.load(os.path.join(PROCESSED_DIR, "scaler_mean.npy"))
+    scaler_std = np.load(os.path.join(PROCESSED_DIR, "scaler_std.npy"))
 
-    # 2. CIC-IDS2018 (FTP/SSH BruteForce, DoS-GoldenEye, DDoS-HOIC, Infiltration)
-    c18_dir = os.path.join("data", "raw", "CIC-IDS2018")
-    if os.path.exists(c18_dir):
-        c18_files = sorted(glob.glob(os.path.join(c18_dir, "*.csv")))
-        # Pick high-diversity days
-        for f in c18_files[:4]:
-            selected_files.append(f)
+    splits = np.load(split_indices_path)
+    train_idx = splits["train_indices"]
+    val_idx = splits["val_indices"]
+    test_idx = splits["test_indices"]
 
-    # 3. CIC-IDS2017 (PortScan, DDoS LOIC, Web Attacks, Botnet Ares)
-    c17_dir = os.path.join("data", "raw", "TrafficLabelling")
-    if os.path.exists(c17_dir):
-        c17_files = sorted(glob.glob(os.path.join(c17_dir, "*.csv")))
-        priority_kws = ["Tuesday", "PortScan", "DDos", "Morning-WebAttacks", "Infilteration"]
-        for f in c17_files:
-            if any(k.lower() in os.path.basename(f).lower() for k in priority_kws):
-                selected_files.append(f)
+    train_ds = StateSequenceDataset(
+        states[train_idx], atks[train_idx], mitres[train_idx], fracs[train_idx],
+        lookback=lookback, scaler_mean=scaler_mean, scaler_std=scaler_std
+    )
+    val_ds = StateSequenceDataset(
+        states[val_idx], atks[val_idx], mitres[val_idx], fracs[val_idx],
+        lookback=lookback, scaler_mean=scaler_mean, scaler_std=scaler_std
+    )
+    test_ds = StateSequenceDataset(
+        states[test_idx], atks[test_idx], mitres[test_idx], fracs[test_idx],
+        lookback=lookback, scaler_mean=scaler_mean, scaler_std=scaler_std
+    )
 
-    # 4. UNSW-NB15 (Exfiltration, Fuzzers, Backdoors)
-    unsw_files = sorted(glob.glob(os.path.join("data", "raw", "unsw_nb15", "*.csv")))
-    selected_files.extend(unsw_files)
-
-    logger.info(f"Selected {len(selected_files)} multi-dataset files for training: {[os.path.basename(f) for f in selected_files]}")
-    file_tuples, states, atks, mitres, fracs = load_and_preprocess_traffic(selected_files, window_size=15)
-
-    # Multi-file chronological split with lookback=30
-    train_ds, val_ds, test_ds = multi_file_chronological_split(file_tuples, lookback=lookback)
-    logger.info(f"Sequences -> Train: {len(train_ds)}, Val: {len(val_ds)}, Test: {len(test_ds)}")
+    logger.info(f"Scaled Dataset Loaded: {len(states):,} total windows (d_state={states.shape[1]})")
+    logger.info(f"Sequences -> Train: {len(train_ds):,}, Val: {len(val_ds):,}, Test: {len(test_ds):,}")
 
     # 1. Train Baseline Classifier
     X_train_flat = train_ds.raw_states[train_ds.lookback:]
@@ -179,18 +179,34 @@ def train_pipeline(epochs: int = 50, batch_size: int = 64, lr: float = 1e-4, loo
 
     class_weights = torch.tensor([1.0, 3.5], dtype=torch.float32).to(device)
 
-    # Balanced MITRE multi-class weights (boosting sensitivity for Recon, Lateral Movement, and DDoS)
+    # Balanced MITRE multi-class weights (smoothed to prevent minority class over-prediction)
     mitre_counts = np.bincount(train_ds.mitre_labels, minlength=7)
     total_mitre = len(train_ds.mitre_labels)
     raw_mitre_w = total_mitre / (7.0 * np.maximum(mitre_counts, 1).astype(np.float32))
-    clipped_mitre_w = np.clip(raw_mitre_w, 0.25, 10.0)
+    clipped_mitre_w = np.clip(raw_mitre_w, 0.35, 2.5)
     mitre_weights = torch.from_numpy(clipped_mitre_w).float().to(device)
     logger.info(f"Balanced MITRE class weights: {np.round(clipped_mitre_w, 2).tolist()}")
 
     best_val_loss = float("inf")
     best_checkpoint_path = os.path.join(WEIGHTS_DIR, "world_model.pt")
+    start_epoch = 1
+    patience = 8
+    patience_counter = 0
 
-    for epoch in range(1, epochs + 1):
+    if os.path.exists(best_checkpoint_path):
+        try:
+            chk = torch.load(best_checkpoint_path, map_location=device, weights_only=False)
+            if "model_state_dict" in chk:
+                model.load_state_dict(chk["model_state_dict"])
+                start_epoch = chk.get("epoch", 0) + 1
+                best_val_loss = chk.get("val_loss", float("inf"))
+                if "optimizer_state_dict" in chk:
+                    optimizer.load_state_dict(chk["optimizer_state_dict"])
+                logger.info(f"Resuming training from checkpoint: Start Epoch = {start_epoch}, Best Val Loss = {best_val_loss:.4f}")
+        except Exception as e:
+            logger.warning(f"Could not resume from checkpoint, starting fresh: {e}")
+
+    for epoch in range(start_epoch, epochs + 1):
         model.train()
         train_loss_sum = 0.0
         train_batches = 0
@@ -246,8 +262,11 @@ def train_pipeline(epochs: int = 50, batch_size: int = 64, lr: float = 1e-4, loo
 
         avg_val_loss = val_loss_sum / max(1, val_batches) if val_batches > 0 else avg_train_loss
 
-        if avg_val_loss < best_val_loss:
+        is_best = avg_val_loss <= best_val_loss
+        if is_best:
             best_val_loss = avg_val_loss
+            patience_counter = 0
+            tmp_ckpt = best_checkpoint_path + ".tmp"
             torch.save({
                 "epoch": epoch,
                 "model_state_dict": model.state_dict(),
@@ -255,12 +274,22 @@ def train_pipeline(epochs: int = 50, batch_size: int = 64, lr: float = 1e-4, loo
                 "scaler_mean": train_ds.scaler_mean,
                 "scaler_std": train_ds.scaler_std,
                 "val_loss": best_val_loss
-            }, best_checkpoint_path)
+            }, tmp_ckpt)
+            if os.path.exists(best_checkpoint_path):
+                try:
+                    os.remove(best_checkpoint_path)
+                except Exception:
+                    pass
+            os.replace(tmp_ckpt, best_checkpoint_path)
+        else:
+            patience_counter += 1
+            if patience_counter >= patience:
+                logger.info(f"Early stopping triggered after {epoch} epochs (no validation improvement for {patience} epochs).")
+                break
 
-        if epoch % 10 == 0 or epoch == 1:
-            logger.info(f"Epoch [{epoch:02d}/{epochs:02d}] - Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+        logger.info(f"Epoch [{epoch:02d}/{epochs:02d}] - Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} {'[BEST]' if is_best else ''}")
 
-    logger.info(f"Training complete! Best checkpoint saved to {best_checkpoint_path}")
+    logger.info(f"Training complete! Best checkpoint saved to {best_checkpoint_path} (Val Loss: {best_val_loss:.4f})")
 
     # 3. Benchmark Evaluation on Test Set
     logger.info("Running test set benchmark comparison with dynamic threshold calibration...")
@@ -284,4 +313,4 @@ def train_pipeline(epochs: int = 50, batch_size: int = 64, lr: float = 1e-4, loo
 
 
 if __name__ == "__main__":
-    train_pipeline(epochs=50, batch_size=64, lookback=30)
+    train_pipeline(epochs=50, batch_size=256, lookback=30)

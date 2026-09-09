@@ -176,7 +176,17 @@ MULTI_DATASET_COLUMN_MAP = {
     "proto": "protocol_type",
     "stime": "timestamp",
     "attack_cat": "label",
-    "sload": "flow_byts_s"
+    "sload": "flow_byts_s",
+
+    # CTU-13 Specific Columns (NetFlow format)
+    "starttime": "timestamp",
+    "srcaddr": "src_ip",
+    "dstaddr": "dst_ip",
+    "sport": "src_port",
+    "dport": "dst_port",
+    "totpkts": "tot_fwd_pkts",
+    "totbytes": "tot_fwd_bytes",
+    "srcbytes": "fwd_act_data_pkts"
 }
 
 CIC_COLUMN_MAP = MULTI_DATASET_COLUMN_MAP
@@ -196,6 +206,12 @@ def map_label_to_mitre(label_str: str) -> Tuple[int, str, int]:
     """
     clean_lbl = clean_label_string(label_str)
     
+    # Priority check for CTU-13 Botnet and Background patterns
+    if "botnet" in clean_lbl or "from-botnet" in clean_lbl or "to-botnet" in clean_lbl:
+        return 4, "Command & Control", 1
+    if "background" in clean_lbl or "from-normal" in clean_lbl or "to-normal" in clean_lbl:
+        return 0, "Benign", 0
+        
     mitre_name = LABEL_TO_MITRE.get(clean_lbl, None)
     if mitre_name is None:
         for k, v in LABEL_TO_MITRE.items():
@@ -290,11 +306,20 @@ class SchemaAligner:
             ts_data = df_mapped["timestamp"]
             if isinstance(ts_data, pd.DataFrame):
                 ts_data = ts_data.iloc[:, 0]
-            result_df["timestamp"] = pd.to_datetime(
+            parsed_ts = pd.to_datetime(
                 ts_data.astype(str),
                 errors="coerce",
                 format="mixed"
             )
+            # If dataset has minute-level truncation (seconds are all 00), distribute flows across the 60s
+            if parsed_ts.notna().any() and len(parsed_ts) > 50:
+                valid_mask = parsed_ts.notna()
+                if (parsed_ts[valid_mask].dt.second == 0).all():
+                    minute_order = parsed_ts.groupby(parsed_ts).cumcount()
+                    minute_totals = parsed_ts.map(parsed_ts.value_counts())
+                    sub_sec_offsets = (minute_order / np.maximum(minute_totals, 1)) * 59.0
+                    parsed_ts = parsed_ts + pd.to_timedelta(sub_sec_offsets, unit="s")
+            result_df["timestamp"] = parsed_ts
         else:
             # Synthetic 15s-compatible timestamps
             result_df["timestamp"] = pd.date_range("2026-01-01", periods=len(df), freq="100ms")

@@ -1,4 +1,4 @@
 | Model                             |   F1 Score |   Precision |   Recall |    FPR |   ROC-AUC |   MITRE Accuracy |
 |:----------------------------------|-----------:|------------:|---------:|-------:|----------:|-----------------:|
-| Logistic Regression / RF Baseline |     0.0252 |      1      |   0.0128 | 0      |    0.5064 |           0.1067 |
-| PRISM StateTransformerWorldModel  |     0.9035 |      0.9321 |   0.8766 | 0.0263 |    0.9883 |           0.9293 |
+| Logistic Regression / RF Baseline |     0.0672 |      0.963  |   0.0348 | 0.0008 |    0.4674 |           0.6398 |
+| PRISM StateTransformerWorldModel  |     0.8784 |      0.9278 |   0.834  | 0.0366 |    0.9436 |           0.9046 |

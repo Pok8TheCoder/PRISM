@@ -1,0 +1,405 @@
+{
+  "total_windows": 27693,
+  "train_windows": 19366,
+  "val_windows": 4155,
+  "test_windows": 4172,
+  "files_processed": 42,
+  "file_details": [
+    {
+      "file": "Monday-WorkingHours.pcap_ISCX.csv",
+      "desc": "Monday Pure Benign Traffic",
+      "windows": 1360,
+      "stages": {
+        "0": 1360
+      }
+    },
+    {
+      "file": "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv",
+      "desc": "CIC-IDS2017 PortScan (Reconnaissance)",
+      "windows": 600,
+      "stages": {
+        "0": 534,
+        "1": 66
+      }
+    },
+    {
+      "file": "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv [Concentrated PortScan]",
+      "desc": "CIC-IDS2017 Concentrated Reconnaissance Probe Stream",
+      "windows": 400,
+      "stages": {
+        "1": 400
+      }
+    },
+    {
+      "file": "Tuesday-WorkingHours.pcap_ISCX.csv",
+      "desc": "CIC-IDS2017 Tuesday Port/Service Probing & Patator",
+      "windows": 1813,
+      "stages": {
+        "0": 1521,
+        "2": 292
+      }
+    },
+    {
+      "file": "Tuesday-WorkingHours.pcap_ISCX.csv [Concentrated Initial Access]",
+      "desc": "CIC-IDS2017 Tuesday Port/Service Probing & Patator [Concentrated Initial Access Stream]",
+      "windows": 73,
+      "stages": {
+        "2": 73
+      }
+    },
+    {
+      "file": "02-14-2018.csv",
+      "desc": "CIC-IDS2018 FTP/SSH Brute Force",
+      "windows": 734,
+      "stages": {
+        "2": 621,
+        "0": 113
+      }
+    },
+    {
+      "file": "02-14-2018.csv [Concentrated Initial Access]",
+      "desc": "CIC-IDS2018 FTP/SSH Brute Force [Concentrated Initial Access Stream]",
+      "windows": 400,
+      "stages": {
+        "2": 400
+      }
+    },
+    {
+      "file": "Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv",
+      "desc": "CIC-IDS2017 Web Attacks (XSS, SQLi, Brute Force)",
+      "windows": 964,
+      "stages": {
+        "0": 801,
+        "2": 163
+      }
+    },
+    {
+      "file": "Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv [Concentrated Initial Access]",
+      "desc": "CIC-IDS2017 Web Attacks (XSS, SQLi, Brute Force) [Concentrated Initial Access Stream]",
+      "windows": 15,
+      "stages": {
+        "2": 15
+      }
+    },
+    {
+      "file": "02-22-2018.csv",
+      "desc": "CIC-IDS2018 Web Attacks",
+      "windows": 2189,
+      "stages": {
+        "0": 2081,
+        "2": 108
+      }
+    },
+    {
+      "file": "02-23-2018.csv",
+      "desc": "CIC-IDS2018 Web Attacks Day 2 (Brute Force, XSS, SQLi)",
+      "windows": 2219,
+      "stages": {
+        "0": 2074,
+        "2": 145
+      }
+    },
+    {
+      "file": "03-01-2018.csv",
+      "desc": "CIC-IDS2018 Infiltration Campaign Day 2",
+      "windows": 2277,
+      "stages": {
+        "0": 1657,
+        "3": 620
+      }
+    },
+    {
+      "file": "03-01-2018.csv [Concentrated Lateral Movement]",
+      "desc": "CIC-IDS2018 Infiltration Campaign Day 2 [Concentrated Lateral Movement Stream]",
+      "windows": 400,
+      "stages": {
+        "3": 400
+      }
+    },
+    {
+      "file": "02-28-2018.csv",
+      "desc": "CIC-IDS2018 Infiltration Campaign Day 1",
+      "windows": 2272,
+      "stages": {
+        "0": 1740,
+        "3": 532
+      }
+    },
+    {
+      "file": "02-28-2018.csv [Concentrated Lateral Movement]",
+      "desc": "CIC-IDS2018 Infiltration Campaign Day 1 [Concentrated Lateral Movement Stream]",
+      "windows": 400,
+      "stages": {
+        "3": 400
+      }
+    },
+    {
+      "file": "Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv",
+      "desc": "CIC-IDS2017 Infiltration",
+      "windows": 980,
+      "stages": {
+        "0": 980
+      }
+    },
+    {
+      "file": "03-02-2018.csv",
+      "desc": "CIC-IDS2018 Botnet C2 (80k+ Bot flows)",
+      "windows": 2092,
+      "stages": {
+        "4": 1364,
+        "0": 728
+      }
+    },
+    {
+      "file": "Friday-WorkingHours-Morning.pcap_ISCX.csv",
+      "desc": "CIC-IDS2017 Botnet Ares C2",
+      "windows": 962,
+      "stages": {
+        "0": 776,
+        "4": 186
+      }
+    },
+    {
+      "file": "capture20110810.binetflow",
+      "desc": "CTU-13 Neris Botnet C2 (Active Wave 1)",
+      "windows": 348,
+      "stages": {
+        "4": 344,
+        "0": 4
+      }
+    },
+    {
+      "file": "capture20110810.binetflow",
+      "desc": "CTU-13 Neris Botnet C2 (Active Wave 2)",
+      "windows": 353,
+      "stages": {
+        "4": 349,
+        "0": 4
+      }
+    },
+    {
+      "file": "capture20110810.binetflow",
+      "desc": "CTU-13 Neris Botnet C2 (Active Wave 3)",
+      "windows": 383,
+      "stages": {
+        "4": 381,
+        "0": 2
+      }
+    },
+    {
+      "file": "UNSW_NB15_training-set.csv [Benign]",
+      "desc": "UNSW-NB15 Training Partition (Exfil, Exploits, Fuzzers, Backdoors) [Benign]",
+      "windows": 374,
+      "stages": {
+        "0": 374
+      }
+    },
+    {
+      "file": "UNSW_NB15_training-set.csv [Command & Control]",
+      "desc": "UNSW-NB15 Training Partition (Exfil, Exploits, Fuzzers, Backdoors) [Command & Control]",
+      "windows": 12,
+      "stages": {
+        "4": 12
+      }
+    },
+    {
+      "file": "UNSW_NB15_training-set.csv [Exfiltration]",
+      "desc": "UNSW-NB15 Training Partition (Exfil, Exploits, Fuzzers, Backdoors) [Exfiltration]",
+      "windows": 534,
+      "stages": {
+        "5": 534
+      }
+    },
+    {
+      "file": "UNSW_NB15_training-set.csv [Impact]",
+      "desc": "UNSW-NB15 Training Partition (Exfil, Exploits, Fuzzers, Backdoors) [Impact]",
+      "windows": 82,
+      "stages": {
+        "6": 82
+      }
+    },
+    {
+      "file": "UNSW_NB15_training-set.csv [Initial Access]",
+      "desc": "UNSW-NB15 Training Partition (Exfil, Exploits, Fuzzers, Backdoors) [Initial Access]",
+      "windows": 344,
+      "stages": {
+        "2": 344
+      }
+    },
+    {
+      "file": "UNSW_NB15_training-set.csv [Lateral Movement]",
+      "desc": "UNSW-NB15 Training Partition (Exfil, Exploits, Fuzzers, Backdoors) [Lateral Movement]",
+      "windows": 9,
+      "stages": {
+        "3": 9
+      }
+    },
+    {
+      "file": "UNSW_NB15_training-set.csv [Reconnaissance]",
+      "desc": "UNSW-NB15 Training Partition (Exfil, Exploits, Fuzzers, Backdoors) [Reconnaissance]",
+      "windows": 84,
+      "stages": {
+        "1": 84
+      }
+    },
+    {
+      "file": "UNSW_NB15.csv [Benign]",
+      "desc": "UNSW-NB15 Test Partition [Benign]",
+      "windows": 247,
+      "stages": {
+        "0": 247
+      }
+    },
+    {
+      "file": "UNSW_NB15.csv [Exfiltration]",
+      "desc": "UNSW-NB15 Test Partition [Exfiltration]",
+      "windows": 252,
+      "stages": {
+        "5": 252
+      }
+    },
+    {
+      "file": "UNSW_NB15.csv [Impact]",
+      "desc": "UNSW-NB15 Test Partition [Impact]",
+      "windows": 28,
+      "stages": {
+        "6": 28
+      }
+    },
+    {
+      "file": "UNSW_NB15.csv [Initial Access]",
+      "desc": "UNSW-NB15 Test Partition [Initial Access]",
+      "windows": 115,
+      "stages": {
+        "2": 115
+      }
+    },
+    {
+      "file": "UNSW_NB15.csv [Reconnaissance]",
+      "desc": "UNSW-NB15 Test Partition [Reconnaissance]",
+      "windows": 28,
+      "stages": {
+        "1": 28
+      }
+    },
+    {
+      "file": "02-15-2018.csv",
+      "desc": "CIC-IDS2018 DoS GoldenEye / Slowloris",
+      "windows": 2284,
+      "stages": {
+        "0": 2055,
+        "6": 229
+      }
+    },
+    {
+      "file": "02-20-2018.csv",
+      "desc": "CIC-IDS2018 DDoS LOIC-HTTP",
+      "windows": 238,
+      "stages": {
+        "6": 181,
+        "0": 57
+      }
+    },
+    {
+      "file": "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",
+      "desc": "CIC-IDS2017 DDoS LOIC",
+      "windows": 372,
+      "stages": {
+        "0": 303,
+        "6": 69
+      }
+    },
+    {
+      "file": "train.csv [Benign]",
+      "desc": "CICIOT2023 Multi-Attack IoT Stream [Benign]",
+      "windows": 188,
+      "stages": {
+        "0": 188
+      }
+    },
+    {
+      "file": "train.csv [Command & Control]",
+      "desc": "CICIOT2023 Multi-Attack IoT Stream [Command & Control]",
+      "windows": 450,
+      "stages": {
+        "4": 450
+      }
+    },
+    {
+      "file": "train.csv [Impact]",
+      "desc": "CICIOT2023 Multi-Attack IoT Stream [Impact]",
+      "windows": 667,
+      "stages": {
+        "6": 667
+      }
+    },
+    {
+      "file": "train.csv [Initial Access]",
+      "desc": "CICIOT2023 Multi-Attack IoT Stream [Initial Access]",
+      "windows": 7,
+      "stages": {
+        "2": 7
+      }
+    },
+    {
+      "file": "train.csv [Lateral Movement]",
+      "desc": "CICIOT2023 Multi-Attack IoT Stream [Lateral Movement]",
+      "windows": 53,
+      "stages": {
+        "3": 53
+      }
+    },
+    {
+      "file": "train.csv [Reconnaissance]",
+      "desc": "CICIOT2023 Multi-Attack IoT Stream [Reconnaissance]",
+      "windows": 91,
+      "stages": {
+        "1": 91
+      }
+    }
+  ],
+  "stages_breakdown": {
+    "Benign": {
+      "total": 17599,
+      "train": 12730,
+      "val": 2191,
+      "test": 2678
+    },
+    "Reconnaissance": {
+      "total": 669,
+      "train": 444,
+      "val": 114,
+      "test": 111
+    },
+    "Initial Access": {
+      "total": 2283,
+      "train": 1668,
+      "val": 384,
+      "test": 231
+    },
+    "Lateral Movement": {
+      "total": 2014,
+      "train": 1271,
+      "val": 492,
+      "test": 251
+    },
+    "Command & Control": {
+      "total": 3086,
+      "train": 1924,
+      "val": 567,
+      "test": 595
+    },
+    "Exfiltration": {
+      "total": 786,
+      "train": 549,
+      "val": 118,
+      "test": 119
+    },
+    "Impact": {
+      "total": 1256,
+      "train": 780,
+      "val": 289,
+      "test": 187
+    }
+  }
+}

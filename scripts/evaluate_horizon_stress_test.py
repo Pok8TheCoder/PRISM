@@ -78,13 +78,21 @@ def run_horizon_stress_test(
     total_len = len(states)
     logger.info(f"Loaded {total_len:,} total 15s windows ({total_len * 15 / 3600:.2f} hours of network traffic)")
 
-    # 2. Chronological Split (Last 25% reserved for test holdout)
-    split_idx = int(total_len * 0.75)
-    test_states = states[split_idx:]
-    test_atks = attack_labels[split_idx:]
-    test_mitres = mitre_labels[split_idx:]
+    # 2. Stage-Stratified Chronological Split (Load test indices)
+    split_indices_path = os.path.join(PROCESSED_DIR, "split_indices.npz")
+    if os.path.exists(split_indices_path):
+        splits = np.load(split_indices_path)
+        test_idx = splits["test_indices"]
+        test_states = states[test_idx]
+        test_atks = attack_labels[test_idx]
+        test_mitres = mitre_labels[test_idx]
+    else:
+        split_idx = int(total_len * 0.75)
+        test_states = states[split_idx:]
+        test_atks = attack_labels[split_idx:]
+        test_mitres = mitre_labels[split_idx:]
     test_len = len(test_states)
-    logger.info(f"Test Holdout Timeline: {test_len:,} windows (Attacks: {np.sum(test_atks == 1):,}, Benign: {np.sum(test_atks == 0):,})")
+    logger.info(f"Stage-Stratified Test Holdout: {test_len:,} windows (Attacks: {np.sum(test_atks == 1):,}, Benign: {np.sum(test_atks == 0):,})")
 
     # 3. Load Model and Scalers
     if not os.path.exists(WEIGHTS_PATH):
