@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from scripts.lab_traffic_scale import DEFAULT_REPLICATE, DEFAULT_SCALE_FACTOR, scale_prism_rows  # noqa: E402
-from scripts.ram_improve_eval import CONTEXT  # noqa: E402
+from src.aryan.streaming_variants import CONTEXT  # noqa: E402
 from src.adversarial.bots.lab_objective_base import new_round_id  # noqa: E402
 from src.adversarial.ips_controller import block_container, clear_blocks, get_container_ip  # noqa: E402
 from src.adversarial.lab_clock import LabClock  # noqa: E402
@@ -48,18 +48,29 @@ from src.aryan.ips_scoring import compute_ips_scores  # noqa: E402
 from src.aryan.streaming_variants import StreamingARYRamxV01, calibrate_thresholds  # noqa: E402
 from src.aryan.world_model import TemporalTransformerWorldModel  # noqa: E402
 from src.pipeline.extract import pcap_to_rows  # noqa: E402
-from src.shaun.streaming import (  # noqa: E402
-    StreamingShaunBase,
-    StreamingShaunRamxV2,
-    StreamingShaunRamxV3,
-    load_shaun_bundle,
-    pcap_to_shaun_state,
-)
+try:
+    from src.shaun.streaming import (  # noqa: E402
+        StreamingShaunBase,
+        StreamingShaunRamxV2,
+        StreamingShaunRamxV3,
+        load_shaun_bundle,
+        pcap_to_shaun_state,
+    )
+except ImportError:
+    StreamingShaunBase = None
+    StreamingShaunRamxV2 = None
+    StreamingShaunRamxV3 = None
+    load_shaun_bundle = None
+    pcap_to_shaun_state = None
 from src.hx.causal import StreamingHXC, load_hxc_bundle  # noqa: E402
-from src.hx.streaming import StreamingHX, load_hx_bundle  # noqa: E402
+from src.aryan.world_model import TemporalTransformerWorldModel  # noqa: E402
+from src.models.streaming_gen8 import StreamingGen8WorldModel, load_gen8_checkpoint  # noqa: E402
+from src.models.gen8_world_model import Gen8DecoupledMLPWorldModel  # noqa: E402
 
 LAB_CTL = ROOT / "scripts" / "lab_ctl.py"
-SPLITS_5S = ROOT / "data" / "aryan_splits_5s"
+SPLITS_5S = ROOT / "data" / "splits_universal_gen8_5s"
+SPLITS_ARYAN_5S = ROOT / "data" / "aryan_splits_5s"
+CKPT_GEN8 = ROOT / "weights" / "universal_gen8" / "world_model_best.pt"
 CKPT_V01 = ROOT / "models" / "checkpoints" / "ary_5sv01.pt"
 MITRE_TACTIC = "Credential Access"
 EARLY_ALERT_SEC = 120.0
@@ -81,7 +92,8 @@ def _json_safe(obj):
 
 
 BACKEND_CONFIG = {
-    "ary": {"window_sec": 5.0, "block_id": "ary5_ramx", "tag": "ary5_ramx"},
+    "gen8": {"window_sec": 5.0, "block_id": "gen8_world_model", "tag": "gen8_world_model"},
+    "ary": {"window_sec": 5.0, "block_id": "gen8_world_model", "tag": "gen8_world_model"},
     "sn2rx": {"window_sec": 15.0, "block_id": "sn2rx", "tag": "sn2rx"},
     "sn2rx3": {"window_sec": 15.0, "block_id": "sn2rx3", "tag": "sn2rx3"},
     "hx": {"window_sec": 5.0, "block_id": "hx", "tag": "hx"},
@@ -91,9 +103,12 @@ BACKEND_CONFIG = {
 SHAUN_LIKE = ("sn2rx", "sn2rx3", "hx", "hx_c")
 
 
-def load_ary_ckpt(path: Path) -> TemporalTransformerWorldModel:
-    ck = torch.load(path, map_location="cpu", weights_only=False)
-    sd = ck["model_state_dict"]
+def load_ary_ckpt(path: Path) -> nn.Module:
+    p = path if path.exists() else CKPT_GEN8
+    ck = torch.load(p, map_location="cpu", weights_only=False)
+    if ck.get("model_class") == "Gen8DecoupledMLPWorldModel" or "universal_gen8" in str(p):
+        return load_gen8_checkpoint(p)
+    sd = ck.get("model_state_dict", ck)
     d_state = sd["embedding.proj.weight"].shape[1]
     model = TemporalTransformerWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=CONTEXT)
     model.load_state_dict(sd)
@@ -443,12 +458,15 @@ def build_systems(
     systems: dict[str, object] = {}
     ckpt = shaun_ckpt.resolve() if shaun_ckpt else None
 
-    if backend == "ary":
-        model = load_ary_ckpt(CKPT_V01)
-        splits = load_all_splits(SPLITS_5S)
-        va_s, va_b, _ = splits["val"]
-        _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
-        systems[block_id] = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
+    if backend in ("gen8", "ary"):
+        model = load_ary_ckpt(CKPT_GEN8)
+        if isinstance(model, Gen8DecoupledMLPWorldModel):
+            systems[block_id] = StreamingGen8WorldModel(base_model=model, detect_thresh=DETECT_THRESHOLD)
+        else:
+            splits = load_all_splits(SPLITS_5S)
+            va_s, va_b, _ = splits["val"]
+            _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
+            systems[block_id] = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
     elif backend == "hx":
         bundle = load_hx_bundle()
         systems[block_id] = StreamingHX(bundle, context_skip_steps=10_000)

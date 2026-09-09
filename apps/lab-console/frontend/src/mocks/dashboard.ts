@@ -29,7 +29,7 @@ export const mockDashboard: DashboardState = {
   models: [
     { id: 'shaun_v3', name: 'Shaun v3', version: 'w5s', loaded: true },
     { id: 'hx_c', name: 'HX-C', version: 'lab', loaded: true },
-    { id: 'ary_5s', name: 'ARY 5s', version: 'ramx', loaded: false },
+    { id: 'gen8_world_model', name: 'PRISM Gen 8', version: 'universal-5s', loaded: true },
     { id: 'xmt_01', name: 'XMT.01', version: 'v1', loaded: false },
   ],
   metricsTimeseries: Array.from({ length: 60 }, (_, i) => ({

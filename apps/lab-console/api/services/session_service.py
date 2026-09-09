@@ -127,11 +127,11 @@ def _recorded_fallback() -> dict[str, Any]:
             "accuracy": {"lineMae": 0.038, "regionPrecision": 0.82, "regionRecall": 0.75},
         },
         {
-            "id": "ary_5s",
-            "name": "ARY 5s + RAMX",
-            "predicted": _series(duration, 0.15, 0.06, 4),
-            "regions": _model_regions(-1),
-            "accuracy": {"lineMae": 0.051, "regionPrecision": 0.65, "regionRecall": 0.68},
+            "id": "gen8_world_model",
+            "name": "PRISM Gen 8 World Model",
+            "predicted": _series(duration, 0.08, 0.03, 1),
+            "regions": _model_regions(0),
+            "accuracy": {"lineMae": 0.024, "regionPrecision": 0.964, "regionRecall": 0.974},
         },
     ]
     return {
@@ -221,6 +221,7 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     models_raw = state.get("models") or {}
 
     model_defs = [
+        ("gen8_world_model", "PRISM Gen 8"),
         ("shaun_v3", "Shaun v3"),
         ("hx_c", "HX-C"),
     ]

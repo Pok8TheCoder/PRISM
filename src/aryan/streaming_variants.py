@@ -388,11 +388,12 @@ class RAMXMemoryBank:
 def infer(model: nn.Module, seq: np.ndarray) -> dict:
     x = torch.from_numpy(seq[None].astype(np.float32))
     out = model(x)
+    hidden_val = out["latent_h"][0].cpu().numpy() if "latent_h" in out else out["hidden"][0].cpu().numpy()
     return {
         "p_att": torch.softmax(out["pred_binary"], -1)[0, 1].item(),
-        "p_mit": torch.softmax(out["pred_mitre"], -1)[0].numpy(),
-        "hidden": out["hidden"][0].numpy(),
-        "pred_state": out["pred_state_mean"][0].numpy(),
+        "p_mit": torch.softmax(out["pred_mitre"], -1)[0].cpu().numpy(),
+        "hidden": hidden_val,
+        "pred_state": out["pred_state_mean"][0].cpu().numpy(),
     }
 
 
@@ -943,3 +944,7 @@ def build_all_systems(
             gate_threshold=gate_threshold, tfm_features=tfm_features,
         ),
     }
+
+
+# Drop-in PRISM Gen 8 World Model streaming compatibility
+from src.models.streaming_gen8 import StreamingGen8WorldModel, load_gen8_checkpoint

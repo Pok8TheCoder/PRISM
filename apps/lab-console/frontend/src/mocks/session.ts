@@ -37,11 +37,11 @@ const models: ModelSlot[] = [
     accuracy: { lineMae: 0.038, regionPrecision: 0.82, regionRecall: 0.75 },
   },
   {
-    id: 'ary_5s',
-    name: 'ARY 5s + RAMX',
-    predicted: series(0, 70, 0.15, 0.06, 4),
-    regions: modelRegions(-1),
-    accuracy: { lineMae: 0.051, regionPrecision: 0.65, regionRecall: 0.68 },
+    id: 'gen8_world_model',
+    name: 'PRISM Gen 8 World Model',
+    predicted: series(0, 70, 0.08, 0.03, 1),
+    regions: modelRegions(0),
+    accuracy: { lineMae: 0.024, regionPrecision: 0.964, regionRecall: 0.974 },
   },
 ]
 

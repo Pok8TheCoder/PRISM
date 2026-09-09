@@ -25,7 +25,7 @@ import torch
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.ram_improve_eval import CONTEXT  # noqa: E402
+from src.aryan.streaming_variants import CONTEXT  # noqa: E402
 from src.adversarial.bots.lab_objective_base import new_round_id  # noqa: E402
 from src.adversarial.ips_controller import block_container, clear_blocks, get_container_ip  # noqa: E402
 from src.adversarial.lab_clock import LabClock  # noqa: E402
@@ -42,23 +42,29 @@ from src.aryan.ingest import TARGET_DIM, pcap_to_states  # noqa: E402
 from src.aryan.ips_scoring import compute_ips_scores  # noqa: E402
 from src.aryan.streaming_variants import StreamingARYRamxV01, calibrate_thresholds  # noqa: E402
 from src.aryan.world_model import TemporalTransformerWorldModel  # noqa: E402
+from src.models.streaming_gen8 import StreamingGen8WorldModel, load_gen8_checkpoint  # noqa: E402
+from src.models.gen8_world_model import Gen8DecoupledMLPWorldModel  # noqa: E402
 
 LAB_CTL = ROOT / "scripts" / "lab_ctl.py"
-SPLITS_5S = ROOT / "data" / "aryan_splits_5s"
+SPLITS_5S = ROOT / "data" / "splits_universal_gen8_5s"
+SPLITS_ARYAN_5S = ROOT / "data" / "aryan_splits_5s"
 SPLITS_1S = ROOT / "data" / "aryan_splits_1s"
+CKPT_GEN8 = ROOT / "weights" / "universal_gen8" / "world_model_best.pt"
 CKPT_V01 = ROOT / "models" / "checkpoints" / "ary_5sv01.pt"
 CKPT_V02 = ROOT / "models" / "checkpoints" / "ary_5sv02.pt"
 CKPT_1S = ROOT / "models" / "checkpoints" / "ary_1sv01.pt"
 STATE_WINDOW_SEC = 5.0
-SYSTEM_ID = "ary5_ramx"
+SYSTEM_ID = "gen8_world_model"
 MITRE_TACTIC = "Credential Access"
 EARLY_ALERT_SEC = 120.0
 DETECT_THRESHOLD = 0.5
 
 
-def load_ckpt(path: Path) -> TemporalTransformerWorldModel:
+def load_ckpt(path: Path) -> nn.Module:
     ck = torch.load(path, map_location="cpu", weights_only=False)
-    sd = ck["model_state_dict"]
+    if ck.get("model_class") == "Gen8DecoupledMLPWorldModel" or "universal_gen8" in str(path):
+        return load_gen8_checkpoint(path)
+    sd = ck.get("model_state_dict", ck)
     d_state = sd["embedding.proj.weight"].shape[1]
     model = TemporalTransformerWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=CONTEXT)
     model.load_state_dict(sd)
@@ -185,10 +191,13 @@ def run_experiment(
 
     print(f"Loading checkpoint {ckpt_path} ...")
     model = load_ckpt(ckpt_path)
-    splits = load_all_splits(splits_dir)
-    va_s, va_b, _ = splits["val"]
-    _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
-    system = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
+    if isinstance(model, Gen8DecoupledMLPWorldModel):
+        system = StreamingGen8WorldModel(base_model=model, detect_thresh=DETECT_THRESHOLD)
+    else:
+        splits = load_all_splits(splits_dir)
+        va_s, va_b, _ = splits["val"]
+        _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
+        system = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
 
     clock = LabClock(speed=speed, base_window_sec=state_window_sec)
     capture = TrafficCapture(container_name=TARGET_CONTAINER, output_dir=round_dir / "pcaps")
@@ -313,7 +322,7 @@ def run_experiment(
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--model", choices=("v01", "v02", "1s"), required=True)
+    p.add_argument("--model", choices=("gen8", "v01", "v02", "1s"), default="gen8")
     p.add_argument("--window-sec", type=float, default=None, help="StateBuilder window (default: 5, or 1 for --model 1s)")
     p.add_argument("--ckpt", type=Path, default=None)
     p.add_argument("--splits-dir", type=Path, default=None)
@@ -323,11 +332,16 @@ def main() -> int:
     p.add_argument("--out-dir", type=Path, default=IPS_OUT_ROOT)
     args = p.parse_args()
 
-    if args.model == "v01":
-        ckpt = args.ckpt or CKPT_V01
+    if args.model == "gen8":
+        ckpt = args.ckpt or CKPT_GEN8
         splits_dir = args.splits_dir or SPLITS_5S
         window_sec = args.window_sec or 5.0
-        model_tag = "v01"
+        model_tag = "gen8"
+    elif args.model == "v01":
+        ckpt = args.ckpt or (CKPT_GEN8 if not CKPT_V01.exists() else CKPT_V01)
+        splits_dir = args.splits_dir or SPLITS_5S
+        window_sec = args.window_sec or 5.0
+        model_tag = "gen8" if ckpt == CKPT_GEN8 else "v01"
     elif args.model == "v02":
         ckpt = args.ckpt or CKPT_V02
         splits_dir = args.splits_dir or SPLITS_5S
