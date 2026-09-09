@@ -40,9 +40,11 @@ data/splits_*/
 *.pcap
 *.binetflow
 
-# Track schema and small reference splits
+# Track schema and reference splits
 !data/*.json
 !data/splits/*.npz
+!data/splits_universal_gen8_5s/
+!data/splits_universal_gen8_5s/*.npz
 
 # Ignore intermediate epoch weights and temporary experiment folders
 weights/**/world_model_epoch*.pt
