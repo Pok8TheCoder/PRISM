@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -11,6 +12,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 COMPOSE = ROOT / "docker" / "docker-compose.yml"
+
+# Ensure Docker CLI is in PATH on Windows
+_DOCKER_BIN_CANDIDATES = [
+    Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "DockerDesktop" / "resources" / "bin",
+    Path(r"C:\Program Files\Docker\Docker\resources\bin"),
+]
+for _p in _DOCKER_BIN_CANDIDATES:
+    if _p.is_dir() and str(_p) not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = str(_p) + os.pathsep + os.environ.get("PATH", "")
 
 
 def _compose_cmd(*args: str) -> list[str]:

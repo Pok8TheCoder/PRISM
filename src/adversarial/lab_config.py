@@ -1,8 +1,18 @@
 """Configuration for the isolated PRISM adversarial Docker lab."""
 
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
+
+# Ensure Docker CLI is in PATH on Windows
+_DOCKER_BIN_CANDIDATES = [
+    Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "DockerDesktop" / "resources" / "bin",
+    Path(r"C:\Program Files\Docker\Docker\resources\bin"),
+]
+for _p in _DOCKER_BIN_CANDIDATES:
+    if _p.is_dir() and str(_p) not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = str(_p) + os.pathsep + os.environ.get("PATH", "")
 
 COMPOSE_FILE = ROOT / "docker" / "docker-compose.yml"
 COMPOSE_PROJECT = "prism"
