@@ -9,8 +9,13 @@ COMPOSE_PROJECT = "prism"
 
 TARGET_HOST = "target-server"
 ATTACKER_CONTAINER = "attacker-bot"
+REDTEAM_CONTAINER = "redteam"
 TARGET_CONTAINER = "target-server"
 BENIGN_CONTAINER = "benign-client"
+
+REDTEAM_EVENTS_CONTAINER_PATH = "/events/redteam.jsonl"
+REDTEAM_EVENTS_HOST_PATH = ROOT / "data" / "lab_events" / "redteam.jsonl"
+IPS_OUT_ROOT = ROOT / "results" / "ips_redteam"
 
 SAVE_DIR = ROOT / "data" / "raw" / "adversarial"
 MISSED_DIR = SAVE_DIR / "missed"

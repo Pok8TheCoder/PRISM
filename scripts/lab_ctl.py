@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -18,7 +19,7 @@ def _compose_cmd(*args: str) -> list[str]:
 
 def _remove_conflicting_containers() -> None:
     """Remove legacy standalone containers that block compose names."""
-    for name in ("target-server", "attacker-bot", "benign-client"):
+    for name in ("target-server", "attacker-bot", "benign-client", "redteam"):
         inspect = subprocess.run(
             ["docker", "inspect", "-f", "{{.Name}}", name],
             capture_output=True,
@@ -32,13 +33,14 @@ def _remove_conflicting_containers() -> None:
 
 def cmd_up(_: argparse.Namespace) -> int:
     print("Building and starting isolated PRISM lab (internal network only)...")
+    (ROOT / "data" / "lab_events").mkdir(parents=True, exist_ok=True)
     _remove_conflicting_containers()
     r = subprocess.run(_compose_cmd("up", "-d", "--build"), cwd=str(ROOT))
     if r.returncode != 0:
         return r.returncode
     print("\nLab containers:")
     subprocess.run(_compose_cmd("ps"), cwd=str(ROOT))
-    print("\nTarget DNS: target-server  |  Attacker: attacker-bot  |  Benign: benign-client")
+    print("\nTarget DNS: target-server  |  Attacker: attacker-bot  |  Benign: benign-client  |  Red team: redteam")
     print("No ports are published to your host.")
     return 0
 
@@ -57,6 +59,45 @@ def cmd_logs(args: argparse.Namespace) -> int:
     if args.service:
         return subprocess.run(_compose_cmd("logs", *tail, args.service), cwd=str(ROOT)).returncode
     return subprocess.run(_compose_cmd("logs", *tail), cwd=str(ROOT)).returncode
+
+
+def cmd_reset(args: argparse.Namespace) -> int:
+    """Force-recreate target-server for a clean per-round state.
+
+    entrypoint.sh regenerates config/secret.key and seed_db.py reseeds
+    users/posts/homepage on every boot, so recreating the container (fresh
+    writable layer, no volumes) is enough to fully reset the vulnerable
+    webapp between objective rounds/evasion versions -- new admin
+    password, new session secret, homepage un-defaced, no leftover guest
+    accounts from the previous round's exploit.
+    """
+    print("Resetting target-server (fresh secret/DB/homepage)...")
+    r = subprocess.run(
+        _compose_cmd("up", "-d", "--force-recreate", "target-server"),
+        cwd=str(ROOT),
+    )
+    if r.returncode != 0:
+        return r.returncode
+
+    if not args.no_wait:
+        print("Waiting for the webapp to come back up...")
+        deadline = time.monotonic() + args.timeout
+        while time.monotonic() < deadline:
+            check = subprocess.run(
+                [
+                    "docker", "exec", "target-server",
+                    "python3", "-c",
+                    "import urllib.request;urllib.request.urlopen('http://localhost/api/health',timeout=2)",
+                ],
+                capture_output=True,
+            )
+            if check.returncode == 0:
+                print("target-server ready.")
+                break
+            time.sleep(1)
+        else:
+            print("Warning: target-server did not report healthy within timeout.", file=sys.stderr)
+    return 0
 
 
 def cmd_verify(_: argparse.Namespace) -> int:
@@ -86,6 +127,11 @@ def main() -> int:
     logs_p.set_defaults(func=cmd_logs)
 
     sub.add_parser("verify", help="Run probe attack inside lab").set_defaults(func=cmd_verify)
+
+    reset_p = sub.add_parser("reset", help="Force-recreate target-server for a clean per-round state")
+    reset_p.add_argument("--timeout", type=float, default=30.0, help="Seconds to wait for health check")
+    reset_p.add_argument("--no-wait", action="store_true", help="Don't wait/poll for health after recreate")
+    reset_p.set_defaults(func=cmd_reset)
 
     args = parser.parse_args()
     return args.func(args)

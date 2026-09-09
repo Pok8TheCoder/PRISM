@@ -5,6 +5,9 @@ from __future__ import annotations
 from typing import Callable
 
 from src.adversarial.bots import (
+    lab_cred_theft,
+    lab_defacement,
+    lab_key_theft,
     t1020_automated_exfil,
     t1021_remote_services,
     t1030_exfil_size_limit,
@@ -78,6 +81,28 @@ _BOT_MODULES = [
 
 BOT_REGISTRY: dict[str, RunFn] = {m.CLASS_ID: m.run for m in _BOT_MODULES}
 
+# --- Objective bots (real requests-based HTTP client, structured results) --
+# Kept in a separate registry from BOT_REGISTRY: these have a richer contract
+# (`run_objective(target_ip, evasion, clock, event_log, round_id) -> dict`)
+# than the recon bots' `RunFn -> int`. The live orchestrator
+# (scripts/live_attack_lab.py) calls `run_objective` directly; `run_bot`/
+# `BOT_REGISTRY` above are untouched for the existing recon-bot rotation.
+_OBJECTIVE_BOT_MODULES = [
+    lab_defacement,
+    lab_key_theft,
+    lab_cred_theft,
+]
+
+ObjectiveRunFn = Callable[..., dict]
+
+OBJECTIVE_BOT_REGISTRY: dict[str, ObjectiveRunFn] = {
+    m.CLASS_ID: m.run_objective for m in _OBJECTIVE_BOT_MODULES
+}
+
+OBJECTIVE_BOT_TACTICS: dict[str, str] = {
+    m.CLASS_ID: m.MITRE_TACTIC for m in _OBJECTIVE_BOT_MODULES
+}
+
 # Legacy PoC strategy names -> catalog class IDs
 LEGACY_ALIASES: dict[str, str] = {
     "ssh_bruteforce": "T1110_ssh_bruteforce",
@@ -104,3 +129,13 @@ def run_bot(class_id: str, target_ip: str, evasion: str = "none") -> int:
 
 def list_bots() -> list[str]:
     return sorted(BOT_REGISTRY.keys())
+
+
+def list_objective_bots() -> list[str]:
+    return sorted(OBJECTIVE_BOT_REGISTRY.keys())
+
+
+def run_objective_bot(class_id: str, target_ip: str, evasion: str, **kwargs) -> dict:
+    if class_id not in OBJECTIVE_BOT_REGISTRY:
+        raise KeyError(f"Unknown objective class: {class_id}")
+    return OBJECTIVE_BOT_REGISTRY[class_id](target_ip, evasion, **kwargs)

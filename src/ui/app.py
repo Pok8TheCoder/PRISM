@@ -41,10 +41,11 @@ from src.ui.lab_controller import (
     start_lab,
     stop_lab,
     threat_level,
+    train_on_all_dashboard_attacks,
+    start_background_loop,
 )
-import torch
-from src.prediction.simulator import KStepSimulator
-from src.utils.constants import MITRE_STAGES_INV
+from src.ui.live_feed import render_packet_visualizer
+from src.ui.forecast_player import render_forecast_player
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -77,9 +78,55 @@ SOC_CSS = """
         margin: 0.5rem 0;
     }
     div[data-testid="stExpander"] { background: #161b22; border: 1px solid #30363d; }
+    .wire-banner {
+        display: flex; justify-content: space-between; align-items: center;
+        font-family: Consolas, monospace; font-size: 0.85rem;
+        padding: 0.55rem 0.8rem; margin-bottom: 0.8rem;
+        background: #010409; border: 1px solid #30363d; border-radius: 8px;
+    }
+    .wire-live.on { color: #f85149; letter-spacing: 0.08em; animation: pulse 1.4s ease-in-out infinite; }
+    .wire-live.off { color: #8b949e; letter-spacing: 0.08em; }
+    .wire-legend { color: #8b949e; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 6px 0 12px; }
+    .dot.intrusion { background: #f85149; }
+    .dot.evasion { background: #a371f7; }
+    .dot.misclass { background: #d29922; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .verdict-card {
+        background: #010409; border: 1px solid #30363d; border-left-width: 4px;
+        border-radius: 8px; padding: 0.85rem 1rem; margin-top: 0.4rem;
+        font-family: Consolas, monospace; font-size: 0.82rem;
+    }
+    .verdict-tag { font-weight: 700; letter-spacing: 0.14em; margin-bottom: 0.35rem; }
+    .verdict-true, .verdict-pred, .verdict-meta { color: #c9d1d9; margin-top: 0.2rem; }
+    .verdict-meta { color: #8b949e; }
+    .pkt-feed {
+        background: #010409; border: 1px solid #30363d; border-radius: 8px;
+        padding: 0.4rem 0; max-height: 320px; overflow-y: auto;
+        font-family: Consolas, ui-monospace, monospace; font-size: 0.75rem;
+    }
+    .pkt-row {
+        display: grid; grid-template-columns: 118px 1fr 220px;
+        gap: 0.6rem; padding: 0.32rem 0.8rem;
+        border-left: 3px solid #30363d; color: #c9d1d9;
+    }
+    .pkt-row:nth-child(odd) { background: #0d1117; }
+    .pkt-tag { font-weight: 700; letter-spacing: 0.06em; }
+    .pkt-line { color: #8b949e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pkt-cls { color: #58a6ff; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 """
 st.markdown(SOC_CSS, unsafe_allow_html=True)
+
+
+def _live_packet_fragment():
+    render_packet_visualizer()
+
+
+try:
+    _live_packet_fragment = st.fragment(run_every=2.0)(_live_packet_fragment)
+except Exception:
+    pass
 
 
 def _init_session():
@@ -125,55 +172,16 @@ def _append_timeline(result, prediction: dict):
     st.session_state.timeline = st.session_state.timeline[-50:]
 
 
-@st.cache_resource(show_spinner="Loading PRISM World Model...")
-def _load_prism_model(model_name: str, device: str = "cpu"):
-    from src.models.world_model import StateTransformerWorldModel, LSTMWorldModel, load_checkpoint
-    from src.models.gen7_world_model import Gen7DecoupledWorldModel
-    from src.models.gnn_model import GraphWorldModel
-    from src.models.latent_dynamics import LatentDynamicsWorldModel
-
-    d_state = 242
-    if "Gen 7" in model_name or "Decoupled" in model_name:
-        m = Gen7DecoupledWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=20)
-        ckpt_path = "weights/gen7/world_model_best.pt" if (ROOT / "weights/gen7/world_model_best.pt").exists() else "weights/world_model_best.pt"
-        if (ROOT / ckpt_path).exists():
-            load_checkpoint(m, ckpt_path, device=device)
-    elif "GNN" in model_name or "Graph" in model_name:
-        m = GraphWorldModel(d_node=d_state, d_graph=d_state, d_model=256, lookback=20)
-        load_checkpoint(m, "weights/gnn/world_model_best.pt", device=device)
-    elif "LSTM" in model_name:
-        m = LSTMWorldModel(d_state=d_state, d_model=256, lstm_layers=2, lookback=20)
-        load_checkpoint(m, "weights/lstm/world_model_best.pt", device=device)
-    elif "Latent" in model_name:
-        m = LatentDynamicsWorldModel(d_state=d_state, d_latent=64, d_model=256, n_layers=2, lookback=20)
-        load_checkpoint(m, "weights/latent/world_model_best.pt", device=device)
-    else:
-        m = StateTransformerWorldModel(d_state=d_state, d_model=256, n_layers=4, n_heads=8, lookback=20)
-        load_checkpoint(m, "weights/world_model_best.pt", device=device)
-    m.eval()
-    return m
-
-
-@st.cache_data(show_spinner="Loading CIC-IDS-2018 test telemetry...")
-def _load_test_telemetry():
-    from src.data.dataset import load_states_from_npz
-    npz_path = ROOT / "data" / "splits" / "test.npz"
-    if npz_path.exists():
-        d = load_states_from_npz(str(npz_path))
-        return d["states"], d.get("labels_binary", None), d.get("labels_mitre", None)
-    return None, None, None
-
-
-def _render_header(lab, active_prism_model: str = "Transformer World Model (200ep GPU)"):
+def _render_header(lab):
     online = lab.all_running
     status_cls = "status-online" if online else "status-offline"
-    status_txt = "ONLINE" if online else "STANDALONE"
+    status_txt = "ONLINE" if online else "OFFLINE"
+    ckpt = "READY" if lab.checkpoint_compatible else ("MISSING" if not lab.checkpoint_exists else "MISMATCH")
     st.markdown(
         f'<div class="prism-header">'
-        f'PRISM // Predictive Recurrent Infiltration State Model &nbsp; '
+        f'PRISM // Predictive Risk Intelligence for Security Monitoring &nbsp; '
         f'<span class="{status_cls}">[{status_txt}]</span> &nbsp; '
-        f'Active: <span style="color: #58a6ff; font-weight: bold;">{active_prism_model}</span> &nbsp; '
-        f'Device: {lab.device}'
+        f'Model: {ckpt} &nbsp; Device: {lab.device}'
         f'</div>',
         unsafe_allow_html=True,
     )
@@ -276,7 +284,7 @@ def _plot_attribution(scores: list[tuple[str, float]]):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def _render_suspect_review():
+def _render_suspect_review(key_prefix: str = "suspect"):
     suspect = st.session_state.pending_suspect
     if not suspect:
         return
@@ -296,7 +304,7 @@ def _render_suspect_review():
     c2.write(f"**Flows:** {result.flow_count} | **Evasion:** {result.evasion}")
 
     a1, a2, a3, a4 = st.columns(4)
-    if a1.button("Confirm Alert", type="primary"):
+    if a1.button("Confirm Alert", type="primary", key=f"{key_prefix}_confirm"):
         st.session_state.alerts.append({
             "time": datetime.now(timezone.utc).isoformat(),
             "result": result.to_dict(),
@@ -307,19 +315,19 @@ def _render_suspect_review():
         st.session_state.pending_suspect = None
         st.rerun()
 
-    if a2.button("Dismiss"):
+    if a2.button("Dismiss", key=f"{key_prefix}_dismiss"):
         _log(f"Dismissed suspect: {pred['pred_class']}")
         st.session_state.pending_suspect = None
         st.rerun()
 
-    if a3.button("Save to missed dataset"):
+    if a3.button("Save to missed dataset", key=f"{key_prefix}_save"):
         path = save_result_to_missed(result, reason="operator_save")
         _log(f"Saved missed sample -> {path}")
         st.session_state.pending_suspect = None
         st.cache_resource.clear()
         st.rerun()
 
-    if a4.button("Save + Dismiss"):
+    if a4.button("Save + Dismiss", key=f"{key_prefix}_save_dismiss"):
         save_result_to_missed(result, reason="operator_save")
         st.session_state.pending_suspect = None
         st.rerun()
@@ -379,196 +387,15 @@ def _render_ps_demo(model, scaler, device):
     st.write("Top classes", result.get("top_classes"))
 
 
-def _render_prism_simulation(prism_model, prism_model_name: str, device: str, test_states, test_labels_binary, test_labels_mitre):
-    st.subheader(f"🔮 PRISM World Model Simulation & Infiltration Forecast")
-    st.caption(
-        f"Active Architecture: **{prism_model_name}** | Target: CSE-CIC-IDS2018 Temporal States ($S_t \\in \\mathbb{{R}}^{{242}}$) | "
-        f"Forecasting $P(S_{{t+k}} \\mid S_t)$ over lookahead horizon $K$."
-    )
-
-    if test_states is None:
-        st.error("CIC-IDS-2018 test telemetry not found at `data/splits/test.npz`.")
-        return
-
-    c_scen, c_k, c_roll = st.columns([2, 1, 1])
-    with c_scen:
-        scen = st.selectbox(
-            "Telemetry Scenario",
-            [
-                "🚨 Scenario A: Attack Escalation (Window 255 -> Rapid Critical Breach)",
-                "🔍 Scenario B: Infiltration Reconnaissance (Window 60 -> Early Probe)",
-                "🛡️ Scenario C: Clean Benign Baseline (Window 25 -> Normal Operations)",
-                "🎛️ Custom Window Slider",
-            ],
-            index=0,
-        )
-        if "255" in scen:
-            default_window = 255
-        elif "60" in scen:
-            default_window = 60
-        elif "25" in scen:
-            default_window = 25
-        else:
-            default_window = 100
-
-        window_idx = st.slider("Current Time Window (t)", 20, len(test_states) - 1, default_window, step=1)
-
-    with c_k:
-        k_steps = st.slider("Lookahead Horizon (K steps)", 5, 25, 10, help="Future steps to simulate")
-    with c_roll:
-        n_rollouts = st.slider("Monte Carlo Rollouts", 1, 15, 5, help="Stochastic rollouts for 95% CI")
-
-    lookback_seq = test_states[window_idx - 20 : window_idx]
-    true_label = int(test_labels_binary[window_idx]) if test_labels_binary is not None else -1
-    true_mitre = MITRE_STAGES_INV.get(int(test_labels_mitre[window_idx]), "Unknown") if test_labels_mitre is not None else "N/A"
-
-    sim = KStepSimulator(model=prism_model, device=device, k_steps=k_steps, num_rollouts=n_rollouts)
-    result = sim.simulate(lookback_seq)
-
-    current_prob = result.steps[0].infiltration_prob
-    peak_prob = result.peak_infiltration_prob
-    alert = result.overall_alert.upper()
-
-    alert_colors = {
-        "NONE": "#3fb950",
-        "LOW": "#58a6ff",
-        "MEDIUM": "#d29922",
-        "HIGH": "#db6d28",
-        "CRITICAL": "#f85149",
-    }
-    color = alert_colors.get(alert, "#58a6ff")
-
-    m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("Current Attack Prob", f"{current_prob:.1%}")
-    m2.metric("Peak Forecast Risk", f"{peak_prob:.1%}")
-    m3.markdown(
-        f"**Threat Assessment**<br><span style='color:{color}; font-size:1.3rem; font-weight:bold;'>{alert}</span>",
-        unsafe_allow_html=True,
-    )
-    m4.metric("Escalation Detected", "YES ⚠️" if result.is_escalating else "NO ✅")
-    m5.metric("Ground Truth Label", "ATTACK 🚨" if true_label == 1 else "BENIGN 🛡️")
-
-    st.write(f"**Trajectory Assessment**: *{result.trajectory_summary}*")
-
-    # Estimate historical probabilities for the lookback window
-    step_indices = [s.step for s in result.steps]
-    step_probs = [s.infiltration_prob for s in result.steps]
-
-    fig = go.Figure()
-    if result.ensemble_upper is not None and result.ensemble_lower is not None:
-        fig.add_trace(go.Scatter(
-            x=step_indices + step_indices[::-1],
-            y=list(result.ensemble_upper) + list(result.ensemble_lower)[::-1],
-            fill="toself",
-            fillcolor="rgba(210, 153, 34, 0.18)",
-            line=dict(color="rgba(255,255,255,0)"),
-            hoverinfo="skip",
-            name="95% Confidence Band",
-        ))
-
-    all_x = [0] + step_indices
-    all_y = [current_prob] + step_probs
-    fig.add_trace(go.Scatter(
-        x=all_x, y=all_y,
-        mode="lines+markers",
-        name=f"Rollout ({prism_model_name.split()[0]})",
-        line=dict(color="#d29922", width=3),
-        marker=dict(size=8, color="#f0883e"),
-    ))
-
-    fig.add_hline(y=0.50, line_dash="dash", line_color="#d29922", annotation_text="Warning Threshold (0.50)")
-    fig.add_hline(y=0.75, line_dash="dash", line_color="#f85149", annotation_text="Critical Threshold (0.75)")
-
-    fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="#0d1117",
-        plot_bgcolor="#161b22",
-        height=360,
-        margin=dict(l=20, r=20, t=40, b=20),
-        title=f"Autoregressive Forecast Horizon (t=0 to t+{k_steps})",
-        xaxis_title="Simulation Step Ahead (k)",
-        yaxis_title="Infiltration Probability P(Attack | S_{t+k})",
-        yaxis=dict(range=[0, 1.05]),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-    c_mitre, c_explain = st.columns([1, 1])
-    with c_mitre:
-        st.subheader("MITRE ATT&CK Kill-Chain Rollout")
-        peak_s = result.steps[min(result.peak_step, len(result.steps) - 1)]
-        mitre_names = [MITRE_STAGES_INV.get(i, f"Stage {i}") for i in range(len(peak_s.mitre_probs))]
-        mitre_vals = [float(p) for p in peak_s.mitre_probs]
-        fig_m = go.Figure(go.Bar(
-            x=mitre_vals, y=mitre_names, orientation="h",
-            marker=dict(color=mitre_vals, colorscale="Turbo", cmin=0, cmax=1),
-        ))
-        fig_m.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="#0d1117",
-            plot_bgcolor="#161b22",
-            height=300,
-            margin=dict(l=10, r=10, t=30, b=10),
-            xaxis=dict(range=[0, 1]),
-        )
-        st.plotly_chart(fig_m, use_container_width=True)
-        st.info(f"Most Likely Kill-Chain Phase at Step +{peak_s.step}: **{peak_s.mitre_stage}** (True Stage: **{true_mitre}**)")
-
-    with c_explain:
-        st.subheader("Feature Deviation & Drivers")
-        curr_state = lookback_seq[-1]
-        top_feat_idx = np.argsort(np.abs(curr_state))[-10:][::-1]
-        feat_names = [f"Feature [{i}]" for i in top_feat_idx]
-        feat_mags = [float(curr_state[i]) for i in top_feat_idx]
-        fig_f = go.Figure(go.Bar(x=feat_mags, y=feat_names, orientation="h", marker_color="#58a6ff"))
-        fig_f.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="#0d1117",
-            plot_bgcolor="#161b22",
-            height=300,
-            margin=dict(l=10, r=10, t=30, b=10),
-        )
-        st.plotly_chart(fig_f, use_container_width=True)
-
-    # 200-Epoch Benchmark Summary Expander
-    with st.expander("📊 View Full 200-Epoch Multi-Model Benchmark Comparison Table"):
-        st.markdown("""
-        | Model Architecture | Model Family | Binary F1 | Precision | Recall | False Positive Rate | ROC AUC | MITRE F1 | Dynamics MSE | Can Forecast Ahead? |
-        |:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-        | **Transformer World Model** | Causal Attention | **0.7552** | 0.7826 | **0.7297** | 0.0460 | 0.9151 | 0.4506 | 268.49 | **Yes (Autoregressive)** |
-        | **Graph World Model (GNN)** | Graph Topology | **0.7107** | **0.9149** | 0.5811 | **0.0123** | 0.8806 | 0.4329 | **164.91** | **Yes (Autoregressive)** |
-        | **LSTM World Model** | Recurrent Sequence | 0.6875 | 0.8148 | 0.5946 | 0.0307 | **0.9335** | **0.8586** | 259.13 | **Yes (Autoregressive)** |
-        | **Latent Dynamics (VAE)** | Stochastic VAE | 0.3122 | 0.1850 | **1.0000** | 1.0000 | 0.5159 | 0.4616 | 291.89 | **Yes (Autoregressive)** |
-        | **Logistic Regression** | Static Linear | 0.6240 | 0.7800 | 0.5200 | 0.0319 | 0.9130 | 0.2316 | N/A | No (Static only) |
-        | **Random Forest** | Static Ensemble | 0.5000 | **1.0000** | 0.3333 | **0.0000** | **0.9729** | 0.2305 | N/A | No (Static only) |
-        """)
-
-
 def main():
     _init_session()
     lab = get_lab_snapshot()
     model, scaler, device = _load_model_bundle()
 
-    # ── Sidebar: PRISM World Model Selector ──────────────────────────────────
-    with st.sidebar:
-        st.subheader("PRISM Model Selector")
-        prism_model_names = [
-            "Gen 7 Decoupled World Model (Contrastive SOTA)",
-            "Transformer World Model (Primary 200ep GPU)",
-            "Graph World Model (GNN 200ep)",
-            "LSTM World Model (200ep)",
-            "Latent Dynamics World Model (200ep)",
-        ]
-        active_model_name = st.selectbox(
-            "Active World Model",
-            prism_model_names,
-            index=0,
-            help="Select which deep world model checkpoint to evaluate and simulate.",
-        )
-        prism_model = _load_prism_model(active_model_name, device=str(device))
-        test_states, test_labels_binary, test_labels_mitre = _load_test_telemetry()
+    _render_header(lab)
 
-        st.divider()
+    # ── Sidebar: lab + model controls ─────────────────────────────────────────
+    with st.sidebar:
         st.subheader("Lab Control")
         if st.button("Start Lab", use_container_width=True):
             ok, msg = start_lab()
@@ -587,15 +414,34 @@ def main():
             st.write(f"{icon} `{name}`")
 
         st.divider()
-        st.subheader("Lab Model")
+        st.subheader("Model")
+        st.caption("Retrain and the adversarial loop replay every labeled capture in missed/, not only the latest batch.")
         if not lab.checkpoint_compatible:
-            st.info("Docker lab model: 33-class catalog.")
+            st.warning("Train 33-class model or retrain checkpoint.")
         if st.button("Retrain on missed samples", use_container_width=True):
             ok, msg, n = retrain_from_missed(model, scaler, device)
             _log(msg)
             if ok:
                 st.cache_resource.clear()
             st.success(msg) if ok else st.error(msg)
+
+        if st.button("Train on ALL catalog attacks", use_container_width=True):
+            with st.spinner("Running every dashboard attack class against the lab, then retraining..."):
+                ok, msg, summary = train_on_all_dashboard_attacks(model, scaler, device)
+            _log(msg)
+            st.session_state.catalog_train_summary = summary
+            if ok:
+                st.cache_resource.clear()
+                st.success(msg)
+            else:
+                st.error(msg)
+            if summary.get("log"):
+                st.code("\n".join(summary["log"][:40]), language=None)
+
+        if st.button("Adversarial loop 20 min", use_container_width=True):
+            msg = start_background_loop(1200)
+            _log(msg)
+            st.info(msg)
 
         st.divider()
         summary = get_catalog_summary()
@@ -604,26 +450,33 @@ def main():
             f"{summary.get('network_distinct_bots', '?')} bots"
         )
 
-    _render_header(lab, active_prism_model=active_model_name)
-
     # ── Tabs ──────────────────────────────────────────────────────────────────
-    tab_prism, tab_demo, tab_live, tab_runbook, tab_missed, tab_mitre = st.tabs([
-        "🔮 PRISM World Model", "PS Demo", "Live Monitor", "Attack Runbook", "Missed & Retrain", "MITRE Catalog",
+    tab_demo, tab_live, tab_runbook, tab_missed, tab_mitre, tab_player = st.tabs([
+        "PS Demo", "Live Monitor", "Attack Runbook", "Missed & Retrain", "MITRE Catalog",
+        "Forecast Player",
     ])
 
     last_pred = None
     if st.session_state.last_result and st.session_state.last_result.prediction:
         last_pred = st.session_state.last_result.prediction
 
-    with tab_prism:
-        _render_prism_simulation(prism_model, active_model_name, str(device), test_states, test_labels_binary, test_labels_mitre)
-
     with tab_demo:
         _render_ps_demo(model, scaler, device)
 
     with tab_live:
+        st.subheader("Live packet wire")
+        st.caption(
+            "Red = correctly identified intrusion. Purple = evasion (attack not confidently named). "
+            "Amber = model saw an attack but named the wrong class."
+        )
+        try:
+            _live_packet_fragment()
+        except Exception:
+            render_packet_visualizer()
+
+        st.divider()
         _render_metrics(lab, last_pred)
-        _render_suspect_review()
+        _render_suspect_review("live")
 
         col_chart, col_tactic = st.columns([3, 2])
         forecast = None
@@ -757,7 +610,7 @@ def main():
             else:
                 st.warning("No scored result yet.")
 
-            _render_suspect_review()
+            _render_suspect_review("runbook")
 
             c1, c2 = st.columns(2)
             if c1.button("Back"):
@@ -856,6 +709,9 @@ def main():
                 "detectable": tech.get("detectable_from_network"),
             })
         st.dataframe(rows, use_container_width=True, hide_index=True)
+
+    with tab_player:
+        render_forecast_player()
 
 
 if __name__ == "__main__":
