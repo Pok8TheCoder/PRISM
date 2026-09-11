@@ -1,0 +1,52 @@
+data:
+  splits_dir: "data/splits_universal_gen10_5s"
+  lookback: 20
+  stride: 2
+  num_workers: 0
+
+model:
+  architecture: "gen10"
+  d_state: 249
+  d_model: 256
+  n_layers: 4
+  n_heads: 8
+  dropout: 0.1
+  mlp_hidden: 512
+  lookback: 20
+  residual_dynamics: true
+
+train:
+  batch_size: 2048
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  epochs: 25
+  phase1_epochs: 5
+  patience: 25
+  grad_clip: 1.0
+
+  # Phase 1: Spatio-Temporal Representation Learning
+  lambda_dynamics_p1: 0.40
+  lambda_mitre_p1: 5.0
+  
+  # Phase 2: Classification De-confliction & Topological SupCon
+  lambda_dynamics_p2: 0.005
+  lambda_mitre_p2: 15.0
+
+  lambda_infiltration: 2.0
+  lambda_pair: 2.5
+  lambda_supcon: 2.0
+  supcon_temperature: 0.07
+
+  asymmetric_fn_weight: 1.0
+  use_focal: true
+  focal_gamma: 1.5
+  label_smoothing: 0.01
+  max_sq_err: 5.0
+  balanced_sampling: true
+  scheduler: "cosine"
+  warmup_steps: 0
+  device: "cuda"
+  seed: 42
+  checkpoint_dir: "weights/universal_gen10"
+  log_dir: "results/logs"
+  save_every: 10

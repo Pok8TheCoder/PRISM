@@ -24,6 +24,8 @@ SCRIPTS: list[dict[str, str]] = [
     {"id": "forecast-record", "label": "Record session", "description": "WebM + manifest"},
     {"id": "scorer-start", "label": "Start scorer", "description": "demo_forecast.py"},
     {"id": "scorer-stop", "label": "Stop scorer", "description": "Stop demo_forecast.py"},
+    {"id": "live-ips-laplace", "label": "Live IPS (Laplace Model)", "description": "live_ips_multi.py --backend laplace"},
+    {"id": "live-ips-gen10", "label": "Live IPS (Gen 10)", "description": "live_ips_multi.py --backend gen10"},
 ]
 
 _SCRIPT_CMDS: dict[str, list[str]] = {
@@ -38,6 +40,8 @@ _SCRIPT_CMDS: dict[str, list[str]] = {
     "bench-fair-ids": [sys.executable, str(ROOT / "scripts" / "compare_ips_v01_v02.py")],
     "forecast-record": [sys.executable, str(ROOT / "scripts" / "demo_forecast_record.py")],
     "scorer-start": [sys.executable, str(ROOT / "scripts" / "demo_forecast.py")],
+    "live-ips-laplace": [sys.executable, str(ROOT / "scripts" / "live_ips_multi.py"), "--backend", "laplace", "--duration", "60", "--speed", "10"],
+    "live-ips-gen10": [sys.executable, str(ROOT / "scripts" / "live_ips_multi.py"), "--backend", "laplace", "--duration", "60", "--speed", "10"],
 }
 
 _LOG_LINES: list[dict[str, Any]] = [

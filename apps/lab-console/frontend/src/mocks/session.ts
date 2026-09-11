@@ -37,11 +37,11 @@ const models: ModelSlot[] = [
     accuracy: { lineMae: 0.038, regionPrecision: 0.82, regionRecall: 0.75 },
   },
   {
-    id: 'gen8_world_model',
-    name: 'PRISM Gen 8 World Model',
+    id: 'gen10_world_model',
+    name: 'PRISM Gen 10 World Model',
     predicted: series(0, 70, 0.08, 0.03, 1),
     regions: modelRegions(0),
-    accuracy: { lineMae: 0.024, regionPrecision: 0.964, regionRecall: 0.974 },
+    accuracy: { lineMae: 0.018, regionPrecision: 0.992, regionRecall: 0.988 },
   },
 ]
 

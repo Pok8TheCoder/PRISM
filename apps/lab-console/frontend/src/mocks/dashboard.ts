@@ -27,9 +27,9 @@ export const mockDashboard: DashboardState = {
     { name: 'internet_sim', cidr: '10.0.0.0/24', protected: false },
   ],
   models: [
+    { id: 'laplace_world_model', name: 'PRISM Laplace Model', version: 'universal-laplace-5s', loaded: true },
     { id: 'shaun_v3', name: 'Shaun v3', version: 'w5s', loaded: true },
     { id: 'hx_c', name: 'HX-C', version: 'lab', loaded: true },
-    { id: 'gen8_world_model', name: 'PRISM Gen 8', version: 'universal-5s', loaded: true },
     { id: 'xmt_01', name: 'XMT.01', version: 'v1', loaded: false },
   ],
   metricsTimeseries: Array.from({ length: 60 }, (_, i) => ({

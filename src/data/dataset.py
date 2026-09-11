@@ -238,14 +238,17 @@ class GPUDatasetLoader:
         self.N = len(self.valid_indices)
         self.window_offsets = torch.arange(-lookback, 0, device=device)
 
-        # Precompute balanced sampling weights on GPU
+        # 7-Stage Stratified Sampling with Heavy Minority Boost (S3 Lateral, S5 Exfil)
         if balanced_sampling:
             labels_m = self.labels_mitre[self.valid_indices]
             counts = torch.bincount(labels_m, minlength=7).float()
-            target_prob = 1.0 / 7.0
+            # Heavy boost for minority stages (S3: Lateral Movement, S5: Exfiltration)
+            stage_boost = torch.tensor([1.0, 1.2, 1.2, 3.5, 1.0, 8.0, 1.0], device=device)
             class_weights = torch.zeros(7, device=device)
             mask = counts > 0
-            class_weights[mask] = target_prob / counts[mask]
+            # Inverse frequency smoothed with exponent 0.90 to prevent numerical extremes
+            inv_freq = (1.0 / (counts[mask] ** 0.90)) * stage_boost[mask]
+            class_weights[mask] = inv_freq / inv_freq.sum()
             self.sample_weights = class_weights[labels_m]
         else:
             self.sample_weights = None
@@ -267,11 +270,26 @@ class GPUDatasetLoader:
         for start in range(0, self.N, self.batch_size):
             b_idx = active_indices[start : start + self.batch_size]
             gather_idx = b_idx.unsqueeze(1) + self.window_offsets.unsqueeze(0)
+            state_seq = self.states[gather_idx]
+            y_mit = self.labels_mitre[b_idx]
+
+            # Minority class jitter and manifold interpolation (S3 Lateral & S5 Exfil)
+            if self.balanced_sampling:
+                s5_mask = (y_mit == 5)
+                s3_mask = (y_mit == 3)
+                if s5_mask.any():
+                    # Targeted Gaussian perturbation on S5 to prevent single-sample memorization
+                    jitter = torch.randn_like(state_seq[s5_mask]) * 0.035
+                    state_seq[s5_mask] = state_seq[s5_mask] + jitter
+                if s3_mask.any():
+                    jitter = torch.randn_like(state_seq[s3_mask]) * 0.020
+                    state_seq[s3_mask] = state_seq[s3_mask] + jitter
+
             yield {
-                "state_seq": self.states[gather_idx],
+                "state_seq": state_seq,
                 "next_state": self.states[b_idx],
                 "label_binary": self.labels_binary[b_idx],
-                "label_mitre": self.labels_mitre[b_idx],
+                "label_mitre": y_mit,
             }
 
 

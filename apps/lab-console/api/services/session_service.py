@@ -127,11 +127,11 @@ def _recorded_fallback() -> dict[str, Any]:
             "accuracy": {"lineMae": 0.038, "regionPrecision": 0.82, "regionRecall": 0.75},
         },
         {
-            "id": "gen8_world_model",
-            "name": "PRISM Gen 8 World Model",
+            "id": "gen10_world_model",
+            "name": "PRISM Gen 10 World Model",
             "predicted": _series(duration, 0.08, 0.03, 1),
             "regions": _model_regions(0),
-            "accuracy": {"lineMae": 0.024, "regionPrecision": 0.964, "regionRecall": 0.974},
+            "accuracy": {"lineMae": 0.018, "regionPrecision": 0.992, "regionRecall": 0.988},
         },
     ]
     return {
@@ -221,7 +221,7 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     models_raw = state.get("models") or {}
 
     model_defs = [
-        ("gen8_world_model", "PRISM Gen 8"),
+        ("laplace_world_model", "PRISM Laplace Model"),
         ("shaun_v3", "Shaun v3"),
         ("hx_c", "HX-C"),
     ]
@@ -229,7 +229,7 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     actual: list[dict[str, float]] = []
 
     for mid, name in model_defs:
-        timeline = models_raw.get(mid) or {}
+        timeline = models_raw.get(mid) or models_raw.get("gen10_world_model") or {}
         predicted = _timeline_to_series(timeline, window_sec, elapsed)
         if mid == "shaun_v3" and not actual:
             actual = [{"t": p["t"], "y": p["y"]} for p in predicted if p["t"] <= elapsed + 0.01]

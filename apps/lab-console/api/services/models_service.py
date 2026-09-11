@@ -12,6 +12,25 @@ MOCKS = ROOT / "apps" / "lab-console" / "mocks"
 
 KNOWN_MODELS: list[dict[str, Any]] = [
     {
+        "id": "laplace_world_model",
+        "name": "PRISM Laplace Model (Tier 1 & Tier 2 Combined)",
+        "version": "universal-laplace-5s",
+        "checkpointPath": "weights/universal_gen10/world_model_best.pt",
+        "parameters": 5_721_499,
+        "classes": [
+            "Benign",
+            "Reconnaissance",
+            "Initial Access",
+            "Lateral Movement",
+            "Command & Control",
+            "Exfiltration",
+            "Impact",
+        ],
+        "featureDim": 249,
+        "seqLen": 20,
+        "tags": ["laplace", "world_model", "spatiotemporal_gnn", "tier1_tier2_combined", "live_lab"],
+    },
+    {
         "id": "shaun_v3",
         "name": "Shaun v3",
         "version": "w5s",
@@ -32,6 +51,25 @@ KNOWN_MODELS: list[dict[str, Any]] = [
         "featureDim": 128,
         "seqLen": 8,
         "tags": ["forecast", "kill-chain", "lab-adapt"],
+    },
+    {
+        "id": "gen9_world_model",
+        "name": "PRISM Gen 9 Hierarchical World Model",
+        "version": "universal-5s",
+        "checkpointPath": "weights/universal_gen9/world_model_best.pt",
+        "parameters": 5_670_611,
+        "classes": [
+            "Benign",
+            "Reconnaissance",
+            "Initial Access",
+            "Lateral Movement",
+            "Command & Control",
+            "Exfiltration",
+            "Impact",
+        ],
+        "featureDim": 242,
+        "seqLen": 20,
+        "tags": ["world_model", "hierarchical_routing", "supcon", "gen9", "live_lab"],
     },
     {
         "id": "gen8_world_model",

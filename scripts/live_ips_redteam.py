@@ -44,17 +44,20 @@ from src.aryan.streaming_variants import StreamingARYRamxV01, calibrate_threshol
 from src.aryan.world_model import TemporalTransformerWorldModel  # noqa: E402
 from src.models.streaming_gen8 import StreamingGen8WorldModel, load_gen8_checkpoint  # noqa: E402
 from src.models.gen8_world_model import Gen8DecoupledMLPWorldModel  # noqa: E402
+from src.models.streaming_gen10 import StreamingGen10WorldModel  # noqa: E402
 
 LAB_CTL = ROOT / "scripts" / "lab_ctl.py"
 SPLITS_5S = ROOT / "data" / "splits_universal_gen8_5s"
+SPLITS_GEN10_5S = ROOT / "data" / "splits_universal_gen10_5s"
 SPLITS_ARYAN_5S = ROOT / "data" / "aryan_splits_5s"
 SPLITS_1S = ROOT / "data" / "aryan_splits_1s"
+CKPT_GEN10 = ROOT / "weights" / "universal_gen10" / "world_model_best.pt"
 CKPT_GEN8 = ROOT / "weights" / "universal_gen8" / "world_model_best.pt"
 CKPT_V01 = ROOT / "models" / "checkpoints" / "ary_5sv01.pt"
 CKPT_V02 = ROOT / "models" / "checkpoints" / "ary_5sv02.pt"
 CKPT_1S = ROOT / "models" / "checkpoints" / "ary_1sv01.pt"
 STATE_WINDOW_SEC = 5.0
-SYSTEM_ID = "gen8_world_model"
+SYSTEM_ID = "gen10_world_model"
 MITRE_TACTIC = "Credential Access"
 EARLY_ALERT_SEC = 120.0
 DETECT_THRESHOLD = 0.5
@@ -190,14 +193,17 @@ def run_experiment(
     round_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Loading checkpoint {ckpt_path} ...")
-    model = load_ckpt(ckpt_path)
-    if isinstance(model, Gen8DecoupledMLPWorldModel):
-        system = StreamingGen8WorldModel(base_model=model, detect_thresh=DETECT_THRESHOLD)
+    if model_tag == "gen10" or "gen10" in str(ckpt_path):
+        system = StreamingGen10WorldModel(detect_thresh=DETECT_THRESHOLD)
     else:
-        splits = load_all_splits(splits_dir)
-        va_s, va_b, _ = splits["val"]
-        _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
-        system = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
+        model = load_ckpt(ckpt_path)
+        if isinstance(model, Gen8DecoupledMLPWorldModel):
+            system = StreamingGen8WorldModel(base_model=model, detect_thresh=DETECT_THRESHOLD)
+        else:
+            splits = load_all_splits(splits_dir)
+            va_s, va_b, _ = splits["val"]
+            _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
+            system = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
 
     clock = LabClock(speed=speed, base_window_sec=state_window_sec)
     capture = TrafficCapture(container_name=TARGET_CONTAINER, output_dir=round_dir / "pcaps")
@@ -322,7 +328,7 @@ def run_experiment(
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--model", choices=("gen8", "v01", "v02", "1s"), default="gen8")
+    p.add_argument("--model", choices=("laplace", "gen10", "gen8", "v01", "v02", "1s"), default="laplace")
     p.add_argument("--window-sec", type=float, default=None, help="StateBuilder window (default: 5, or 1 for --model 1s)")
     p.add_argument("--ckpt", type=Path, default=None)
     p.add_argument("--splits-dir", type=Path, default=None)
@@ -332,7 +338,12 @@ def main() -> int:
     p.add_argument("--out-dir", type=Path, default=IPS_OUT_ROOT)
     args = p.parse_args()
 
-    if args.model == "gen8":
+    if args.model in ("laplace", "gen10"):
+        ckpt = args.ckpt or CKPT_GEN10
+        splits_dir = args.splits_dir or SPLITS_GEN10_5S
+        window_sec = args.window_sec or 5.0
+        model_tag = "laplace" if args.model == "laplace" else "gen10"
+    elif args.model == "gen8":
         ckpt = args.ckpt or CKPT_GEN8
         splits_dir = args.splits_dir or SPLITS_5S
         window_sec = args.window_sec or 5.0

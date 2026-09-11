@@ -435,7 +435,13 @@ class LSTMWorldModel(nn.Module):
 from src.models.timesfm_model import Gen6_TimesFMWorldModel, TimesFMWorldModel
 from src.models.gen7_world_model import Gen7DecoupledWorldModel
 from src.models.gen8_world_model import Gen8DecoupledMLPWorldModel
+from src.models.gen9_world_model import Gen9HierarchicalWorldModel
+from src.models.gen10_world_model import Gen10SpatioTemporalWorldModel
 
+Gen10_SpatioTemporalWorldModel = Gen10SpatioTemporalWorldModel
+Gen10_WorldModel = Gen10SpatioTemporalWorldModel
+Gen9_HierarchicalWorldModel = Gen9HierarchicalWorldModel
+Gen9_HDWorldModel = Gen9HierarchicalWorldModel
 Gen8_DecoupledMLPWorldModel = Gen8DecoupledMLPWorldModel
 Gen7_DecoupledTemporalTransformer = Gen7DecoupledWorldModel
 Gen6_TimesFMCyberWorldModel = Gen6_TimesFMWorldModel
@@ -456,7 +462,27 @@ def build_world_model(cfg) -> nn.Module:
     """
     arch = getattr(cfg, "architecture", "transformer").lower()
 
-    if arch in ("gen8", "gen8_world_model", "gen8_mlp", "gen8_decoupled"):
+    if arch in ("gen10", "gen10_world_model", "gen10_graph", "gen10_spatiotemporal"):
+        return Gen10SpatioTemporalWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            lookback=getattr(cfg, "lookback", 20),
+            dropout=cfg.dropout,
+            residual_dynamics=getattr(cfg, "residual_dynamics", True),
+        )
+    elif arch in ("gen9", "gen9_world_model", "gen9_hierarchical", "gen9_hd"):
+        return Gen9HierarchicalWorldModel(
+            d_state=cfg.d_state,
+            d_model=cfg.d_model,
+            n_layers=cfg.n_layers,
+            n_heads=cfg.n_heads,
+            lookback=getattr(cfg, "lookback", 20),
+            dropout=cfg.dropout,
+            residual_dynamics=getattr(cfg, "residual_dynamics", True),
+        )
+    elif arch in ("gen8", "gen8_world_model", "gen8_mlp", "gen8_decoupled"):
         return Gen8DecoupledMLPWorldModel(
             d_state=cfg.d_state,
             d_model=cfg.d_model,

@@ -4,6 +4,7 @@ Converts merged feature DataFrames into time-windowed state vectors or
 graph representations for consumption by the world model.
 """
 
+import ipaddress
 import logging
 from typing import Optional
 
@@ -11,6 +12,22 @@ import numpy as np
 import pandas as pd
 
 logger = logging.getLogger("prism.data.state_builder")
+
+_PRIVATE_CACHE: dict[str, bool] = {}
+
+
+def _is_private_ip_fast(ip_str: str) -> bool:
+    """Fast amortized check if an IP string belongs to RFC 1918 private subnets."""
+    cached = _PRIVATE_CACHE.get(ip_str)
+    if cached is not None:
+        return cached
+    try:
+        res = ipaddress.ip_address(ip_str.strip()).is_private
+    except Exception:
+        res = False
+    _PRIVATE_CACHE[ip_str] = res
+    return res
+
 
 
 class StateBuilder:
@@ -196,6 +213,69 @@ class StateBuilder:
         else:
             features.append(0.0)
             names.append("port_entropy")
+
+        # --- Graph Topology & Directional Invariants (Gen 10) ---
+        src_col = next((c for c in ["Src IP", "src_ip", "src_ip_hash"] if c in window.columns), None)
+        dst_col = next((c for c in ["Dst IP", "dst_ip", "dst_ip_hash"] if c in window.columns), None)
+
+        # 1. Peak Out-Degree (Fan-Out) -> Detects S1 Reconnaissance
+        if src_col and len(window) > 0:
+            features.append(float(window[src_col].value_counts().max()))
+        else:
+            features.append(0.0)
+        names.append("graph_max_out_degree")
+
+        # 2. Peak In-Degree (Target Concentration) -> Detects S2/S6 Focus
+        if dst_col and len(window) > 0:
+            features.append(float(window[dst_col].value_counts().max()))
+        else:
+            features.append(0.0)
+        names.append("graph_max_in_degree")
+
+        # 3. Subnet Directionality Ratios
+        if "_src_priv" in window.columns and "_dst_priv" in window.columns and len(window) > 0:
+            src_priv = window["_src_priv"]
+            dst_priv = window["_dst_priv"]
+            total_flows = float(len(window))
+            features.append(float((~src_priv & dst_priv).sum()) / total_flows)  # WAN -> LAN (S2)
+            names.append("graph_wan_to_lan_ratio")
+            features.append(float((src_priv & dst_priv).sum()) / total_flows)   # LAN -> LAN (S3)
+            names.append("graph_lan_to_lan_ratio")
+            features.append(float((src_priv & ~dst_priv).sum()) / total_flows)  # LAN -> WAN (S4/S5)
+            names.append("graph_lan_to_wan_ratio")
+        elif src_col and dst_col and len(window) > 0:
+            src_priv = window[src_col].astype(str).map(_is_private_ip_fast)
+            dst_priv = window[dst_col].astype(str).map(_is_private_ip_fast)
+            total_flows = float(len(window))
+            features.append(float((~src_priv & dst_priv).sum()) / total_flows)  # WAN -> LAN (S2)
+            names.append("graph_wan_to_lan_ratio")
+            features.append(float((src_priv & dst_priv).sum()) / total_flows)   # LAN -> LAN (S3)
+            names.append("graph_lan_to_lan_ratio")
+            features.append(float((src_priv & ~dst_priv).sum()) / total_flows)  # LAN -> WAN (S4/S5)
+            names.append("graph_lan_to_wan_ratio")
+        else:
+            features.extend([0.0, 0.0, 0.0])
+            names.extend(["graph_wan_to_lan_ratio", "graph_lan_to_lan_ratio", "graph_lan_to_wan_ratio"])
+
+        # 4. Graph Reciprocity Ratio (Response verification)
+        bwd_col = next(
+            (c for c in ["TotLen Bwd Pkts", "Total Length of Bwd Packets", "bwd_bytes", "Bwd Pkts/s"] if c in window.columns),
+            None,
+        )
+        if bwd_col and len(window) > 0:
+            features.append(float((pd.to_numeric(window[bwd_col], errors="coerce").fillna(0) > 0).sum()) / float(len(window)))
+        else:
+            features.append(0.0)
+        names.append("graph_reciprocity_ratio")
+
+        # 5. Bipartite Interaction Density
+        if src_col and dst_col and len(window) > 0:
+            n_src = max(window[src_col].nunique(), 1)
+            n_dst = max(window[dst_col].nunique(), 1)
+            features.append(float(len(window)) / float(n_src * n_dst))
+        else:
+            features.append(0.0)
+        names.append("graph_bipartite_density")
 
         # --- Numeric feature statistics (mean + std) ---
         for col in numeric_cols:

@@ -26,6 +26,8 @@ from src.models.baseline import (
 )
 from src.models.gnn_model import GraphWorldModel
 from src.models.latent_dynamics import LatentDynamicsWorldModel
+from src.models.laplace_world_model import LaplaceWorldModel, load_laplace_checkpoint
+from src.models.streaming_laplace import StreamingLaplaceModel, LaplaceModel
 
 __all__ = [
     "TemporalTransformerWorldModel",
@@ -33,6 +35,10 @@ __all__ = [
     "LSTMWorldModel",
     "GraphWorldModel",
     "LatentDynamicsWorldModel",
+    "LaplaceWorldModel",
+    "load_laplace_checkpoint",
+    "StreamingLaplaceModel",
+    "LaplaceModel",
     "LogisticRegressionBaseline",
     "RandomForestBaseline",
     "StateEmbedding",

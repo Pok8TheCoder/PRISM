@@ -66,11 +66,13 @@ from src.hx.causal import StreamingHXC, load_hxc_bundle  # noqa: E402
 from src.aryan.world_model import TemporalTransformerWorldModel  # noqa: E402
 from src.models.streaming_gen8 import StreamingGen8WorldModel, load_gen8_checkpoint  # noqa: E402
 from src.models.gen8_world_model import Gen8DecoupledMLPWorldModel  # noqa: E402
+from src.models.streaming_gen10 import StreamingGen10WorldModel  # noqa: E402
 
 LAB_CTL = ROOT / "scripts" / "lab_ctl.py"
 SPLITS_5S = ROOT / "data" / "splits_universal_gen8_5s"
 SPLITS_ARYAN_5S = ROOT / "data" / "aryan_splits_5s"
 CKPT_GEN8 = ROOT / "weights" / "universal_gen8" / "world_model_best.pt"
+CKPT_GEN10 = ROOT / "weights" / "universal_gen10" / "world_model_best.pt"
 CKPT_V01 = ROOT / "models" / "checkpoints" / "ary_5sv01.pt"
 MITRE_TACTIC = "Credential Access"
 EARLY_ALERT_SEC = 120.0
@@ -92,6 +94,8 @@ def _json_safe(obj):
 
 
 BACKEND_CONFIG = {
+    "laplace": {"window_sec": 5.0, "block_id": "laplace_model", "tag": "laplace_model"},
+    "gen10": {"window_sec": 5.0, "block_id": "gen10_world_model", "tag": "gen10_world_model"},
     "gen8": {"window_sec": 5.0, "block_id": "gen8_world_model", "tag": "gen8_world_model"},
     "ary": {"window_sec": 5.0, "block_id": "gen8_world_model", "tag": "gen8_world_model"},
     "sn2rx": {"window_sec": 15.0, "block_id": "sn2rx", "tag": "sn2rx"},
@@ -145,6 +149,7 @@ def state_from_pcap(
             pcap_path, last_state=last_state, scale_factor=scale_factor, replicate=replicate,
             window_sec=window_sec,
         )
+    target_dim = 249 if backend == "gen10" else TARGET_DIM
     from src.pipeline.extract import pcap_to_rows
     rows = pcap_to_rows(pcap_path)
     if scale_factor != 1.0 or replicate != 1:
@@ -152,13 +157,18 @@ def state_from_pcap(
     if not rows:
         if last_state is not None:
             return last_state.copy()
-        return np.zeros(TARGET_DIM, dtype=np.float32)
+        return np.zeros(target_dim, dtype=np.float32)
     states, _, _ = _states_from_flow_df(pd.DataFrame(rows), window_sec=window_sec)
     if len(states):
-        return states[0].astype(np.float32)
+        st = states[0].astype(np.float32)
+        if len(st) < target_dim:
+            st = np.pad(st, (0, target_dim - len(st)))
+        elif len(st) > target_dim:
+            st = st[:target_dim]
+        return st
     if last_state is not None:
         return last_state.copy()
-    return np.zeros(TARGET_DIM, dtype=np.float32)
+    return np.zeros(target_dim, dtype=np.float32)
 
 
 def _sleep_with_poll(
@@ -248,7 +258,7 @@ def capture_one_window(
             pass
     t_end = time.time()
     if state is None:
-        dim = 292 if backend in SHAUN_LIKE else TARGET_DIM
+        dim = 249 if backend == "gen10" else (292 if backend in SHAUN_LIKE else TARGET_DIM)
         state = last_state.copy() if last_state is not None else np.zeros(dim, dtype=np.float32)
     return state.astype(np.float32), t_start, t_end
 
@@ -458,7 +468,10 @@ def build_systems(
     systems: dict[str, object] = {}
     ckpt = shaun_ckpt.resolve() if shaun_ckpt else None
 
-    if backend in ("gen8", "ary"):
+    if backend in ("laplace", "gen10"):
+        from src.models.streaming_laplace import StreamingLaplaceModel
+        systems[block_id] = StreamingLaplaceModel(detect_thresh=DETECT_THRESHOLD)
+    elif backend in ("gen8", "ary"):
         model = load_ary_ckpt(CKPT_GEN8)
         if isinstance(model, Gen8DecoupledMLPWorldModel):
             systems[block_id] = StreamingGen8WorldModel(base_model=model, detect_thresh=DETECT_THRESHOLD)
@@ -746,7 +759,7 @@ def run_experiment(
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--backend", choices=tuple(BACKEND_CONFIG), default="ary")
+    p.add_argument("--backend", choices=tuple(BACKEND_CONFIG), default="laplace")
     p.add_argument("--duration", type=float, default=30.0, help="Wall-clock attack phase seconds")
     p.add_argument("--warmup-sec", type=float, default=15.0)
     p.add_argument("--speed", type=float, default=20.0)
