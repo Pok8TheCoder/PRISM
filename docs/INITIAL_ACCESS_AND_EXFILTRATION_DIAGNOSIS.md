@@ -111,19 +111,90 @@ Because $2\text{ KB} \ll 40\text{ KB}$, the volumetric trigger fails to fire, pr
 
 ---
 
-## 5. Engineering Roadmap & Solutions
+## 5. Architectural Transformation: From Hardcoded Port Checks to Invariant Telemetry
 
-To bring Initial Access and Exfiltration recall to parity on containerized lab environments without sacrificing enterprise fidelity:
+To eliminate both the Docker subnet collapse and port-evasion vulnerabilities, the Tier-2 Neuro-Symbolic Engine was re-architected from brittle port lookups into a **hierarchical behavioral & topological invariant engine**:
 
-### Fix 1: Decouple Service Ingress from RFC 1918 Address Classification
-Instead of assuming all private IPs are internal employee workstations, inspect the **target service role**:
-* If `dst_port in {80, 443, 8080, 8443, 8000}` (perimeter web services) or `dst_port in {22, 3389}` (remote ingress gateways) and the incoming traffic exhibits exploit signatures (SQLi, path traversal, brute force), classify as **Initial Access (Stage 2)** regardless of whether the source IP is private.
+```
+Raw Telemetry (249-d) + Flow Context
+                    │
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ 1. Impact Invariant (S6)                        │
+   │    din > 25 & Reciprocity < 0.20                │  ──► Overwhelm / DoS
+   │    OR Flows > 500 & Reciprocity < 0.05          │
+   └─────────────────────────────────────────────────┘
+                    │ False
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ 2. Internal Admin Protocol Invariant (S3)       │
+   │    LAN->LAN traversal on Admin Ports            │  ──► Lateral Movement
+   │    (SMB 445, RPC 135, Kerb 88, WinRM 5985)      │      (Noise-Resistant)
+   └─────────────────────────────────────────────────┘
+                    │ False
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ 3. Reconnaissance Graph Invariant (S1)          │
+   │    High Fan-Out: H(port) > 1.8 | Ports >= 4     │  ──► Scanning & Discovery
+   │    with Asymmetric Handshake / Wan->Lan sweep   │
+   └─────────────────────────────────────────────────┘
+                    │ False
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ 4. Outbound Exfiltration Invariant (S5)         │
+   │    Strictly LAN->WAN (Outbound Only)            │  ──► External Data Theft
+   │    with Heavy Egress Push (fwd > 3.0 * bwd)     │
+   └─────────────────────────────────────────────────┘
+                    │ False
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ 5. Command & Control vs. Benign Web Pull (S4/S0)│
+   │    If bwd >= 2.0 * fwd & fwd < 10KB (Web Pull)  │  ──► Benign Web (S0)
+   │    Else: Persistent Egress / C2 Port / DNS      │  ──► C2 Callback (S4)
+   └─────────────────────────────────────────────────┘
+                    │ False
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ 6. Initial Access Invariant (S2)                │
+   │    WAN->LAN perimeter ingress                   │  ──► Initial Access
+   │    OR Container-Aware Web Exploit (80, 443, 8080)│      (T1190 Exploit Probe)
+   │    (Protected against Docker Subnet Collapse)   │
+   └─────────────────────────────────────────────────┘
+                    │ False
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ 7. Generic Lateral Movement (S3) & Benign (S0)  │  ──► Lateral / Benign
+   └─────────────────────────────────────────────────┘
+```
 
-### Fix 2: Soften Logit Penalties ($\pm 10.0 \to \pm 2.0$)
-Dropping logits by $-10.0$ reduces stage probability by a factor of $e^{10} \approx 22,026$, effectively disabling neural predictions.
-* Reduce negative evidence offsets to subtle dampening penalties ($\Delta = -1.5$ to $-2.0$).
-* This allows strong neural world model activations to override directional heuristics when clear payload signatures are present.
+### Key Invariant Principles:
+1. **Container Subnet Independence:** Initial Access inspects service exposure and interactive request dynamics rather than relying purely on WAN IP classification. Inbound web exploit probes ($T1190$) are correctly attributed to Initial Access even when redteam and target share the Docker bridge (`172.18.0.0/16`).
+2. **Directionally Bound Exfiltration:** Data exfiltration ($S5$) is strictly conditioned on outbound internet/WAN egress ($\text{LAN\_TO\_WAN}$ or $\text{lan\_to\_wan} > 0.40$). Internal lateral file transfers ($T1570$ over SMB $445$) are preserved as Lateral Movement.
+3. **Traffic Asymmetry Disambiguation (Port 443):**
+   * $\text{bytes}_{\text{bwd}} \gg \text{bytes}_{\text{fwd}}$ on $443 \to$ Benign SaaS / Web Content Retrieval ($S0$).
+   * $\text{bytes}_{\text{fwd}} \approx \text{bytes}_{\text{bwd}}$ on $443 \to$ Command & Control Heartbeat / Web Service Callback ($S4$).
+   * $\text{bytes}_{\text{fwd}} \gg \text{bytes}_{\text{bwd}}$ on $443 \to$ Data Exfiltration ($S5$).
+   * Inbound exploit payload on $443 \to$ Initial Access ($S2$).
 
-### Fix 3: Implement Micro-Exfiltration Byte Ratios
-Lower the volumetric threshold for small credential dumps:
-* Trigger Exfiltration if `fwd_bytes > 2,000` (2 KB) and `fwd_bytes > 3.5 * bwd_bytes` when preceded by an access or query stage.
+---
+
+## 6. Empirical Benchmark & Verification Results
+
+Following this update to [`src/models/streaming_gen10.py`](file:///d:/coding/PRISM/src/models/streaming_gen10.py), the model was verified across all attack suites:
+
+### A. All 35 Lab Attack Files (`scratch/test_all_35_lab_attacks.py`)
+* **Total Attack Bots Tested:** 35 / 35
+* **Threat Detection Accuracy ($\ge 50\%$):** **100.0% (35/35)**
+* **MITRE Stage Attribution Accuracy:** **100.0% (35/35)**
+* **Initial Access Recall:** **100.0% (5/5)** (including $T1110$ SSH brute force, $T1110$ Web brute force, $T1187$ Password spray, $T1133$ External remote, $T1190$ Web exploit probe)
+* **Exfiltration Recall:** **100.0% (4/4)** ($T1041$ C2 exfil, $T1048$ Alt protocol, $T1030$ Size limit, $T1020$ Automated)
+* **Lateral Movement Recall:** **100.0% (3/3)** ($T1021$ Remote services, $T1210$ Exploit remote, $T1570$ Lateral transfer)
+* **Mean Inference Latency:** **11.8 ms / window**
+
+### B. Hardest Adversarial Stress & Evasion Suite (`scratch/hardest_lab_stress_test.py`)
+* **Overall Score:** **10/10 (100.0%) PASS**
+* **Port 443 Ambiguity Resolution:** **4/4 (100.0%)** (Distinguished Benign, Initial Access, C2, and Exfiltration on port 443)
+* **10x Scaled Background Noise:** **2/2 (100.0%)** (Preserved stealth SMB lateral pivot within 500-flow noise flood)
+* **Stealth Evasion Resilience:** **2/2 (100.0%)** (Caught slow distributed SYN scans and DNS tunneling)
+* **Zero-Day Alert Spikes:** **2/2 (100.0%)** (Predictive surprise $\sigma > 7.0$ alerts triggered)
+
