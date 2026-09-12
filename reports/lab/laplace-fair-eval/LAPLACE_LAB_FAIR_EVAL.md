@@ -27,25 +27,27 @@ Continuous lookback=20 is carried across PCAPs (no per-PCAP buffer reset).
 
 ## Results on our realistic lab PCAPs (148 files, 272 scored windows)
 
+**After canonical 249-d fix** (2026-09-12):
+
 | Metric | Laplace | Gen8 | Gen8+RXI v2_staged |
 |--------|---------|------|---------------------|
-| MITRE accuracy | **14.8%** | 4.0% | 2.6% |
-| Binary accuracy | 54.8% | 77.6% | 18.4% |
-| Weak-stage recall (Init/Lateral/Exfil mean) | 13.6% | 33.3%* | 33.3%* |
+| MITRE accuracy | **14.5%** | 4.0% | 2.6% |
+| Binary accuracy | **73.9%** | 77.6% | 18.4% |
+| Weak-stage recall (Init/Lateral/Exfil mean) | 33.3%* | 33.3%* | 33.3%* |
 
-\*Gen8 variants only recall **Initial Access** (7 windows); other weak stages stay at 0%.
+\*All three only hit one weak stage strongly (Laplace: Lateral 100%; Gen8/RXI: Init Access 100%).
 
-### Laplace per-stage recall
+### Laplace per-stage recall (post-fix)
 
-| Stage | Recall |
-|-------|--------|
-| Benign | 16.0% |
-| Reconnaissance | 9.7% |
-| Initial Access | 0% |
-| Lateral Movement | **40.7%** |
-| Command & Control | 0% |
-| Exfiltration | 0% |
-| Impact | **54.5%** |
+| Stage | Before fix | After fix |
+|-------|------------|-----------|
+| Benign | 16.0% | 4.8% |
+| Reconnaissance | 9.7% | 1.7% |
+| Initial Access | 0% | 0% |
+| Lateral Movement | 40.7% | **100%** |
+| Exfiltration | 0% | 0% |
+| Impact | 54.5% | **75.0%** |
+| Binary | 54.8% | **73.9%** |
 
 Artifacts: `Automode/baselines/laplace_lab_fair.json`, `Automode/baselines/lab_fair_compare.json`
 
@@ -71,7 +73,13 @@ Confusion matrix shows heavy **Benign ↔ Recon** and **Recon → Impact** mixin
 
 54.8% binary accuracy vs Gen8’s 77.6% on the same PCAPs — Tier-1 attack probability is not well calibrated for sparse lab features even when Tier-2 flow context is present.
 
-### 6. Unfair tests were misleading (now ruled out)
+### 6. Feature layout bug (fixed 2026-09-12)
+
+PCAP ingest was building ~85–89 features then **zero-padding at the end**, which shifted flag/proto/port slots away from training indices 230–248. Fix: **canonical 249-d layout** via `gen10_feature_schema.py` — 109 fixed CIC numeric columns always occupy indices 12–229; missing columns zero-fill in-place.
+
+Also fixed: `pcap_to_rows` now includes Src/Dst IP; `live_ips_multi` passes `flow_context` to Laplace `step()`.
+
+### 7. Unfair tests were misleading (now ruled out)
 
 Feeding **pre-scaled Gen8 242-d NPZ** into Laplace (padding to 249-d) produced ~39% batch / ~3% stream — that path **double-wrong** (feature space + no flow context). Fair PCAP streaming is the only valid offline comparison.
 
