@@ -149,7 +149,17 @@ def state_from_pcap(
             pcap_path, last_state=last_state, scale_factor=scale_factor, replicate=replicate,
             window_sec=window_sec,
         )
-    target_dim = 249 if backend == "gen10" else TARGET_DIM
+    if backend in ("laplace", "gen10"):
+        from src.data.gen10_pcap_ingest import pcap_to_gen10_windows
+
+        win = pcap_to_gen10_windows(pcap_path, window_sec=window_sec)
+        if len(win["states"]):
+            return win["states"][-1].astype(np.float32)
+        if last_state is not None:
+            return last_state.copy()
+        return np.zeros(249, dtype=np.float32)
+
+    target_dim = TARGET_DIM
     from src.pipeline.extract import pcap_to_rows
     rows = pcap_to_rows(pcap_path)
     if scale_factor != 1.0 or replicate != 1:

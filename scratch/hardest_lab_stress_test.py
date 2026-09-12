@@ -20,6 +20,23 @@ sys.path.insert(0, str(ROOT))
 
 from src.models.streaming_gen10 import StreamingGen10WorldModel
 
+
+def _load_benign_background(root: Path, scaler) -> np.ndarray:
+    """Benign raw 249-d windows for zero-day seeding / flash-crowd case."""
+    gen10_test = root / "data" / "splits_universal_gen10_5s" / "test.npz"
+    if gen10_test.is_file():
+        test_npz = np.load(gen10_test)
+        b_indices = np.where(test_npz["labels_binary"] == 0)[0]
+        return np.expm1(scaler.inverse_transform(test_npz["states"][b_indices[:30]]))
+
+    # Fallback when gen10 splits are not shipped: stable synthetic benign telemetry.
+    template = np.array(
+        [5, 1, 1, 1, 0.05, 1.0, 1.0, 0.0, 0.0, 1.0, 0.9, 0.9] + [0.0] * 237,
+        dtype=np.float32,
+    )
+    return np.stack([template * (0.95 + 0.01 * i) for i in range(30)])
+
+
 def run_hardest_test():
     print("=" * 115)
     print("      PRISM GEN 10: HARDEST ADVERSARIAL STRESS & EVASION LAB BENCHMARK")
@@ -29,12 +46,15 @@ def run_hardest_test():
     print("[*] Loaded StreamingGen10WorldModel on device:", model.device)
     print("-" * 115)
 
-    # Load representative benign background windows from test split
     import joblib
+
     scaler = joblib.load(ROOT / "weights" / "universal_gen10_5s_scaler.pkl")
-    test_npz = np.load(ROOT / "data" / "splits_universal_gen10_5s" / "test.npz")
-    b_indices = np.where(test_npz["labels_binary"] == 0)[0]
-    benign_states_raw = np.expm1(scaler.inverse_transform(test_npz["states"][b_indices[:30]]))
+    benign_states_raw = _load_benign_background(ROOT, scaler)
+    gen10_test = ROOT / "data" / "splits_universal_gen10_5s" / "test.npz"
+    if gen10_test.is_file():
+        print(f"[*] Benign background from {gen10_test}")
+    else:
+        print("[*] Benign background: synthetic fallback (gen10 test split not on branch)")
 
     test_categories = [
         # ---------------------------------------------------------------------

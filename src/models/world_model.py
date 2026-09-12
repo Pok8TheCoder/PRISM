@@ -435,8 +435,12 @@ class LSTMWorldModel(nn.Module):
 from src.models.timesfm_model import Gen6_TimesFMWorldModel, TimesFMWorldModel
 from src.models.gen7_world_model import Gen7DecoupledWorldModel
 from src.models.gen8_world_model import Gen8DecoupledMLPWorldModel
-from src.models.gen9_world_model import Gen9HierarchicalWorldModel
 from src.models.gen10_world_model import Gen10SpatioTemporalWorldModel
+
+try:
+    from src.models.gen9_world_model import Gen9HierarchicalWorldModel
+except ModuleNotFoundError:
+    Gen9HierarchicalWorldModel = None  # type: ignore[misc, assignment]
 
 Gen10_SpatioTemporalWorldModel = Gen10SpatioTemporalWorldModel
 Gen10_WorldModel = Gen10SpatioTemporalWorldModel
@@ -473,6 +477,10 @@ def build_world_model(cfg) -> nn.Module:
             residual_dynamics=getattr(cfg, "residual_dynamics", True),
         )
     elif arch in ("gen9", "gen9_world_model", "gen9_hierarchical", "gen9_hd"):
+        if Gen9HierarchicalWorldModel is None:
+            raise ModuleNotFoundError(
+                "Gen9 architecture requested but src.models.gen9_world_model is not available on this branch."
+            )
         return Gen9HierarchicalWorldModel(
             d_state=cfg.d_state,
             d_model=cfg.d_model,
