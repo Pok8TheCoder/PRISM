@@ -1,0 +1,50 @@
+{
+  "v1_unified": {
+    "memory_mode": "unified",
+    "immune_v2": true,
+    "system_id": "aryan_gen8_rxi",
+    "description": "Original RXI: single RAMX bank, immune v2 seeding, blended MITRE from k-NN.",
+    "blend_mode": "unified",
+    "knn_k": 3,
+    "baseline_mitre_accuracy_universal_test": 0.09487010587535948
+  },
+  "v2_staged": {
+    "memory_mode": "staged",
+    "immune_v2": true,
+    "system_id": "aryan_gen8_rxi_staged",
+    "description": "Per-MITRE-stage RAMX banks; winner-take-all stage selection at query time.",
+    "blend_mode": "staged",
+    "knn_k": 3,
+    "baseline_mitre_accuracy_universal_test": 0.1731
+  },
+  "v3_gated": {
+    "memory_mode": "staged",
+    "immune_v2": true,
+    "system_id": "aryan_gen8_rxi_gated",
+    "description": "Gen8-led MITRE: RXI only confirms/boosts Gen8 attack hypotheses. Strict memory for anomaly.",
+    "blend_mode": "gated",
+    "knn_k": 3,
+    "mitre_confirm_floor": 0.15,
+    "mitre_boost": 0.25,
+    "anomaly_strict_factor": 0.35,
+    "attack_prior_floor": 0.20,
+    "baseline_mitre_accuracy_universal_test": 0.0995
+  },
+  "v4_targeted": {
+    "memory_mode": "staged",
+    "immune_v2": true,
+    "system_id": "aryan_gen8_rxi_targeted",
+    "description": "RXI only on Gen8 failure surfaces: binary uncertainty band + weak MITRE stages (Init/Lateral/Exfil).",
+    "blend_mode": "targeted",
+    "knn_k": 3,
+    "target_stages": [2, 3, 5],
+    "mitre_pass_through_stages": [0, 1, 4, 6],
+    "seed_stages": [0, 2, 3, 5],
+    "mitre_confirm_floor": 0.10,
+    "mitre_weak_confidence_ceiling": 0.55,
+    "mitre_boost": 0.30,
+    "anomaly_strict_factor": 0.35,
+    "binary_uncertainty_low": 0.25,
+    "binary_uncertainty_high": 0.75
+  }
+}

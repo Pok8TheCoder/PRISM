@@ -45,6 +45,14 @@ from src.aryan.constants import MITRE_STAGES, TACTIC_TO_STAGE  # noqa: E402
 from src.aryan.dataset import load_all_splits  # noqa: E402
 from src.aryan.ingest import TARGET_DIM, _states_from_flow_df  # noqa: E402
 from src.aryan.ips_scoring import compute_ips_scores  # noqa: E402
+from src.aryan.gen8_rxi import StreamingAryanGen8Rxi, seed_rxi_scorer  # noqa: E402
+from src.aryan.gen8_streaming import (  # noqa: E402
+    StreamingAryanGen8,
+    StreamingAryanGen8Ramx,
+    calibrate_gen8_settings,
+    load_gen8_bundle,
+    preprocess_state,
+)
 from src.aryan.streaming_variants import StreamingARYRamxV01, calibrate_thresholds  # noqa: E402
 from src.aryan.world_model import TemporalTransformerWorldModel  # noqa: E402
 from src.pipeline.extract import pcap_to_rows  # noqa: E402
@@ -82,6 +90,9 @@ def _json_safe(obj):
 
 BACKEND_CONFIG = {
     "ary": {"window_sec": 5.0, "block_id": "ary5_ramx", "tag": "ary5_ramx"},
+    "aryan_gen8": {"window_sec": 5.0, "block_id": "aryan_gen8", "tag": "aryan_gen8"},
+    "aryan_gen8_ramx": {"window_sec": 5.0, "block_id": "aryan_gen8_ramx", "tag": "aryan_gen8_ramx"},
+    "aryan_gen8_rxi": {"window_sec": 5.0, "block_id": "aryan_gen8_rxi", "tag": "aryan_gen8_rxi"},
     "sn2rx": {"window_sec": 15.0, "block_id": "sn2rx", "tag": "sn2rx"},
     "sn2rx3": {"window_sec": 15.0, "block_id": "sn2rx3", "tag": "sn2rx3"},
     "hx": {"window_sec": 5.0, "block_id": "hx", "tag": "hx"},
@@ -89,6 +100,7 @@ BACKEND_CONFIG = {
 }
 
 SHAUN_LIKE = ("sn2rx", "sn2rx3", "hx", "hx_c")
+ARY_LIKE = ("ary", "aryan_gen8", "aryan_gen8_ramx", "aryan_gen8_rxi")
 
 
 def load_ary_ckpt(path: Path) -> TemporalTransformerWorldModel:
@@ -449,6 +461,41 @@ def build_systems(
         va_s, va_b, _ = splits["val"]
         _, hidden_thresh = calibrate_thresholds(model, va_s, va_b)
         systems[block_id] = StreamingARYRamxV01(base_model=model, hidden_thresh=hidden_thresh)
+    elif backend in ("aryan_gen8", "aryan_gen8_ramx"):
+        bundle = load_gen8_bundle()
+        gen8_cfg = {"detect_threshold": DETECT_THRESHOLD, "hidden_thresh": 30.0}
+        if SPLITS_5S.is_dir():
+            try:
+                splits = load_all_splits(SPLITS_5S)
+                va_s, va_b, _ = splits["val"]
+                gen8_cfg = calibrate_gen8_settings(bundle, val_states=va_s, val_bin=va_b)
+            except Exception as exc:
+                print(f"  WARNING: Gen8 calibration failed: {exc}", file=sys.stderr)
+        if backend == "aryan_gen8":
+            systems[block_id] = StreamingAryanGen8(
+                bundle, detect_threshold=gen8_cfg["detect_threshold"],
+            )
+        else:
+            systems[block_id] = StreamingAryanGen8Ramx(
+                bundle,
+                hidden_thresh=gen8_cfg["hidden_thresh"],
+                detect_threshold=gen8_cfg["detect_threshold"],
+            )
+    elif backend == "aryan_gen8_rxi":
+        bundle = load_gen8_bundle()
+        gen8_cfg = {"detect_threshold": DETECT_THRESHOLD, "hidden_thresh": 30.0}
+        if SPLITS_5S.is_dir():
+            try:
+                splits = load_all_splits(SPLITS_5S)
+                va_s, va_b, _ = splits["val"]
+                gen8_cfg = calibrate_gen8_settings(bundle, val_states=va_s, val_bin=va_b)
+            except Exception as exc:
+                print(f"  WARNING: Gen8 calibration failed: {exc}", file=sys.stderr)
+        systems[block_id] = StreamingAryanGen8Rxi(
+            bundle,
+            hidden_thresh=gen8_cfg["hidden_thresh"],
+            detect_threshold=gen8_cfg["detect_threshold"],
+        )
     elif backend == "hx":
         bundle = load_hx_bundle()
         systems[block_id] = StreamingHX(bundle, context_skip_steps=10_000)
@@ -520,6 +567,7 @@ def run_experiment(
         systems[block_id].begin_live_phase()
 
     trace: list[dict] = []
+    rxi_warmup_states: list[np.ndarray] = []
     state_box: dict[str, np.ndarray | None] = {"last": None}
     ips_state = {
         "blocked": False,
@@ -607,6 +655,10 @@ def run_experiment(
         if phase == "warmup":
             nonlocal warmup_windows
             warmup_windows += 1
+            if backend == "aryan_gen8_rxi" and block_id in systems:
+                rxi_warmup_states.append(
+                    preprocess_state(np.asarray(state, dtype=np.float32), systems[block_id].scaler)
+                )
 
     window_idx = 0
     warmup_start = time.time()
@@ -618,6 +670,22 @@ def run_experiment(
     if backend in SHAUN_LIKE and block_id in systems:
         systems[block_id].set_context_skip(warmup_windows)
         print(f"  {backend} context gate set to {warmup_windows} warmup windows")
+
+    if backend == "aryan_gen8_rxi" and block_id in systems and rxi_warmup_states:
+        bulk = ROOT / "data" / "raw" / "bulk_parallel_weak"
+        benign_dir = ROOT / "data" / "raw" / "internet_benign" / "captured"
+        thresh = seed_rxi_scorer(
+            systems[block_id],
+            warmup_states=rxi_warmup_states,
+            attack_class="T1110_ssh_bruteforce",
+            donor_roots=(bulk, ROOT / "data" / "raw" / "adversarial"),
+            benign_dir=benign_dir,
+            attack_mitre_stage=MITRE_STAGES.get("Credential Access", 3),
+        )
+        print(
+            f"  RXI immune seeding complete: threshold={thresh:.5f} "
+            f"bank={systems[block_id].seed_stats.get('memory_entries', 0)}"
+        )
 
     attack_clock = LabClock(speed=speed, base_window_sec=atk_window_sec)
     attack_capture = TrafficCapture(container_name=TARGET_CONTAINER, output_dir=round_dir / "pcaps_attack")
@@ -751,6 +819,11 @@ def main() -> int:
     if args.backend == "ary" and not CKPT_V01.exists():
         print(f"Missing checkpoint: {CKPT_V01}", file=sys.stderr)
         return 1
+    if args.backend in ("aryan_gen8", "aryan_gen8_ramx"):
+        gen8_ckpt = ROOT.parent / "PRISM-aryan" / "weights" / "universal_gen8" / "world_model_best.pt"
+        if not gen8_ckpt.is_file():
+            print(f"Missing Gen8 checkpoint: {gen8_ckpt}", file=sys.stderr)
+            return 1
 
     log_systems = [s.strip() for s in args.log_systems.split(",") if s.strip()]
     if args.backend in ("sn2rx", "sn2rx3") and "sn_base" not in log_systems:

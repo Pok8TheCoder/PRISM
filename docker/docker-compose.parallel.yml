@@ -1,0 +1,65 @@
+# Parallel PRISM lab stacks — no fixed container_name (use -p prism-p0 … prism-p5).
+# Slimmer footprint: target + attacker + benign only (no redteam).
+# PCAP / logs should live on D: (see parallel_lab_stress.py).
+
+name: prism-parallel
+
+services:
+  target-server:
+    build:
+      context: ./target
+    hostname: target-server
+    networks:
+      - prism-lab
+    cap_add:
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 384M
+    restart: unless-stopped
+
+  attacker-bot:
+    build:
+      context: ./attacker
+    hostname: attacker-bot
+    networks:
+      - prism-lab
+    volumes:
+      - ..:/app:ro
+    working_dir: /app
+    depends_on:
+      target-server:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: "0.35"
+          memory: 128M
+    restart: unless-stopped
+
+  benign-client:
+    build:
+      context: ./benign
+    hostname: benign-client
+    networks:
+      - prism-lab
+    environment:
+      TARGET_HOST: target-server
+      BENIGN_INTERVAL: "${BENIGN_INTERVAL:-0.8}"
+      BENIGN_WORKERS: "${BENIGN_WORKERS:-4}"
+    depends_on:
+      target-server:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 96M
+    restart: unless-stopped
+
+networks:
+  prism-lab:
+    driver: bridge
+    internal: true

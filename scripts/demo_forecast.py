@@ -52,11 +52,18 @@ from src.hx.lab_adapt import (  # noqa: E402
     phase_to_class_id,
     resolve_hxc_ckpt,
 )
+from src.aryan.gen8_streaming import (  # noqa: E402
+    StreamingAryanGen8,
+    StreamingAryanGen8Ramx,
+    load_gen8_bundle,
+    pcap_to_gen8_state,
+)
 from src.shaun.streaming import StreamingShaunRamxV3, load_shaun_bundle, pcap_to_shaun_state  # noqa: E402
 
 COMPOSE_BASE = ROOT / "docker" / "docker-compose.yml"
 COMPOSE_FC = ROOT / "docker" / "docker-compose.forecast.yml"
 W5S = ROOT.parent / "PRISM-shaun" / "weights" / "w5s" / "world_model.pt"
+GEN8_WINDOW_SEC = 5.0
 EVENTS = ROOT / "data" / "lab_events"
 STATE_PATH = EVENTS / "demo_forecast.json"
 HIST_PATH = EVENTS / "demo_forecast.jsonl"
@@ -713,6 +720,9 @@ class LiveState:
             "block_ips": [],
             "pending_sn2rx3": 0,
             "pending_hx_c": 0,
+            "pending_aryan_gen8_ramx": 0,
+            "p_aryan_gen8": 0.0,
+            "p_aryan_gen8_ramx": 0.0,
             "confirm_need": CONFIRM_WINDOWS,
             "same_window_tie": False,
             "scores_at_block": None,
@@ -720,7 +730,12 @@ class LiveState:
             "phase_regions": [],
             "memory_regions": [],
             "ips_armed": False,
-            "models": {"shaun_v3": {"retrospective": [], "prospective": []}, "hx_c": {"retrospective": [], "prospective": []}},
+            "models": {
+                "shaun_v3": {"retrospective": [], "prospective": []},
+                "hx_c": {"retrospective": [], "prospective": []},
+                "aryan_gen8": {"retrospective": [], "prospective": []},
+                "aryan_gen8_ramx": {"retrospective": [], "prospective": []},
+            },
         }
 
     def update(self, **kwargs: Any) -> dict[str, Any]:
@@ -1038,6 +1053,80 @@ def run_auto_attack() -> None:
     tlog("  [auto-attack] complete", kind="phase")
 
 
+class Gen8Track:
+    """Thread-safe scores for 5s Gen8 base + RAMX (parallel to 1s Shaun/HX loop)."""
+
+    def __init__(self) -> None:
+        self.lock = threading.Lock()
+        self.stop = threading.Event()
+        self.enabled = False
+        self.g8_hist: deque[dict[str, Any]] = deque(maxlen=HISTORY_MAX)
+        self.g8r_hist: deque[dict[str, Any]] = deque(maxlen=HISTORY_MAX)
+        self.g8_roll: dict[str, Any] = {"forecast": []}
+        self.g8r_roll: dict[str, Any] = {"forecast": []}
+        self.p_g8 = 0.0
+        self.p_g8r = 0.0
+        self.window_idx = 0
+
+
+def run_gen8_scorer(track: Gen8Track) -> None:
+    try:
+        from src.aryan.dataset import load_all_splits
+        from src.aryan.gen8_streaming import calibrate_gen8_hidden_thresh
+
+        bundle = load_gen8_bundle()
+        hidden_thresh = 30.0
+        splits_dir = ROOT / "data" / "aryan_splits_5s"
+        if splits_dir.is_dir():
+            splits = load_all_splits(splits_dir)
+            va_s, va_b, _ = splits["val"]
+            hidden_thresh = calibrate_gen8_hidden_thresh(bundle, va_s, va_b)
+        gen8 = StreamingAryanGen8(bundle)
+        gen8_ramx = StreamingAryanGen8Ramx(bundle, hidden_thresh=hidden_thresh)
+    except Exception as exc:
+        tlog(f"  Gen8 scorer disabled: {exc}", kind="alert")
+        return
+
+    track.enabled = True
+    gen8_dir = PCAP_DIR / "gen8"
+    gen8_dir.mkdir(parents=True, exist_ok=True)
+    capture = TrafficCapture(container_name=TARGET_CONTAINER, output_dir=gen8_dir)
+    last = None
+    local_idx = 0
+    tlog(f"  Gen8 track online — {GEN8_WINDOW_SEC:.0f}s windows (base + RAMX)", kind="phase")
+    while not track.stop.is_set():
+        capture.start_capture(f"gen8_w{local_idx + 1:05d}.pcap")
+        end = time.monotonic() + GEN8_WINDOW_SEC
+        while time.monotonic() < end and not track.stop.is_set():
+            time.sleep(0.2)
+        pcap = capture.stop_capture()
+        last = pcap_to_gen8_state(pcap, last_state=last, window_sec=GEN8_WINDOW_SEC)
+        if pcap and pcap.exists():
+            try:
+                pcap.unlink()
+            except OSError:
+                pass
+        local_idx += 1
+        out_g8 = gen8.step(last)
+        out_g8r = gen8_ramx.step(last)
+        pg8 = float(out_g8["p_att"])
+        pg8r = float(out_g8r["p_att"])
+        label_g8 = out_g8.get("mitre_stage_name")
+        if level_from_p(pg8) != "attack":
+            label_g8 = None
+        label_g8r = out_g8r.get("mitre_stage_name")
+        if level_from_p(pg8r) != "attack":
+            label_g8r = None
+        with track.lock:
+            track.window_idx = local_idx
+            track.p_g8 = pg8
+            track.p_g8r = pg8r
+            track.g8_hist.append({"w": local_idx, "p": pg8, "label": label_g8})
+            track.g8r_hist.append({"w": local_idx, "p": pg8r, "label": label_g8r})
+            track.g8_roll = gen8.rollout(HORIZON)
+            track.g8r_roll = gen8_ramx.rollout(HORIZON)
+
+
 def run_loop(
     *,
     warmup_windows: int,
@@ -1082,6 +1171,10 @@ def run_loop(
     sn.begin_live_phase()
     hx.begin_live_phase()
 
+    gen8_track = Gen8Track()
+    gen8_thread = threading.Thread(target=run_gen8_scorer, args=(gen8_track,), daemon=True)
+    gen8_thread.start()
+
     capture = TrafficCapture(container_name=TARGET_CONTAINER, output_dir=PCAP_DIR)
     last = None
     t0 = time.time()
@@ -1090,7 +1183,7 @@ def run_loop(
     phase = "warmup"
     forecast_alert = False
     blocked = False
-    pending = {"sn2rx3": 0, "hx_c": 0}
+    pending = {"sn2rx3": 0, "hx_c": 0, "aryan_gen8_ramx": 0}
     v3_hist: deque[dict[str, Any]] = deque(maxlen=HISTORY_MAX)
     hx_hist: deque[dict[str, Any]] = deque(maxlen=HISTORY_MAX)
     tlog(f"  warmup {warmup_windows} x {window_sec:.0f}s windows then LIVE. Dashboard http://127.0.0.1:{DASH_PORT}")
@@ -1141,10 +1234,29 @@ def run_loop(
             hx_hist.append({"w": window_idx, "p": ph, "label": hx_label})
             if out_hx.get("memory_written"):
                 memory_regions = bump_memory_regions(memory_regions, window_idx, system="hx_c")
+            with gen8_track.lock:
+                pg8 = gen8_track.p_g8
+                pg8r = gen8_track.p_g8r
+                g8_hist_snap = list(gen8_track.g8_hist)
+                g8r_hist_snap = list(gen8_track.g8r_hist)
+                g8_roll_snap = dict(gen8_track.g8_roll)
+                g8r_roll_snap = dict(gen8_track.g8r_roll)
+                gen8_enabled = gen8_track.enabled
+                g8_w = gen8_track.window_idx
             models = {
                 "shaun_v3": build_timeline(v3_hist, roll_v3, window_idx=window_idx, window_sec=window_sec, horizon=horizon),
                 "hx_c": build_timeline(hx_hist, roll_hx, window_idx=window_idx, window_sec=window_sec, horizon=horizon),
             }
+            if gen8_enabled:
+                g8_w = max(1, g8_w)
+                models["aryan_gen8"] = build_timeline(
+                    deque(g8_hist_snap), g8_roll_snap,
+                    window_idx=g8_w, window_sec=GEN8_WINDOW_SEC, horizon=horizon,
+                )
+                models["aryan_gen8_ramx"] = build_timeline(
+                    deque(g8r_hist_snap), g8r_roll_snap,
+                    window_idx=g8_w, window_sec=GEN8_WINDOW_SEC, horizon=horizon,
+                )
             if phase == "warmup":
                 warmup_n += 1
             attack_phase = STATE.snapshot().get("attack_phase", "idle")
@@ -1152,7 +1264,7 @@ def run_loop(
                 phase_regions, window_idx, attack_phase, prev_attack_phase,
             )
             if attack_phase in RECON_PHASES | IPS_ARM_PHASES and attack_phase != prev_attack_phase:
-                pending = {"sn2rx3": 0, "hx_c": 0}
+                pending = {"sn2rx3": 0, "hx_c": 0, "aryan_gen8_ramx": 0}
             ips_armed = phase == "live" and not blocked and attack_phase in IPS_ARM_PHASES
             ips_confirm = IPS_ATTACK_CONFIRM if ips_armed else confirm_windows
             if phase == "live" and attack_phase in FORECAST_PHASE_LABELS and lab_adapt:
@@ -1162,10 +1274,11 @@ def run_loop(
                     "window": window_idx,
                 })
             if ips_armed:
-                for name, p in (("sn2rx3", p3), ("hx_c", ph)):
+                score_map = {"sn2rx3": p3, "hx_c": ph, "aryan_gen8_ramx": pg8r}
+                for name, p in score_map.items():
                     pending[name] = pending[name] + 1 if p >= ATTACK_THRESHOLD else 0
                 fired = [n for n, c in pending.items() if c >= ips_confirm]
-                fired.sort(key=lambda n: {"sn2rx3": p3, "hx_c": ph}[n], reverse=True)
+                fired.sort(key=lambda n: score_map[n], reverse=True)
                 if fired:
                     blocked = True
                     gt = phase_to_class_id(attack_phase)
@@ -1173,7 +1286,7 @@ def run_loop(
                         t0,
                         window_idx,
                         fired,
-                        {"sn2rx3": p3, "hx_c": ph},
+                        score_map,
                         sn=sn,
                         hx=hx,
                         out_v3=out_v3,
@@ -1182,7 +1295,7 @@ def run_loop(
                     )
                     do_lab_adapt(hx, hxc_bundle, adapt_samples, lab_adapt=lab_adapt, reason=f"block_w{window_idx}")
             elif phase == "live" and attack_phase in RECON_PHASES:
-                pending = {"sn2rx3": 0, "hx_c": 0}
+                pending = {"sn2rx3": 0, "hx_c": 0, "aryan_gen8_ramx": 0}
             if (
                 lab_adapt
                 and prev_attack_phase != "complete"
@@ -1210,11 +1323,14 @@ def run_loop(
                 window_sec=window_sec,
                 p_sn2rx3=p3,
                 p_hx_c=ph,
+                p_aryan_gen8=pg8,
+                p_aryan_gen8_ramx=pg8r,
                 forecast_max=fc,
                 class_shift=float(out_hx.get("class_shift") or 0.0),
                 relative_anomaly=rel,
                 pending_sn2rx3=pending["sn2rx3"],
                 pending_hx_c=pending["hx_c"],
+                pending_aryan_gen8_ramx=pending["aryan_gen8_ramx"],
                 confirm_need=ips_confirm if ips_armed else confirm_windows,
                 ips_confirm=IPS_ATTACK_CONFIRM,
                 ips_armed=ips_armed,
@@ -1224,9 +1340,10 @@ def run_loop(
             )
             tlog(
                 f"  w{window_idx:03d} {phase:7s}  hx={ph:.3f}  cone={fc:.3f}  "
-                f"v3={p3:.3f}  blocked={blocked}  attack={attack_phase}"
+                f"v3={p3:.3f}  g8={pg8:.3f}  g8r={pg8r:.3f}  blocked={blocked}  attack={attack_phase}"
             )
     finally:
+        gen8_track.stop.set()
         do_lab_adapt(hx, hxc_bundle, adapt_samples, lab_adapt=lab_adapt, reason="run_end")
 
 

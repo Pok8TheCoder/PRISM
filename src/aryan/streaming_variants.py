@@ -384,6 +384,79 @@ class RAMXMemoryBank:
         return self._rotation_count
 
 
+class StagedRAMXMemoryBank:
+    """Seven isolated RAMX banks — one per MITRE stage (0=Benign .. 6=Impact).
+
+    Ingest routes each key to the bank for its ``mit_label``. Query is
+    stage-local; use ``_classify_blend_staged`` for winner-take-all fusion.
+    """
+
+    N_STAGES = 7
+
+    def __init__(
+        self,
+        rotation_interval: int = 100,
+        dynamic_capacity_pre: int = 20,
+        dynamic_capacity_post: int = 40,
+        suspicious_thresh: float = 0.01,
+    ):
+        self._kwargs = {
+            "rotation_interval": rotation_interval,
+            "dynamic_capacity_pre": dynamic_capacity_pre,
+            "dynamic_capacity_post": dynamic_capacity_post,
+            "suspicious_thresh": suspicious_thresh,
+        }
+        self.banks: dict[int, RAMXMemoryBank] = {
+            s: RAMXMemoryBank(**self._kwargs) for s in range(self.N_STAGES)
+        }
+
+    def ingest(
+        self,
+        key: np.ndarray,
+        bin_label: int,
+        mit_label: int,
+        p_att_raw: float,
+    ) -> None:
+        stage = int(mit_label or 0)
+        if stage not in self.banks:
+            stage = 0
+        self.banks[stage].ingest(key, bin_label, stage, p_att_raw)
+
+    def query(self, key: np.ndarray, k: int = 1) -> list[tuple[int, int, float]]:
+        """Flat query across all stage banks (fallback / diagnostics)."""
+        merged: list[tuple[int, int, float]] = []
+        for stage_id, bank in self.banks.items():
+            for b, m, d in bank.query(key, k=k):
+                merged.append((b, stage_id if m != stage_id else m, d))
+        merged.sort(key=lambda x: x[2])
+        return merged[:k]
+
+    def query_stage(self, stage_id: int, key: np.ndarray, k: int = 1) -> list[tuple[int, int, float]]:
+        return self.banks[stage_id].query(key, k=k)
+
+    def clone_empty(self) -> StagedRAMXMemoryBank:
+        return StagedRAMXMemoryBank(**self._kwargs)
+
+    def __len__(self) -> int:
+        return sum(len(b) for b in self.banks.values())
+
+    @property
+    def rotation_interval(self) -> int:
+        return self._kwargs["rotation_interval"]
+
+    @property
+    def dynamic_capacity_pre(self) -> int:
+        return self._kwargs["dynamic_capacity_pre"]
+
+    @property
+    def dynamic_capacity_post(self) -> int:
+        return self._kwargs["dynamic_capacity_post"]
+
+    @property
+    def suspicious_thresh(self) -> float:
+        return self._kwargs["suspicious_thresh"]
+
+
 @torch.no_grad()
 def infer(model: nn.Module, seq: np.ndarray) -> dict:
     x = torch.from_numpy(seq[None].astype(np.float32))
@@ -422,6 +495,324 @@ def _classify_blend(
     for (_, m, _), w in zip(close, weights):
         mit_onehot[m] += w
     p_mit_out = (1 - w_total) * p_mit + w_total * mit_onehot
+    return p_att_out, p_mit_out
+
+
+def _classify_blend_staged(
+    bank: StagedRAMXMemoryBank,
+    key: np.ndarray,
+    p_att: float,
+    p_mit: np.ndarray,
+    knn_k: int,
+    match_thresh: float,
+) -> tuple[float, np.ndarray]:
+    """Winner-take-all blend: pick the MITRE stage bank with the closest neighbor."""
+    if len(bank) == 0:
+        return p_att, p_mit
+
+    stage_close: dict[int, list[tuple[int, int, float]]] = {}
+    for stage_id in range(StagedRAMXMemoryBank.N_STAGES):
+        matches = bank.query_stage(stage_id, key, k=knn_k)
+        close = [m for m in matches if m[2] < match_thresh]
+        if close:
+            stage_close[stage_id] = close
+
+    if not stage_close:
+        return p_att, p_mit
+
+    win_stage = min(stage_close.keys(), key=lambda s: min(m[2] for m in stage_close[s]))
+    close = stage_close[win_stage]
+    weights = np.array([max(0.0, 1.0 - d / match_thresh) for _, _, d in close])
+    weights = weights / weights.sum() if weights.sum() > 0 else np.ones(len(close)) / len(close)
+    w_total = min(BLEND_MAX_WEIGHT, float(np.mean(weights))) * 0.7 + BLEND_FLOOR
+    vote_bin = 1.0 if win_stage > 0 else 0.0
+    p_att_out = (1 - w_total) * p_att + w_total * vote_bin
+    mit_onehot = np.zeros(len(p_mit), dtype=np.float32)
+    mit_onehot[win_stage] = 1.0
+    p_mit_out = (1 - w_total) * p_mit + w_total * mit_onehot
+    return p_att_out, p_mit_out
+
+
+def _classify_blend_gated(
+    bank: MemoryBank | StagedRAMXMemoryBank,
+    key: np.ndarray,
+    p_att: float,
+    p_mit: np.ndarray,
+    knn_k: int,
+    match_thresh: float,
+    *,
+    mitre_confirm_floor: float = 0.15,
+    mitre_boost: float = 0.25,
+    anomaly_strict_factor: float = 0.35,
+    attack_prior_floor: float = 0.20,
+) -> tuple[float, np.ndarray]:
+    """Gen8-led MITRE + strict RXI anomaly confirmation.
+
+    Anomaly: memory may adjust P(attack) only for very close neighbors (low tolerance).
+    MITRE: Gen8 argmax is kept unless Gen8's top call is an attack stage with
+    confidence >= ``mitre_confirm_floor`` and P(attack) >= ``attack_prior_floor``;
+    then RXI may boost that stage if its bank confirms a neighbor match.
+    """
+    p_mit_out = np.asarray(p_mit, dtype=np.float32).copy()
+    p_att_out = float(p_att)
+    if len(bank) == 0:
+        return p_att_out, p_mit_out
+
+    anomaly_thresh = match_thresh * anomaly_strict_factor
+    strict_close: list[tuple[int, int, float]] = []
+    if isinstance(bank, StagedRAMXMemoryBank):
+        for stage_id in range(StagedRAMXMemoryBank.N_STAGES):
+            for match in bank.query_stage(stage_id, key, k=knn_k):
+                if match[2] < anomaly_thresh:
+                    strict_close.append(match)
+    else:
+        strict_close = [m for m in bank.query(key, k=knn_k) if m[2] < anomaly_thresh]
+
+    if strict_close:
+        weights = np.array([max(0.0, 1.0 - d / anomaly_thresh) for _, _, d in strict_close])
+        weights = weights / weights.sum() if weights.sum() > 0 else np.ones(len(strict_close)) / len(strict_close)
+        w_total = min(BLEND_MAX_WEIGHT, float(np.mean(weights))) * 0.7 + BLEND_FLOOR
+        vote_bin = float(np.sum([w * b for (b, _, _), w in zip(strict_close, weights)]))
+        p_att_out = (1 - w_total) * p_att + w_total * vote_bin
+
+    gen8_stage = int(np.argmax(p_mit_out))
+    gen8_conf = float(p_mit_out[gen8_stage])
+    if gen8_stage == 0 or gen8_conf < mitre_confirm_floor or float(p_att) < attack_prior_floor:
+        return p_att_out, p_mit_out
+
+    candidate = gen8_stage
+    if isinstance(bank, StagedRAMXMemoryBank):
+        stage_matches = bank.query_stage(candidate, key, k=knn_k)
+    else:
+        stage_matches = [(b, m, d) for b, m, d in bank.query(key, k=knn_k) if m == candidate]
+
+    confirmed = [m for m in stage_matches if m[2] < match_thresh]
+    if not confirmed:
+        return p_att_out, p_mit_out
+
+    best_d = min(m[2] for m in confirmed)
+    strength = mitre_boost * max(0.0, 1.0 - best_d / match_thresh)
+    if strength <= 0.0:
+        return p_att_out, p_mit_out
+
+    p_mit_out = p_mit_out * (1.0 - strength)
+    p_mit_out[candidate] += strength
+    total = float(p_mit_out.sum())
+    if total > 0:
+        p_mit_out /= total
+    return p_att_out, p_mit_out
+
+
+def _classify_blend_targeted(
+    bank: MemoryBank | StagedRAMXMemoryBank,
+    key: np.ndarray,
+    p_att: float,
+    p_mit: np.ndarray,
+    knn_k: int,
+    match_thresh: float,
+    *,
+    target_stages: list[int] | None = None,
+    mitre_pass_through_stages: list[int] | None = None,
+    mitre_confirm_floor: float = 0.10,
+    mitre_weak_confidence_ceiling: float = 0.55,
+    mitre_boost: float = 0.30,
+    anomaly_strict_factor: float = 0.35,
+    binary_uncertainty_low: float = 0.25,
+    binary_uncertainty_high: float = 0.75,
+) -> tuple[float, np.ndarray]:
+    """Targeted RXI: intervene only on Gen8 failure surfaces.
+
+    Binary: memory adjusts P(attack) only when Gen8 is in the uncertainty band
+    and a strict neighbor exists in benign or target-stage banks.
+    MITRE: only weak target stages (Init Access, Lateral, Exfil) may be boosted
+    when Gen8 is unsure; strong stages pass through unchanged.
+    """
+    p_mit_out = np.asarray(p_mit, dtype=np.float32).copy()
+    p_att_out = float(p_att)
+    targets = set(target_stages or [2, 3, 5])
+    passthrough = set(mitre_pass_through_stages or [0, 1, 4, 6])
+
+    if len(bank) == 0:
+        return p_att_out, p_mit_out
+
+    in_uncertainty = binary_uncertainty_low <= p_att <= binary_uncertainty_high
+    if in_uncertainty:
+        anomaly_thresh = match_thresh * anomaly_strict_factor
+        strict_close: list[tuple[int, int, float]] = []
+        stage_scope = [0] + sorted(targets)
+        if isinstance(bank, StagedRAMXMemoryBank):
+            for stage_id in stage_scope:
+                for match in bank.query_stage(stage_id, key, k=knn_k):
+                    if match[2] < anomaly_thresh:
+                        strict_close.append(match)
+        else:
+            strict_close = [m for m in bank.query(key, k=knn_k) if m[2] < anomaly_thresh]
+
+        if strict_close:
+            weights = np.array([max(0.0, 1.0 - d / anomaly_thresh) for _, _, d in strict_close])
+            weights = weights / weights.sum() if weights.sum() > 0 else np.ones(len(strict_close)) / len(strict_close)
+            w_total = min(BLEND_MAX_WEIGHT, float(np.mean(weights))) * 0.7 + BLEND_FLOOR
+            vote_bin = float(np.sum([w * b for (b, _, _), w in zip(strict_close, weights)]))
+            p_att_out = (1 - w_total) * p_att + w_total * vote_bin
+
+    gen8_stage = int(np.argmax(p_mit_out))
+    gen8_conf = float(p_mit_out[gen8_stage])
+
+    if gen8_stage in passthrough and gen8_stage not in targets:
+        return p_att_out, p_mit_out
+
+    if gen8_stage in targets:
+        candidate = gen8_stage
+        candidate_conf = gen8_conf
+    else:
+        target_scores = {s: float(p_mit_out[s]) for s in targets}
+        if not target_scores:
+            return p_att_out, p_mit_out
+        candidate = max(target_scores, key=target_scores.get)
+        candidate_conf = target_scores[candidate]
+
+    if candidate_conf < mitre_confirm_floor or candidate_conf > mitre_weak_confidence_ceiling:
+        return p_att_out, p_mit_out
+
+    if isinstance(bank, StagedRAMXMemoryBank):
+        stage_matches = bank.query_stage(candidate, key, k=knn_k)
+    else:
+        stage_matches = [(b, m, d) for b, m, d in bank.query(key, k=knn_k) if m == candidate]
+
+    confirmed = [m for m in stage_matches if m[2] < match_thresh]
+    if not confirmed:
+        return p_att_out, p_mit_out
+
+    best_d = min(m[2] for m in confirmed)
+    strength = mitre_boost * max(0.0, 1.0 - best_d / match_thresh)
+    if strength <= 0.0:
+        return p_att_out, p_mit_out
+
+    p_mit_out = p_mit_out * (1.0 - strength)
+    p_mit_out[candidate] += strength
+    total = float(p_mit_out.sum())
+    if total > 0:
+        p_mit_out /= total
+    return p_att_out, p_mit_out
+
+
+def _classify_blend_staged_soft(
+    bank: StagedRAMXMemoryBank,
+    key: np.ndarray,
+    p_att: float,
+    p_mit: np.ndarray,
+    knn_k: int,
+    match_thresh: float,
+    *,
+    blend_cap: float = 0.25,
+) -> tuple[float, np.ndarray]:
+    """Staged winner-take-all, but cap how much RXI can override Gen8."""
+    if len(bank) == 0:
+        return p_att, p_mit
+
+    stage_close: dict[int, list[tuple[int, int, float]]] = {}
+    for stage_id in range(StagedRAMXMemoryBank.N_STAGES):
+        matches = bank.query_stage(stage_id, key, k=knn_k)
+        close = [m for m in matches if m[2] < match_thresh]
+        if close:
+            stage_close[stage_id] = close
+
+    if not stage_close:
+        return p_att, p_mit
+
+    win_stage = min(stage_close.keys(), key=lambda s: min(m[2] for m in stage_close[s]))
+    close = stage_close[win_stage]
+    weights = np.array([max(0.0, 1.0 - d / match_thresh) for _, _, d in close])
+    weights = weights / weights.sum() if weights.sum() > 0 else np.ones(len(close)) / len(close)
+    w_total = min(BLEND_MAX_WEIGHT, float(np.mean(weights))) * 0.7 + BLEND_FLOOR
+    w_total = min(w_total, max(0.0, float(blend_cap)))
+
+    vote_bin = 1.0 if win_stage > 0 else 0.0
+    p_att_out = (1 - w_total) * p_att + w_total * vote_bin
+    mit_onehot = np.zeros(len(p_mit), dtype=np.float32)
+    mit_onehot[win_stage] = 1.0
+    p_mit_out = (1 - w_total) * p_mit + w_total * mit_onehot
+    return p_att_out, p_mit_out
+
+
+def _classify_blend_gen8_led(
+    bank: MemoryBank | StagedRAMXMemoryBank,
+    key: np.ndarray,
+    p_att: float,
+    p_mit: np.ndarray,
+    knn_k: int,
+    match_thresh: float,
+    *,
+    weak_stages: list[int] | None = None,
+    weak_confidence_ceiling: float = 0.50,
+    strong_confidence_floor: float = 0.55,
+    rescue_boost: float = 0.40,
+    rescue_min: float = 0.08,
+    anomaly_strict_factor: float = 0.35,
+) -> tuple[float, np.ndarray]:
+    """Gen8-led MITRE with RXI rescue limited to weak stages.
+
+    Strong Gen8 calls (Recon/C2/Impact/Benign with high confidence) pass through.
+    Init Access / Lateral / Exfil may be boosted or switched when RXI stage banks
+    confirm a close neighbor and Gen8 is uncertain on that axis.
+    """
+    p_mit_out = np.asarray(p_mit, dtype=np.float32).copy()
+    p_att_out = float(p_att)
+    weak = set(weak_stages or [2, 3, 5])
+
+    if len(bank) == 0:
+        return p_att_out, p_mit_out
+
+    anomaly_thresh = match_thresh * anomaly_strict_factor
+    strict_close: list[tuple[int, int, float]] = []
+    if isinstance(bank, StagedRAMXMemoryBank):
+        for stage_id in range(StagedRAMXMemoryBank.N_STAGES):
+            for match in bank.query_stage(stage_id, key, k=knn_k):
+                if match[2] < anomaly_thresh:
+                    strict_close.append(match)
+    else:
+        strict_close = [m for m in bank.query(key, k=knn_k) if m[2] < anomaly_thresh]
+
+    if strict_close:
+        weights = np.array([max(0.0, 1.0 - d / anomaly_thresh) for _, _, d in strict_close])
+        weights = weights / weights.sum() if weights.sum() > 0 else np.ones(len(strict_close)) / len(strict_close)
+        w_total = min(BLEND_MAX_WEIGHT, float(np.mean(weights))) * 0.7 + BLEND_FLOOR
+        vote_bin = float(np.sum([w * b for (b, _, _), w in zip(strict_close, weights)]))
+        p_att_out = (1 - w_total) * p_att + w_total * vote_bin
+
+    gen8_stage = int(np.argmax(p_mit_out))
+    gen8_conf = float(p_mit_out[gen8_stage])
+    if gen8_stage not in weak and gen8_conf >= strong_confidence_floor:
+        return p_att_out, p_mit_out
+
+    best_rescue: int | None = None
+    best_strength = 0.0
+    for stage_id in sorted(weak):
+        if isinstance(bank, StagedRAMXMemoryBank):
+            stage_matches = bank.query_stage(stage_id, key, k=knn_k)
+        else:
+            stage_matches = [(b, m, d) for b, m, d in bank.query(key, k=knn_k) if m == stage_id]
+        confirmed = [m for m in stage_matches if m[2] < match_thresh]
+        if not confirmed:
+            continue
+        best_d = min(m[2] for m in confirmed)
+        mem_strength = max(0.0, 1.0 - best_d / match_thresh)
+        gen8_prior = float(p_mit_out[stage_id])
+        strength = rescue_boost * mem_strength * max(gen8_prior, 0.05)
+        if gen8_stage == stage_id and gen8_conf < weak_confidence_ceiling:
+            strength *= 1.25
+        if strength > best_strength:
+            best_strength = strength
+            best_rescue = stage_id
+
+    if best_rescue is None or best_strength < rescue_min:
+        return p_att_out, p_mit_out
+
+    p_mit_out = p_mit_out * (1.0 - best_strength)
+    p_mit_out[best_rescue] += best_strength
+    total = float(p_mit_out.sum())
+    if total > 0:
+        p_mit_out /= total
     return p_att_out, p_mit_out
 
 

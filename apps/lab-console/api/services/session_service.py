@@ -317,6 +317,9 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     model_defs = [
         ("shaun_v3", "Shaun v3"),
         ("hx_c", "HX-C"),
+        ("aryan_gen8", "Aryan Gen8"),
+        ("aryan_gen8_ramx", "Aryan Gen8 + RAMX"),
+        ("aryan_gen8_rxi", "Aryan Gen8 + RXI"),
     ]
     models: list[dict[str, Any]] = []
     actual: list[dict[str, float]] = []
@@ -349,6 +352,8 @@ def _live_from_forecast(state: dict[str, Any]) -> dict[str, Any]:
     streaks = {
         "shaun_v3": int(state.get("pending_sn2rx3", 0)),
         "hx_c": int(state.get("pending_hx_c", 0)),
+        "aryan_gen8_ramx": int(state.get("pending_aryan_gen8_ramx", 0)),
+        "aryan_gen8_rxi": int(state.get("pending_aryan_gen8_rxi", 0)),
     }
     attack_phase = state.get("attack_phase", "idle")
     ips_armed = bool(state.get("ips_armed")) or attack_phase in {"enum", "spray", "loot"}

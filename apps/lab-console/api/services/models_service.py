@@ -34,6 +34,39 @@ KNOWN_MODELS: list[dict[str, Any]] = [
         "tags": ["forecast", "kill-chain", "lab-adapt"],
     },
     {
+        "id": "aryan_gen8",
+        "name": "Aryan Gen8",
+        "version": "universal-5s",
+        "checkpointPath": "PRISM-aryan/weights/universal_gen8/world_model_best.pt",
+        "parameters": 3_800_000,
+        "classes": ["Benign", "Reconnaissance", "Initial Access", "Lateral Movement", "C2", "Exfiltration", "Impact"],
+        "featureDim": 242,
+        "seqLen": 20,
+        "tags": ["forecast", "ips", "gen8", "world-model"],
+    },
+    {
+        "id": "aryan_gen8_ramx",
+        "name": "Aryan Gen8 + RAMX",
+        "version": "universal-5s",
+        "checkpointPath": "PRISM-aryan/weights/universal_gen8/world_model_best.pt",
+        "parameters": 3_800_000,
+        "classes": ["Benign", "Reconnaissance", "Initial Access", "Lateral Movement", "C2", "Exfiltration", "Impact"],
+        "featureDim": 242,
+        "seqLen": 20,
+        "tags": ["forecast", "ips", "ramx", "gen8"],
+    },
+    {
+        "id": "aryan_gen8_rxi",
+        "name": "Aryan Gen8 + RXI",
+        "version": "immune-v2",
+        "checkpointPath": "PRISM-aryan/weights/universal_gen8/world_model_best.pt",
+        "parameters": 3_800_000,
+        "classes": ["Benign", "Reconnaissance", "Initial Access", "Lateral Movement", "C2", "Exfiltration", "Impact"],
+        "featureDim": 242,
+        "seqLen": 20,
+        "tags": ["forecast", "ips", "ramx", "gen8", "immune", "rxi"],
+    },
+    {
         "id": "ary_5s",
         "name": "ARY 5s",
         "version": "ramx-v2",
@@ -64,6 +97,8 @@ def _resolve_checkpoint(rel: str) -> Path:
         return p
     # PRISM-shaun sits beside repo root
     if rel.startswith("PRISM-shaun"):
+        return ROOT.parent / rel
+    if rel.startswith("PRISM-aryan"):
         return ROOT.parent / rel
     if rel.startswith("Automode"):
         return ROOT.parent / rel

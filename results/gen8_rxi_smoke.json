@@ -1,0 +1,142 @@
+{
+  "gen8": {
+    "rows": [
+      {
+        "pcap": "live_http_flood_random_timing.pcap",
+        "class": "T1499_http_flood",
+        "detected": true,
+        "honest_fp": false,
+        "max_p": 0.9957420229911804
+      },
+      {
+        "pcap": "internet_benign_w011_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": true,
+        "max_p": 0.9951678514480591
+      },
+      {
+        "pcap": "internet_benign_w012_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": true,
+        "max_p": 0.9951593279838562
+      },
+      {
+        "pcap": "internet_benign_w013_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": true,
+        "max_p": 0.9951726794242859
+      }
+    ],
+    "summary": {
+      "attack_det": 1.0,
+      "benign_fp": 1.0
+    }
+  },
+  "ramx": {
+    "rows": [
+      {
+        "pcap": "live_http_flood_random_timing.pcap",
+        "class": "T1499_http_flood",
+        "detected": true,
+        "honest_fp": false,
+        "max_p": 0.9957420229911804
+      },
+      {
+        "pcap": "internet_benign_w011_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": true,
+        "max_p": 0.9951678514480591
+      },
+      {
+        "pcap": "internet_benign_w012_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": true,
+        "max_p": 0.9951593279838562
+      },
+      {
+        "pcap": "internet_benign_w013_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": true,
+        "max_p": 0.9951726794242859
+      }
+    ],
+    "summary": {
+      "attack_det": 1.0,
+      "benign_fp": 1.0
+    }
+  },
+  "rxi": {
+    "rows": [
+      {
+        "pcap": "live_http_flood_random_timing.pcap",
+        "class": "T1499_http_flood",
+        "detected": true,
+        "honest_fp": false,
+        "max_p": 0.9973742475112279,
+        "threshold": 0.99515,
+        "seed_stats": {
+          "benign_warmup_windows": 10,
+          "benign_donor_windows": 7,
+          "attack_exemplar_windows": 25,
+          "memory_entries": 22,
+          "detect_threshold": 0.99515
+        }
+      },
+      {
+        "pcap": "internet_benign_w011_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": false,
+        "max_p": 0.9945076107978821,
+        "threshold": 0.99515,
+        "seed_stats": {
+          "benign_warmup_windows": 10,
+          "benign_donor_windows": 7,
+          "self_tolerance_windows": 3,
+          "memory_entries": 0,
+          "detect_threshold": 0.99515
+        }
+      },
+      {
+        "pcap": "internet_benign_w012_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": false,
+        "max_p": 0.9944987893104553,
+        "threshold": 0.99515,
+        "seed_stats": {
+          "benign_warmup_windows": 10,
+          "benign_donor_windows": 7,
+          "self_tolerance_windows": 3,
+          "memory_entries": 0,
+          "detect_threshold": 0.99515
+        }
+      },
+      {
+        "pcap": "internet_benign_w013_30s.pcap",
+        "class": "Benign",
+        "detected": false,
+        "honest_fp": false,
+        "max_p": 0.9945074915885925,
+        "threshold": 0.99515,
+        "seed_stats": {
+          "benign_warmup_windows": 10,
+          "benign_donor_windows": 7,
+          "self_tolerance_windows": 3,
+          "memory_entries": 0,
+          "detect_threshold": 0.99515
+        }
+      }
+    ],
+    "summary": {
+      "attack_det": 1.0,
+      "benign_fp": 0.0
+    }
+  }
+}

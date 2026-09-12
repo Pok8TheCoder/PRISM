@@ -37,6 +37,13 @@ HX_C_CKPT = (
     / "checkpoints"
     / "hx_c_w5s.pt"
 )
+HX_C_V2_CKPT = (
+    Path(__file__).resolve().parent.parent.parent.parent
+    / "Automode"
+    / "train"
+    / "checkpoints"
+    / "hx_c_v2_w5s.pt"
+)
 
 
 class CausalHXClassifier(nn.Module):
@@ -131,7 +138,7 @@ def _padded_raw(buf: list[np.ndarray], lookback: int = LOOKBACK) -> np.ndarray:
 
 
 def load_hxc_bundle(ckpt_path: Path | None = None) -> dict[str, Any]:
-    path = Path(ckpt_path or HX_C_CKPT)
+    path = Path(ckpt_path or HX_C_V2_CKPT if HX_C_V2_CKPT.exists() else HX_C_CKPT)
     if not path.exists():
         raise FileNotFoundError(f"Missing HX-C checkpoint: {path}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -158,6 +165,7 @@ def load_hxc_bundle(ckpt_path: Path | None = None) -> dict[str, Any]:
         "device": device,
         "class_names": names,
         "ckpt": path,
+        "hx_version": str(ckpt.get("hx_version", "hx-c-2.0" if "v2" in path.name else "hx-c-1.0")),
     }
 
 
@@ -173,6 +181,7 @@ class StreamingHXC:
         self.std = bundle["std"]
         self.device = bundle["device"]
         self.class_names: list[str] = list(bundle["class_names"])
+        self.hx_version: str = str(bundle.get("hx_version", "hx-c-1.0"))
         self.mitre_map = get_mitre_map()
         self.ramx = RAMXHXPredictor(context_skip_steps=context_skip_steps)
         self.buf: list[np.ndarray] = []
@@ -336,6 +345,6 @@ class StreamingHXC:
             "mitre_stage_name": stage_name,
             "technique": tech,
             "technique_p": tech_p,
-            "ramx_version": "hx-c-1.0",
+            "ramx_version": self.hx_version,
             "memory_written": bool(memory_written),
         }
