@@ -163,6 +163,36 @@ def _flow_context_for_window(window: pd.DataFrame) -> dict[str, Any]:
     }
 
 
+_SCALER_MEAN: np.ndarray | None = None
+
+
+def _get_neutral_tail(start_idx: int, target_dim: int) -> np.ndarray:
+    """Return expm1 of scaler training mean for unobserved feature columns.
+    
+    Guarantees that log1p + StandardScaler produces exactly 0.0 Z-score (neutral baseline)
+    rather than artificial negative bias.
+    """
+    global _SCALER_MEAN
+    pad_len = max(0, target_dim - start_idx)
+    if pad_len == 0:
+        return np.zeros(0, dtype=np.float32)
+
+    if _SCALER_MEAN is None:
+        scaler_path = Path(__file__).resolve().parent.parent.parent / "weights" / "universal_gen10_5s_scaler.pkl"
+        if scaler_path.is_file():
+            try:
+                import joblib
+                s = joblib.load(scaler_path)
+                if hasattr(s, "mean_"):
+                    _SCALER_MEAN = s.mean_.astype(np.float32)
+            except Exception:
+                pass
+
+    if _SCALER_MEAN is not None and len(_SCALER_MEAN) >= target_dim:
+        return np.expm1(_SCALER_MEAN[start_idx:target_dim]).astype(np.float32)
+    return np.zeros(pad_len, dtype=np.float32)
+
+
 def pcap_to_gen10_windows(
     pcap_path: str | Path,
     *,
@@ -188,7 +218,9 @@ def pcap_to_gen10_windows(
 
     states = built["states"]
     if states.size and states.shape[1] < GEN10_STATE_DIM:
-        states = np.pad(states, ((0, 0), (0, GEN10_STATE_DIM - states.shape[1])))
+        tail = _get_neutral_tail(states.shape[1], GEN10_STATE_DIM)
+        pad_matrix = np.tile(tail, (states.shape[0], 1))
+        states = np.hstack([states, pad_matrix])
     elif states.size and states.shape[1] > GEN10_STATE_DIM:
         states = states[:, :GEN10_STATE_DIM]
 
