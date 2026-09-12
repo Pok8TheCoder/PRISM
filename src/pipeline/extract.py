@@ -83,13 +83,22 @@ def pcap_to_rows(pcap_path: str | Path) -> list[dict]:
         seqs = [p["seq"] for p in pkts if p["seq"] is not None]
         retrans = max(0, len(seqs) - len(set(seqs))) if seqs else 0
 
+        fwd_bytes = sum(p["len"] for p in fwd)
+        bwd_bytes = sum(p["len"] for p in bwd)
         row = _empty_row()
         row.update({
+            "time": times[0],
+            "Src IP": str(key[0]),
+            "Dst IP": str(key[2]),
             "Dst Port": pkts[0]["dport"],
             "Protocol": 6 if pkts[0]["proto"] == "TCP" else (17 if pkts[0]["proto"] == "UDP" else 0),
             "Flow Duration": dur * 1e6,
             "Tot Fwd Pkts": len(fwd),
             "Tot Bwd Pkts": len(bwd),
+            "TotLen Fwd Pkts": float(fwd_bytes),
+            "TotLen Bwd Pkts": float(bwd_bytes),
+            "fwd_bytes": float(fwd_bytes),
+            "bwd_bytes": float(bwd_bytes),
             "Fwd Pkt Len Max": max(fwd_lens),
             "Fwd Pkt Len Min": min(fwd_lens),
             "Fwd Pkt Len Mean": float(np.mean(fwd_lens)),
