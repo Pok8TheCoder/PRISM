@@ -285,6 +285,11 @@ class StateBuilder:
                 names.append(f"mean_{col}")
                 features.append(np.nanstd(vals))
                 names.append(f"std_{col}")
+            else:
+                features.append(0.0)
+                names.append(f"mean_{col}")
+                features.append(0.0)
+                names.append(f"std_{col}")
 
         # --- TCP flag distribution ---
         flag_cols_map = {

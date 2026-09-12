@@ -143,21 +143,32 @@ def state_from_pcap(
     scale_factor: float,
     replicate: int,
     last_state: np.ndarray | None,
-) -> np.ndarray:
+) -> tuple[np.ndarray, dict[str, Any]]:
     if backend in SHAUN_LIKE:
         return pcap_to_shaun_state(
             pcap_path, last_state=last_state, scale_factor=scale_factor, replicate=replicate,
             window_sec=window_sec,
-        )
-    target_dim = 249 if backend == "gen10" else TARGET_DIM
+        ), {}
+    if backend in ("laplace", "gen10"):
+        from src.data.gen10_pcap_ingest import pcap_to_gen10_windows
+
+        win = pcap_to_gen10_windows(pcap_path, window_sec=window_sec)
+        ctx = win["flow_contexts"][-1] if len(win.get("flow_contexts", [])) else {}
+        if len(win["states"]):
+            return win["states"][-1].astype(np.float32), ctx
+        if last_state is not None:
+            return last_state.copy(), ctx
+        return np.zeros(249, dtype=np.float32), ctx
+
+    target_dim = TARGET_DIM
     from src.pipeline.extract import pcap_to_rows
     rows = pcap_to_rows(pcap_path)
     if scale_factor != 1.0 or replicate != 1:
         rows = scale_prism_rows(rows, factor=scale_factor, replicate=replicate)
     if not rows:
         if last_state is not None:
-            return last_state.copy()
-        return np.zeros(target_dim, dtype=np.float32)
+            return last_state.copy(), {}
+        return np.zeros(target_dim, dtype=np.float32), {}
     states, _, _ = _states_from_flow_df(pd.DataFrame(rows), window_sec=window_sec)
     if len(states):
         st = states[0].astype(np.float32)
@@ -165,10 +176,16 @@ def state_from_pcap(
             st = np.pad(st, (0, target_dim - len(st)))
         elif len(st) > target_dim:
             st = st[:target_dim]
-        return st
+        r0 = rows[0] if rows else {}
+        ctx = {
+            "src_ip": str(r0.get("Src IP", "")),
+            "dst_ip": str(r0.get("Dst IP", "")),
+            "dst_port": int(r0.get("Dst Port", 0) or 0),
+        }
+        return st, ctx
     if last_state is not None:
-        return last_state.copy()
-    return np.zeros(target_dim, dtype=np.float32)
+        return last_state.copy(), {}
+    return np.zeros(target_dim, dtype=np.float32), {}
 
 
 def _sleep_with_poll(
@@ -234,22 +251,27 @@ def capture_one_window(
     scale_factor: float,
     replicate: int,
     poll_fn: Callable[[], None] | None = None,
-) -> tuple[np.ndarray, float, float]:
+) -> tuple[np.ndarray, dict[str, Any], float, float]:
     t_start = time.time()
     capture.start_capture(filename)
     _sleep_with_poll(clock, window_sec, poll_fn)
     pcap_path = capture.stop_capture()
 
     state = None
+    flow_ctx: dict[str, Any] = {}
     if pcap_path is not None and pcap_path.exists():
         try:
-            def ingest() -> np.ndarray:
+            def ingest() -> tuple[np.ndarray, dict[str, Any]]:
                 return state_from_pcap(
                     pcap_path, backend=backend, window_sec=window_sec,
                     scale_factor=scale_factor, replicate=replicate, last_state=last_state,
                 )
 
-            state = _run_with_poll(ingest, poll_fn)  # type: ignore[assignment]
+            res = _run_with_poll(ingest, poll_fn)
+            if isinstance(res, tuple) and len(res) == 2:
+                state, flow_ctx = res
+            else:
+                state = res
         except Exception as exc:
             print(f"WARNING: ingest failed on {pcap_path}: {exc}", file=sys.stderr)
         try:
@@ -258,9 +280,9 @@ def capture_one_window(
             pass
     t_end = time.time()
     if state is None:
-        dim = 249 if backend == "gen10" else (292 if backend in SHAUN_LIKE else TARGET_DIM)
+        dim = 249 if backend in ("laplace", "gen10") else (292 if backend in SHAUN_LIKE else TARGET_DIM)
         state = last_state.copy() if last_state is not None else np.zeros(dim, dtype=np.float32)
-    return state.astype(np.float32), t_start, t_end
+    return state.astype(np.float32), flow_ctx, t_start, t_end
 
 
 class RedteamEventStream:
@@ -591,7 +613,7 @@ def run_experiment(
         if phase == "attack":
             poll_during_capture()
 
-        state, t_start, t_end = capture_one_window(
+        state, flow_ctx, t_start, t_end = capture_one_window(
             cap, f"w{window_idx:05d}.pcap", clk, state_box["last"],
             backend=backend, window_sec=cap_sec,
             scale_factor=scale_factor, replicate=replicate,
@@ -606,7 +628,10 @@ def run_experiment(
 
         def score_systems() -> None:
             for sid, sys_obj in systems.items():
-                out = sys_obj.step(state, true_bin=true_bin, true_mit=true_mit)
+                try:
+                    out = sys_obj.step(state, flow_context=flow_ctx, true_bin=true_bin, true_mit=true_mit)
+                except TypeError:
+                    out = sys_obj.step(state, true_bin=true_bin, true_mit=true_mit)
                 sys_out[sid] = {
                     k: float(v) if isinstance(v, (float, np.floating)) else v
                     for k, v in out.items()

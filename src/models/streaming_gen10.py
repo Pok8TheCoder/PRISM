@@ -786,69 +786,22 @@ class StreamingGen10WorldModel:
         Stream a PCAP / PCAPNG file through the Gen 10 World Model and Tier-2 Attribution Engine.
         Groups packets/flows into temporal windows, computes graph invariants, and assigns MITRE stages.
         """
-        from src.pipeline.extract import pcap_to_rows
-        from src.data.state_builder import StateBuilder
+        from src.data.gen10_pcap_ingest import pcap_to_gen10_windows
 
         path = Path(pcap_path)
         if not path.is_file():
             raise FileNotFoundError(f"PCAP file not found: {path}")
 
-        rows = pcap_to_rows(path)
-        if not rows:
+        win = pcap_to_gen10_windows(path, window_sec=window_sec)
+        if len(win["states"]) == 0:
             return []
 
-        df = pd.DataFrame(rows)
-        time_col = "time" if "time" in df.columns else "Timestamp"
-        if time_col in df.columns:
-            df = df.sort_values(time_col)
-            t_min = df[time_col].min()
-            df["window_id"] = ((df[time_col] - t_min) // window_sec).astype(int)
-        else:
-            df["window_id"] = np.arange(len(df)) // 10
-
-        builder = StateBuilder(mode="vector")
-        exclude_cols = {
-            "window_id", "Label", "label", "mitre_stage",
-            "mitre_stage_id", "Timestamp", "timestamp", "time",
-            "Src IP", "src_ip", "Dst IP", "dst_ip",
-            "src_ip_hash", "dst_ip_hash",
-            "Flow ID", "flow_id", "port_category",
-        }
-        numeric_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c not in exclude_cols]
-
         results = []
-        for wid, window in df.groupby("window_id", sort=True):
-            state_vec = builder._aggregate_window_vector(window, numeric_cols)
-            if len(state_vec) < self.d_state:
-                padded = np.zeros(self.d_state, dtype=np.float32)
-                padded[:len(state_vec)] = state_vec
-                state_vec = padded
-            elif len(state_vec) > self.d_state:
-                state_vec = state_vec[:self.d_state]
-
-            # Pick highest-risk flow context from window
-            top_flow = None
-            if len(window) > 0:
-                scored_rows = []
-                for _, r in window.iterrows():
-                    score = 0
-                    dp = r.get("dst_port") or r.get("Dst Port")
-                    if dp in Tier2FlowContextAttributor.LATERAL_PORTS:
-                        score += 5
-                    if dp in Tier2FlowContextAttributor.INITIAL_ACCESS_PORTS:
-                        score += 4
-                    if dp in Tier2FlowContextAttributor.C2_PORTS:
-                        score += 3
-                    fb = r.get("fwd_bytes") or 0.0
-                    if fb > 10000:
-                        score += 5
-                    scored_rows.append((score, r.to_dict()))
-                scored_rows.sort(key=lambda x: x[0], reverse=True)
-                top_flow = scored_rows[0][1]
-
+        for i, state_vec in enumerate(win["states"]):
+            top_flow = win["flow_contexts"][i] if i < len(win["flow_contexts"]) else {}
             step_res = self.step(state_vec, flow_context=top_flow)
-            step_res["window_id"] = int(wid)
-            step_res["num_flows_in_window"] = len(window)
+            step_res["window_id"] = int(win["window_ids"][i]) if i < len(win["window_ids"]) else i
+            step_res["num_flows_in_window"] = int(top_flow.get("flow_count", 0))
             results.append(step_res)
 
         return results
