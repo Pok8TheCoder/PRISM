@@ -146,6 +146,10 @@ class Tier2FlowContextAttributor:
         3306, 5432, 1433, 1521, 27017, 6379, 25, 465, 587, 110, 995, 143, 993
     }
 
+    WEB_EXPLOIT_PORTS = {
+        80, 443, 8080, 8443, 8000, 5000, 3000, 8888, 8008, 9000
+    }
+
     KNOWN_C2_BACKDOOR_PORTS = {
         4444,  # Metasploit default
         8888,  # Empire / Covenant / Custom C2
@@ -262,103 +266,154 @@ class Tier2FlowContextAttributor:
         # --- RULE 1: S6 Impact (Denial of Service / Target Overwhelm) ---
         if (max_in_deg > 25 and reciprocity < 0.20) or (num_flows > 500 and reciprocity < 0.05):
             rule_matched = True
-            delta_logits[6] += 12.0
+            delta_logits[6] += 15.0
             delta_logits[0] -= 10.0
-            delta_logits[1] -= 6.0
+            delta_logits[1] -= 8.0
+            delta_logits[2] -= 8.0
+            delta_logits[3] -= 8.0
+            delta_logits[4] -= 8.0
+            delta_logits[5] -= 8.0
             reasons.append(f"Target overwhelm detected: in-degree {max_in_deg:.0f}, {num_flows:.0f} flows with non-responsive reciprocity {reciprocity:.2f} (T1498/T1499 Impact)")
 
-        # --- RULE 2: S1 Reconnaissance (Behavioral: Multi-Port / Multi-Host Fan-Out Sweeps) ---
+        # --- RULE 2: S3 Lateral Movement (Specific Admin Protocols SMB/RPC/Kerberos) ---
+        # When an internal host traverses to another internal host on explicit administrative ports (445, 135, 139, 88, 389, 5985),
+        # this invariant takes precedence over broad background port entropy (catches stealth lateral pivots drowned in noise)
+        elif is_known_lateral_port and (direction == "LAN_TO_LAN" or lan_to_lan > 0.40):
+            rule_matched = True
+            delta_logits[3] += 15.0
+            delta_logits[0] -= 10.0
+            delta_logits[1] -= 8.0
+            delta_logits[2] -= 8.0
+            delta_logits[4] -= 8.0
+            delta_logits[5] -= 8.0
+            delta_logits[6] -= 8.0
+            reasons.append(f"Internal East-West (LAN->LAN) traversal targeting known admin service port {dst_port} (T1021 Remote Services / SMB / PsExec)")
+
+        # --- RULE 3: S1 Reconnaissance (Behavioral: Multi-Port / Multi-Host Fan-Out Sweeps) ---
         # Port-Agnostic: Catches high-port sweeps, random port scans, and horizontal host discovery
         elif has_high_fanout and (has_asymmetric_handshake or wan_to_lan > 0.25 or num_dst_ports > 3):
             rule_matched = True
-            delta_logits[1] += 12.0
+            delta_logits[1] += 15.0
             delta_logits[0] -= 10.0
             delta_logits[2] -= 8.0
             delta_logits[3] -= 8.0
+            delta_logits[4] -= 8.0
+            delta_logits[5] -= 8.0
+            delta_logits[6] -= 8.0
             reasons.append(f"Reconnaissance behavior: high dispersion (port entropy {port_entropy:.2f}, {num_dst_ports:.0f} ports, out-degree {max_out_deg:.0f}) with low handshake reciprocity {reciprocity:.2f} (T1046 / T1595 Discovery)")
 
-        # --- RULE 3: S3 Lateral Movement (Topological Invariant: Internal East-West Traversal) ---
-        # Port-Agnostic: Even if attacker uses non-standard ports (e.g. 8080, 9999), LAN->LAN traversal with
-        # administrative payloads or established reciprocity indicates internal pivoting
-        elif direction == "LAN_TO_LAN" and (
+        # --- RULE 4: S5 Outbound Exfiltration (Volumetric Egress Asymmetry) ---
+        # Strictly Outbound: Requires egress to WAN/internet so internal transfers are not misattributed
+        elif (direction == "LAN_TO_WAN" or lan_to_wan > 0.40) and has_massive_egress:
+            rule_matched = True
+            delta_logits[5] += 15.0
+            delta_logits[0] -= 10.0
+            delta_logits[1] -= 8.0
+            delta_logits[2] -= 8.0
+            delta_logits[3] -= 8.0
+            delta_logits[4] -= 4.0
+            delta_logits[6] -= 8.0
+            reasons.append(f"Volumetric egress asymmetry: {fwd_bytes:,.0f} bytes uploaded vs {bwd_bytes:,.0f} downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)")
+
+        # --- RULE 5: S4 Command & Control vs Benign Outbound Web Browsing ---
+        elif (direction == "LAN_TO_WAN" or lan_to_wan > 0.40 or is_known_c2_port) and (
+            direction == "LAN_TO_WAN" or lan_to_wan > 0.40
+        ):
+            is_benign_web_pull = bool(
+                dst_port in {80, 443}
+                and bwd_bytes >= 2.0 * max(fwd_bytes, 1.0)
+                and fwd_bytes < 10_000
+                and num_flows < 25
+            )
+            if is_benign_web_pull:
+                rule_matched = True
+                delta_logits[0] += 15.0
+                delta_logits[1] -= 8.0
+                delta_logits[2] -= 8.0
+                delta_logits[3] -= 8.0
+                delta_logits[4] -= 8.0
+                delta_logits[5] -= 8.0
+                delta_logits[6] -= 8.0
+                reasons.append(f"Benign outbound web content retrieval to {dst_ip}:{dst_port} (bwd {bwd_bytes:,.0f}B > fwd {fwd_bytes:,.0f}B) (Benign S0)")
+            elif (
+                is_known_c2_port
+                or (dst_port == 53 and fwd_bytes > 1500)
+                or threat_prob >= suspicion_thresh
+            ):
+                rule_matched = True
+                delta_logits[4] += 15.0
+                delta_logits[0] -= 10.0
+                delta_logits[1] -= 8.0
+                delta_logits[2] -= 8.0
+                delta_logits[3] -= 8.0
+                delta_logits[5] -= 4.0
+                delta_logits[6] -= 8.0
+                if is_known_c2_port:
+                    reasons.append(f"Outbound egress to known C2 listener port {dst_port} on {dst_ip} (T1071 C2)")
+                elif dst_port == 53:
+                    reasons.append(f"Anomalous outbound DNS payload tunnel on port 53 to {dst_ip} (T1071.004 DNS C2)")
+                else:
+                    reasons.append(f"Persistent external egress channel to {dst_ip}:{dst_port} matching C2 beaconing dynamics (T1071 Application Layer C2)")
+
+
+        # --- RULE 5: S2 Initial Access (Perimeter Ingress & Exposed Service Exploitation) ---
+        # Container-Aware & Port-Agnostic:
+        # In a Docker lab / microservice mesh / zero-trust environment, external attackers often share the bridge subnet
+        # with the target. Ingress targeting exposed web services (80, 443, 8080) or external gateways (22, 3389)
+        # represents perimeter intrusion / exploit probes (T1190 / T1110) regardless of IP subnet privacy.
+        elif (
+            (direction == "WAN_TO_LAN" or wan_to_lan > 0.40)
+            or (dst_port is not None and (dst_port in self.WEB_EXPLOIT_PORTS or dst_port in self.INITIAL_ACCESS_PORTS) and dst_port not in self.LATERAL_PORTS)
+        ) and direction != "LAN_TO_WAN" and threat_prob >= suspicion_thresh:
+            rule_matched = True
+            delta_logits[2] += 15.0
+            delta_logits[0] -= 10.0
+            delta_logits[1] -= 8.0
+            delta_logits[3] -= 8.0
+            delta_logits[4] -= 8.0
+            delta_logits[5] -= 8.0
+            delta_logits[6] -= 8.0
+            if dst_port is not None and dst_port in self.WEB_EXPLOIT_PORTS:
+                reasons.append(f"Web service exploit probe targeting exposed port {dst_port} on {dst_ip} (T1190 Initial Access)")
+            elif is_known_ingress_port:
+                reasons.append(f"Perimeter ingress attack targeting service port {dst_port} on {dst_ip} (T1190 / T1110 Initial Access)")
+            else:
+                reasons.append(f"External ingress penetration crossing perimeter boundary ({src_ip} -> {dst_ip}:{dst_port}) (T1190 Initial Access)")
+
+        # --- RULE 6: S3 Lateral Movement (True Internal East-West Traversal & Admin Protocols) ---
+        # Port-Agnostic: True lateral traversal relies on internal admin protocols (SMB, RPC, Kerberos, WinRM)
+        # or internal pivoting with established reciprocity.
+        elif (is_known_lateral_port or direction == "LAN_TO_LAN" or lan_to_lan > 0.40) and (
             is_known_lateral_port
             or threat_prob >= suspicion_thresh
             or fwd_bytes > 5000
             or lan_to_lan > 0.50
         ):
             rule_matched = True
-            delta_logits[3] += 12.0
+            delta_logits[3] += 15.0
             delta_logits[0] -= 10.0
-            delta_logits[2] -= 10.0  # Physically impossible: not ingress
-            delta_logits[4] -= 10.0  # Physically impossible: not external C2
-            delta_logits[5] -= 10.0  # Physically impossible: not external Exfil
+            delta_logits[1] -= 8.0
+            delta_logits[2] -= 8.0
+            delta_logits[4] -= 8.0
+            delta_logits[5] -= 8.0
+            delta_logits[6] -= 8.0
             if is_known_lateral_port:
-                reasons.append(f"Internal East-West (LAN->LAN) traversal targeting known service port {dst_port} (T1021 Remote Services / SMB / PsExec)")
+                reasons.append(f"Internal East-West (LAN->LAN) traversal targeting known admin service port {dst_port} (T1021 Remote Services / SMB / PsExec)")
             else:
                 reasons.append(f"Internal East-West (LAN->LAN) lateral pivot to {dst_ip}:{dst_port} with {fwd_bytes:,.0f}B payload (T1021 / T1570 Lateral Movement)")
 
-        # --- RULE 4: S2 Initial Access (Topological Invariant: External Perimeter Ingress) ---
-        # Port-Agnostic: Inbound connection crossing perimeter from WAN to LAN with threat indicators
-        elif direction == "WAN_TO_LAN" and (
-            is_known_ingress_port
-            or threat_prob >= suspicion_thresh
-            or wan_to_lan > 0.50
-        ):
+        # --- RULE 7: Benign S0 Fallback ---
+        elif threat_prob < detect_thresh:
             rule_matched = True
-            delta_logits[2] += 12.0
-            delta_logits[0] -= 10.0
-            delta_logits[3] -= 10.0  # Physically impossible: not internal East-West
-            delta_logits[4] -= 10.0  # Physically impossible: not external C2
-            delta_logits[5] -= 10.0  # Physically impossible: not external Exfil
-            if is_known_ingress_port:
-                reasons.append(f"Perimeter ingress attack targeting exposed service port {dst_port} on {dst_ip} (T1190 / T1110 Initial Access)")
-            else:
-                reasons.append(f"External ingress penetration crossing perimeter boundary ({src_ip} -> {dst_ip}:{dst_port}) (T1190 Initial Access)")
+            delta_logits[0] += 15.0
+            delta_logits[1] -= 8.0
+            delta_logits[2] -= 8.0
+            delta_logits[3] -= 8.0
+            delta_logits[4] -= 8.0
+            delta_logits[5] -= 8.0
+            delta_logits[6] -= 8.0
+            reasons.append(f"Benign baseline network telemetry: sub-threshold threat score {threat_prob*100:.1f}% (Benign S0)")
 
-        # --- RULE 5: Outbound Egress: S5 (Exfiltration) vs S4 (Command & Control) vs Benign ---
-        # Port-Agnostic: Distinguishes egress telemetry by volumetric asymmetry vs heartbeat cadence
-        elif direction == "LAN_TO_WAN" or has_massive_egress or is_known_c2_port:
-            is_dns_tunnel = bool(dst_port == 53 and fwd_bytes > 1500)
-
-            if has_massive_egress and (not is_dns_tunnel):
-                # Volumetric Invariant: Heavy forward push where client pushes orders of magnitude more than it pulls
-                rule_matched = True
-                delta_logits[2] -= 10.0  # Impossible: not ingress
-                delta_logits[3] -= 10.0  # Impossible: not internal East-West
-                delta_logits[0] -= 10.0
-                delta_logits[5] += 12.0
-                delta_logits[4] -= 5.0
-                reasons.append(f"Volumetric egress asymmetry: {fwd_bytes:,.0f} bytes uploaded vs {bwd_bytes:,.0f} downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)")
-
-            elif (
-                is_known_c2_port
-                or is_dns_tunnel
-                or (threat_prob >= detect_thresh and (not has_massive_egress))
-                or (lan_to_wan > 0.70 and num_flows > 15 and threat_prob >= suspicion_thresh)
-            ):
-                # Beaconing / Backdoor Invariant: Persistent or scheduled callbacks to external listener
-                rule_matched = True
-                delta_logits[2] -= 10.0  # Impossible: not ingress
-                delta_logits[3] -= 10.0  # Impossible: not internal East-West
-                delta_logits[0] -= 10.0
-                delta_logits[4] += 12.0
-                delta_logits[5] -= 4.0
-                if is_known_c2_port:
-                    reasons.append(f"Outbound egress to known C2 listener port {dst_port} on {dst_ip} (T1071 C2)")
-                elif is_dns_tunnel:
-                    reasons.append(f"Anomalous outbound DNS payload tunnel on port 53 to {dst_ip} (T1071.004 DNS C2)")
-                else:
-                    reasons.append(f"Persistent external egress channel to {dst_ip}:{dst_port} matching C2 beaconing dynamics (T1071 Application Layer C2)")
-
-            elif dst_port in {80, 443, 53, 123} and threat_prob < detect_thresh:
-                # Legitimate benign outbound SaaS / web browsing
-                rule_matched = True
-                delta_logits[0] += 12.0
-                delta_logits[4] -= 10.0
-                delta_logits[5] -= 10.0
-                delta_logits[2] -= 10.0
-                delta_logits[3] -= 10.0
-                reasons.append(f"Standard outbound web/DNS telemetry to {dst_ip}:{dst_port} (Benign S0)")
 
         # ---------------------------------------------------------------------
         # 4. Soft Bayesian Evidence Fusion & Benign Baseline Handling

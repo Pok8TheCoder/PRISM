@@ -17,7 +17,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.16,
+      "latency_ms": 15.06,
       "reason": "Reconnaissance behavior: high dispersion (port entropy 3.45, 11 ports, out-degree 11) with low handshake reciprocity 0.10 (T1046 / T1595 Discovery)"
     },
     {
@@ -31,7 +31,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.69,
+      "latency_ms": 13.91,
       "reason": "Reconnaissance behavior: high dispersion (port entropy 2.80, 8 ports, out-degree 16) with low handshake reciprocity 0.15 (T1046 / T1595 Discovery)"
     },
     {
@@ -45,7 +45,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.41,
+      "latency_ms": 9.77,
       "reason": "Reconnaissance behavior: high dispersion (port entropy 2.40, 6 ports, out-degree 12) with low handshake reciprocity 0.20 (T1046 / T1595 Discovery)"
     },
     {
@@ -59,7 +59,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 34.86,
+      "latency_ms": 10.29,
       "reason": "Reconnaissance behavior: high dispersion (port entropy 3.10, 12 ports, out-degree 20) with low handshake reciprocity 0.10 (T1046 / T1595 Discovery)"
     },
     {
@@ -73,7 +73,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 18.1,
+      "latency_ms": 11.81,
       "reason": "Reconnaissance behavior: high dispersion (port entropy 2.60, 10 ports, out-degree 10) with low handshake reciprocity 0.15 (T1046 / T1595 Discovery)"
     },
     {
@@ -87,7 +87,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 33.49,
+      "latency_ms": 11.72,
       "reason": "Reconnaissance behavior: high dispersion (port entropy 2.50, 8 ports, out-degree 14) with low handshake reciprocity 0.18 (T1046 / T1595 Discovery)"
     },
     {
@@ -96,13 +96,13 @@
       "file": "src/adversarial/bots/t1110_ssh_bruteforce.py",
       "expected_stage": "Initial Access",
       "predicted_stage": "Initial Access",
-      "threat_prob": 0.9999999403953552,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.09,
-      "reason": "Perimeter ingress attack targeting exposed service port 22 on 192.168.1.10 (T1190 / T1110 Initial Access)"
+      "latency_ms": 14.55,
+      "reason": "Perimeter ingress attack targeting service port 22 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 8,
@@ -110,13 +110,13 @@
       "file": "src/adversarial/bots/t1110_web_bruteforce.py",
       "expected_stage": "Initial Access",
       "predicted_stage": "Initial Access",
-      "threat_prob": 0.9999999403953552,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.68,
-      "reason": "Perimeter ingress attack targeting exposed service port 80 on 192.168.1.10 (T1190 / T1110 Initial Access)"
+      "latency_ms": 11.48,
+      "reason": "Web service exploit probe targeting exposed port 80 on 192.168.1.10 (T1190 Initial Access)"
     },
     {
       "idx": 9,
@@ -124,13 +124,13 @@
       "file": "src/adversarial/bots/t1187_password_spray.py",
       "expected_stage": "Initial Access",
       "predicted_stage": "Initial Access",
-      "threat_prob": 0.9999999403953552,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.63,
-      "reason": "Perimeter ingress attack targeting exposed service port 443 on 192.168.1.10 (T1190 / T1110 Initial Access)"
+      "latency_ms": 14.33,
+      "reason": "Web service exploit probe targeting exposed port 443 on 192.168.1.10 (T1190 Initial Access)"
     },
     {
       "idx": 10,
@@ -138,13 +138,13 @@
       "file": "src/adversarial/bots/t1133_external_remote.py",
       "expected_stage": "Initial Access",
       "predicted_stage": "Initial Access",
-      "threat_prob": 0.9999999403953552,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 15.34,
-      "reason": "Perimeter ingress attack targeting exposed service port 3389 on 192.168.1.10 (T1190 / T1110 Initial Access)"
+      "latency_ms": 9.94,
+      "reason": "Perimeter ingress attack targeting service port 3389 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 11,
@@ -152,13 +152,13 @@
       "file": "src/adversarial/bots/t1190_web_exploit_probe.py",
       "expected_stage": "Initial Access",
       "predicted_stage": "Initial Access",
-      "threat_prob": 0.9999999403953552,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.21,
-      "reason": "Perimeter ingress attack targeting exposed service port 8080 on 192.168.1.10 (T1190 / T1110 Initial Access)"
+      "latency_ms": 12.78,
+      "reason": "Web service exploit probe targeting exposed port 8080 on 192.168.1.10 (T1190 Initial Access)"
     },
     {
       "idx": 12,
@@ -166,13 +166,13 @@
       "file": "src/adversarial/bots/t1021_remote_services.py",
       "expected_stage": "Lateral Movement",
       "predicted_stage": "Lateral Movement",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.42,
-      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 445 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 13.26,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known admin service port 445 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 13,
@@ -180,13 +180,13 @@
       "file": "src/adversarial/bots/t1210_exploit_remote.py",
       "expected_stage": "Lateral Movement",
       "predicted_stage": "Lateral Movement",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.61,
-      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 135 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 8.58,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known admin service port 135 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 14,
@@ -194,13 +194,13 @@
       "file": "src/adversarial/bots/t1570_lateral_transfer.py",
       "expected_stage": "Lateral Movement",
       "predicted_stage": "Lateral Movement",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 12.17,
-      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 445 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 10.54,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known admin service port 445 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 15,
@@ -213,7 +213,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.02,
+      "latency_ms": 14.23,
       "reason": "Outbound egress to known C2 listener port 8088 on 198.51.100.90 (T1071 C2)"
     },
     {
@@ -227,7 +227,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.24,
+      "latency_ms": 11.58,
       "reason": "Anomalous outbound DNS payload tunnel on port 53 to 198.51.100.53 (T1071.004 DNS C2)"
     },
     {
@@ -241,7 +241,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.54,
+      "latency_ms": 13.4,
       "reason": "Outbound egress to known C2 listener port 9001 on 198.51.100.77 (T1071 C2)"
     },
     {
@@ -255,7 +255,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.23,
+      "latency_ms": 14.32,
       "reason": "Outbound egress to known C2 listener port 4444 on 198.51.100.80 (T1071 C2)"
     },
     {
@@ -269,7 +269,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.96,
+      "latency_ms": 12.13,
       "reason": "Persistent external egress channel to 198.51.100.81:443 matching C2 beaconing dynamics (T1071 Application Layer C2)"
     },
     {
@@ -283,7 +283,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.51,
+      "latency_ms": 15.74,
       "reason": "Outbound egress to known C2 listener port 8888 on 198.51.100.82 (T1071 C2)"
     },
     {
@@ -297,7 +297,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.55,
+      "latency_ms": 10.91,
       "reason": "Outbound egress to known C2 listener port 1337 on 198.51.100.83 (T1071 C2)"
     },
     {
@@ -311,7 +311,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 16.24,
+      "latency_ms": 10.99,
       "reason": "Anomalous outbound DNS payload tunnel on port 53 to 198.51.100.54 (T1071.004 DNS C2)"
     },
     {
@@ -325,7 +325,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.72,
+      "latency_ms": 9.62,
       "reason": "Outbound egress to known C2 listener port 6667 on 198.51.100.84 (T1071 C2)"
     },
     {
@@ -339,7 +339,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.75,
+      "latency_ms": 11.02,
       "reason": "Outbound egress to known C2 listener port 5555 on 198.51.100.85 (T1071 C2)"
     },
     {
@@ -353,7 +353,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.48,
+      "latency_ms": 9.76,
       "reason": "Outbound egress to known C2 listener port 31337 on 198.51.100.86 (T1071 C2)"
     },
     {
@@ -367,7 +367,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.84,
+      "latency_ms": 11.06,
       "reason": "Volumetric egress asymmetry: 950,000 bytes uploaded vs 3,500 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
@@ -381,7 +381,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 12.44,
+      "latency_ms": 10.71,
       "reason": "Volumetric egress asymmetry: 1,500,000 bytes uploaded vs 2,800 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
@@ -395,7 +395,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.42,
+      "latency_ms": 12.78,
       "reason": "Volumetric egress asymmetry: 650,000 bytes uploaded vs 4,200 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
@@ -409,7 +409,7 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.85,
+      "latency_ms": 10.6,
       "reason": "Volumetric egress asymmetry: 3,200,000 bytes uploaded vs 5,100 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
@@ -418,12 +418,12 @@
       "file": "src/adversarial/bots/t1498_network_dos.py",
       "expected_stage": "Impact",
       "predicted_stage": "Impact",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 14.1,
+      "latency_ms": 14.43,
       "reason": "Target overwhelm detected: in-degree 65, 800 flows with non-responsive reciprocity 0.02 (T1498/T1499 Impact)"
     },
     {
@@ -432,12 +432,12 @@
       "file": "src/adversarial/bots/t1499_http_flood.py",
       "expected_stage": "Impact",
       "predicted_stage": "Impact",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.87,
+      "latency_ms": 12.35,
       "reason": "Target overwhelm detected: in-degree 80, 1200 flows with non-responsive reciprocity 0.01 (T1498/T1499 Impact)"
     },
     {
@@ -446,12 +446,12 @@
       "file": "src/adversarial/bots/t1499_slowloris.py",
       "expected_stage": "Impact",
       "predicted_stage": "Impact",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.88,
+      "latency_ms": 13.29,
       "reason": "Target overwhelm detected: in-degree 50, 650 flows with non-responsive reciprocity 0.04 (T1498/T1499 Impact)"
     },
     {
@@ -460,13 +460,13 @@
       "file": "src/adversarial/bots/lab_defacement.py",
       "expected_stage": "Initial Access",
       "predicted_stage": "Initial Access",
-      "threat_prob": 0.9999999403953552,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.82,
-      "reason": "Perimeter ingress attack targeting exposed service port 80 on 192.168.1.10 (T1190 / T1110 Initial Access)"
+      "latency_ms": 12.21,
+      "reason": "Web service exploit probe targeting exposed port 80 on 192.168.1.10 (T1190 Initial Access)"
     },
     {
       "idx": 34,
@@ -474,13 +474,13 @@
       "file": "src/adversarial/bots/lab_key_theft.py",
       "expected_stage": "Lateral Movement",
       "predicted_stage": "Lateral Movement",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.2,
-      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 445 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 14.32,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known admin service port 445 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 35,
@@ -488,13 +488,13 @@
       "file": "src/adversarial/bots/lab_cred_theft.py",
       "expected_stage": "Lateral Movement",
       "predicted_stage": "Lateral Movement",
-      "threat_prob": 0.9999998807907104,
+      "threat_prob": 1.0,
       "is_threat": true,
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 12.52,
-      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 389 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 9.7,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known admin service port 389 (T1021 Remote Services / SMB / PsExec)"
     }
   ]
 }
