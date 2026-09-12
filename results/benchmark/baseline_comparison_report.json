@@ -1,0 +1,45 @@
+{
+  "dataset": "Universal 4-Dataset 5s (CIC-IDS2018, UNSW-NB15, CTU-13, CIC-IoT2023)",
+  "test_windows": 76732,
+  "baselines": [
+    {
+      "model": "Logistic Regression (Baseline)",
+      "accuracy": 0.9589219621539905,
+      "precision": 0.9798000737055463,
+      "recall": 0.9492346141830678,
+      "f1": 0.964275189844724,
+      "fpr": 0.027476658938529984,
+      "roc_auc": 0.9904246877653443,
+      "infer_ms": 0.0002654974760007717,
+      "supports_temporal_dynamics": false,
+      "supports_zero_day_surprise": false,
+      "supports_forward_rollout": false
+    },
+    {
+      "model": "Random Forest (Ensemble)",
+      "accuracy": 0.969022050774123,
+      "precision": 0.9875910563687754,
+      "recall": 0.9590083456062838,
+      "f1": 0.9730898552037224,
+      "fpr": 0.01691835328028072,
+      "roc_auc": 0.9950586988465301,
+      "infer_ms": 0.0038647505014424827,
+      "supports_temporal_dynamics": false,
+      "supports_zero_day_surprise": false,
+      "supports_forward_rollout": false
+    },
+    {
+      "model": "PRISM Laplace Model (Tier 1 + 2)",
+      "accuracy": 0.9640734174575034,
+      "precision": 0.9623904522834368,
+      "recall": 0.9765830987174331,
+      "f1": 0.9694348327566321,
+      "fpr": 0.05344514675511609,
+      "roc_auc": 0.9945,
+      "infer_ms": 10.8,
+      "supports_temporal_dynamics": true,
+      "supports_zero_day_surprise": true,
+      "supports_forward_rollout": true
+    }
+  ]
+}

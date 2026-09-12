@@ -172,6 +172,48 @@ class TestModels(unittest.TestCase):
         rf_preds = rf.predict(X_train[:10])
         self.assertEqual(len(rf_preds), 10)
 
+    def test_masked_state_embedding_sparsity(self):
+        """Test MaskedStateEmbedding handles zero-padded feature blocks gracefully."""
+        from src.models.components import MaskedStateEmbedding, HeadAdapter
+        emb = MaskedStateEmbedding(d_state=self.d_state, d_model=self.d_model)
+        
+        # Partially sparse input (simulating CTU-13 with padded columns)
+        sparse_input = self.mock_input.clone()
+        sparse_input[:, :, 10:] = 0.0
+        
+        out = emb(sparse_input)
+        self.assertEqual(out.shape, (self.batch_size, self.lookback, self.d_model))
+        self.assertFalse(torch.isnan(out).any())
+
+        adapter = HeadAdapter(d_model=self.d_model)
+        h_adapted = adapter(out[:, -1, :])
+        self.assertEqual(h_adapted.shape, (self.batch_size, self.d_model))
+
+    def test_zero_day_anomaly_detection(self):
+        """Test compute_zero_day_anomaly returns surprise scores and flags outliers."""
+        model = TemporalTransformerWorldModel(
+            d_state=self.d_state,
+            d_model=self.d_model,
+            n_layers=2,
+            n_heads=4,
+            lookback=self.lookback,
+            num_mitre_stages=self.num_mitre_stages,
+        )
+        model.eval()
+
+        # Normal target vs extreme zero-day spike target
+        normal_next_state = torch.randn(self.batch_size, self.d_state) * 0.1
+        zero_day_next_state = normal_next_state.clone()
+        zero_day_next_state[0, 5:10] = 50.0  # massive anomaly spike
+
+        res = model.compute_zero_day_anomaly(self.mock_input, zero_day_next_state, sigma_threshold=3.0)
+        self.assertIn("surprise_score", res)
+        self.assertIn("is_zero_day_alert", res)
+        self.assertIn("top_anomalous_indices", res)
+        # First sample with spike should have higher surprise score
+        self.assertGreater(res["surprise_score"][0], res["surprise_score"][1])
+
 
 if __name__ == "__main__":
     unittest.main()
+

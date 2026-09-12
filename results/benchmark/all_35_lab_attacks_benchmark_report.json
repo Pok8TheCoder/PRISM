@@ -17,8 +17,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 15.16,
-      "reason": "High port entropy (3.45) & source fan-out (degree 11, 11 ports) indicating active reconnaissance sweep (T1046 Network Service Discovery)"
+      "latency_ms": 14.16,
+      "reason": "Reconnaissance behavior: high dispersion (port entropy 3.45, 11 ports, out-degree 11) with low handshake reciprocity 0.10 (T1046 / T1595 Discovery)"
     },
     {
       "idx": 2,
@@ -31,8 +31,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.92,
-      "reason": "High port entropy (2.80) & source fan-out (degree 16, 8 ports) indicating active reconnaissance sweep (T1046 Network Service Discovery)"
+      "latency_ms": 13.69,
+      "reason": "Reconnaissance behavior: high dispersion (port entropy 2.80, 8 ports, out-degree 16) with low handshake reciprocity 0.15 (T1046 / T1595 Discovery)"
     },
     {
       "idx": 3,
@@ -45,8 +45,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.02,
-      "reason": "High port entropy (2.40) & source fan-out (degree 12, 6 ports) indicating active reconnaissance sweep (T1046 Network Service Discovery)"
+      "latency_ms": 13.41,
+      "reason": "Reconnaissance behavior: high dispersion (port entropy 2.40, 6 ports, out-degree 12) with low handshake reciprocity 0.20 (T1046 / T1595 Discovery)"
     },
     {
       "idx": 4,
@@ -59,8 +59,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.87,
-      "reason": "High port entropy (3.10) & source fan-out (degree 20, 12 ports) indicating active reconnaissance sweep (T1046 Network Service Discovery)"
+      "latency_ms": 34.86,
+      "reason": "Reconnaissance behavior: high dispersion (port entropy 3.10, 12 ports, out-degree 20) with low handshake reciprocity 0.10 (T1046 / T1595 Discovery)"
     },
     {
       "idx": 5,
@@ -73,8 +73,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.59,
-      "reason": "High port entropy (2.60) & source fan-out (degree 10, 10 ports) indicating active reconnaissance sweep (T1046 Network Service Discovery)"
+      "latency_ms": 18.1,
+      "reason": "Reconnaissance behavior: high dispersion (port entropy 2.60, 10 ports, out-degree 10) with low handshake reciprocity 0.15 (T1046 / T1595 Discovery)"
     },
     {
       "idx": 6,
@@ -87,8 +87,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.34,
-      "reason": "High port entropy (2.50) & source fan-out (degree 14, 8 ports) indicating active reconnaissance sweep (T1046 Network Service Discovery)"
+      "latency_ms": 33.49,
+      "reason": "Reconnaissance behavior: high dispersion (port entropy 2.50, 8 ports, out-degree 14) with low handshake reciprocity 0.18 (T1046 / T1595 Discovery)"
     },
     {
       "idx": 7,
@@ -101,8 +101,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.75,
-      "reason": "Targeted perimeter ingress attack against exposed service port 22 (T1190 / T1110 Initial Access)"
+      "latency_ms": 13.09,
+      "reason": "Perimeter ingress attack targeting exposed service port 22 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 8,
@@ -115,8 +115,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.56,
-      "reason": "Targeted perimeter ingress attack against exposed service port 80 (T1190 / T1110 Initial Access)"
+      "latency_ms": 14.68,
+      "reason": "Perimeter ingress attack targeting exposed service port 80 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 9,
@@ -129,8 +129,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.05,
-      "reason": "Targeted perimeter ingress attack against exposed service port 443 (T1190 / T1110 Initial Access)"
+      "latency_ms": 13.63,
+      "reason": "Perimeter ingress attack targeting exposed service port 443 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 10,
@@ -143,8 +143,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.96,
-      "reason": "Targeted perimeter ingress attack against exposed service port 3389 (T1190 / T1110 Initial Access)"
+      "latency_ms": 15.34,
+      "reason": "Perimeter ingress attack targeting exposed service port 3389 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 11,
@@ -157,8 +157,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.62,
-      "reason": "Targeted perimeter ingress attack against exposed service port 8080 (T1190 / T1110 Initial Access)"
+      "latency_ms": 13.21,
+      "reason": "Perimeter ingress attack targeting exposed service port 8080 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 12,
@@ -171,8 +171,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.62,
-      "reason": "Internal East-West (LAN->LAN) administrative traversal targeting service port 445 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 13.42,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 445 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 13,
@@ -185,8 +185,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.96,
-      "reason": "Internal East-West (LAN->LAN) administrative traversal targeting service port 135 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 14.61,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 135 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 14,
@@ -199,8 +199,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.95,
-      "reason": "Internal East-West (LAN->LAN) administrative traversal targeting service port 445 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 12.17,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 445 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 15,
@@ -213,8 +213,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.65,
-      "reason": "Outbound egress connection to known C2/backdoor service port 8088 on 198.51.100.90 (T1071 C2)"
+      "latency_ms": 14.02,
+      "reason": "Outbound egress to known C2 listener port 8088 on 198.51.100.90 (T1071 C2)"
     },
     {
       "idx": 16,
@@ -227,8 +227,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.93,
-      "reason": "Anomalous outbound DNS tunneling payload volume on port 53 to 198.51.100.53 (T1071.004 C2 DNS)"
+      "latency_ms": 14.24,
+      "reason": "Anomalous outbound DNS payload tunnel on port 53 to 198.51.100.53 (T1071.004 DNS C2)"
     },
     {
       "idx": 17,
@@ -241,8 +241,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.94,
-      "reason": "Outbound egress connection to known C2/backdoor service port 9001 on 198.51.100.77 (T1071 C2)"
+      "latency_ms": 13.54,
+      "reason": "Outbound egress to known C2 listener port 9001 on 198.51.100.77 (T1071 C2)"
     },
     {
       "idx": 18,
@@ -255,8 +255,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 12.14,
-      "reason": "Outbound egress connection to known C2/backdoor service port 4444 on 198.51.100.80 (T1071 C2)"
+      "latency_ms": 14.23,
+      "reason": "Outbound egress to known C2 listener port 4444 on 198.51.100.80 (T1071 C2)"
     },
     {
       "idx": 19,
@@ -269,8 +269,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.06,
-      "reason": "Outbound C2 beaconing pattern to external endpoint 198.51.100.81 on port 443 (T1071 Application Layer Protocol C2)"
+      "latency_ms": 13.96,
+      "reason": "Persistent external egress channel to 198.51.100.81:443 matching C2 beaconing dynamics (T1071 Application Layer C2)"
     },
     {
       "idx": 20,
@@ -283,8 +283,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.95,
-      "reason": "Outbound egress connection to known C2/backdoor service port 8888 on 198.51.100.82 (T1071 C2)"
+      "latency_ms": 14.51,
+      "reason": "Outbound egress to known C2 listener port 8888 on 198.51.100.82 (T1071 C2)"
     },
     {
       "idx": 21,
@@ -297,8 +297,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.54,
-      "reason": "Outbound egress connection to known C2/backdoor service port 1337 on 198.51.100.83 (T1071 C2)"
+      "latency_ms": 13.55,
+      "reason": "Outbound egress to known C2 listener port 1337 on 198.51.100.83 (T1071 C2)"
     },
     {
       "idx": 22,
@@ -311,8 +311,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 13.0,
-      "reason": "Anomalous outbound DNS tunneling payload volume on port 53 to 198.51.100.54 (T1071.004 C2 DNS)"
+      "latency_ms": 16.24,
+      "reason": "Anomalous outbound DNS payload tunnel on port 53 to 198.51.100.54 (T1071.004 DNS C2)"
     },
     {
       "idx": 23,
@@ -325,8 +325,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 12.02,
-      "reason": "Outbound egress connection to known C2/backdoor service port 6667 on 198.51.100.84 (T1071 C2)"
+      "latency_ms": 10.72,
+      "reason": "Outbound egress to known C2 listener port 6667 on 198.51.100.84 (T1071 C2)"
     },
     {
       "idx": 24,
@@ -339,8 +339,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 12.79,
-      "reason": "Outbound egress connection to known C2/backdoor service port 5555 on 198.51.100.85 (T1071 C2)"
+      "latency_ms": 13.75,
+      "reason": "Outbound egress to known C2 listener port 5555 on 198.51.100.85 (T1071 C2)"
     },
     {
       "idx": 25,
@@ -353,8 +353,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.54,
-      "reason": "Outbound egress connection to known C2/backdoor service port 31337 on 198.51.100.86 (T1071 C2)"
+      "latency_ms": 13.48,
+      "reason": "Outbound egress to known C2 listener port 31337 on 198.51.100.86 (T1071 C2)"
     },
     {
       "idx": 26,
@@ -367,8 +367,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.27,
-      "reason": "Heavy outbound egress transfer (950,000 bytes) indicating data exfiltration (T1048 Exfiltration)"
+      "latency_ms": 13.84,
+      "reason": "Volumetric egress asymmetry: 950,000 bytes uploaded vs 3,500 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
       "idx": 27,
@@ -381,8 +381,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 12.02,
-      "reason": "Heavy outbound egress transfer (1,500,000 bytes) indicating data exfiltration (T1048 Exfiltration)"
+      "latency_ms": 12.44,
+      "reason": "Volumetric egress asymmetry: 1,500,000 bytes uploaded vs 2,800 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
       "idx": 28,
@@ -395,8 +395,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.12,
-      "reason": "Heavy outbound egress transfer (650,000 bytes) indicating data exfiltration (T1048 Exfiltration)"
+      "latency_ms": 11.42,
+      "reason": "Volumetric egress asymmetry: 650,000 bytes uploaded vs 4,200 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
       "idx": 29,
@@ -409,8 +409,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 9.49,
-      "reason": "Heavy outbound egress transfer (3,200,000 bytes) indicating data exfiltration (T1048 Exfiltration)"
+      "latency_ms": 13.85,
+      "reason": "Volumetric egress asymmetry: 3,200,000 bytes uploaded vs 5,100 downloaded indicating data exfiltration (T1048 / T1041 Exfiltration)"
     },
     {
       "idx": 30,
@@ -423,8 +423,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.63,
-      "reason": "Massive packet concentration (Peak in-degree 65, 800 flows) overwhelming target service (T1498/T1499 Impact)"
+      "latency_ms": 14.1,
+      "reason": "Target overwhelm detected: in-degree 65, 800 flows with non-responsive reciprocity 0.02 (T1498/T1499 Impact)"
     },
     {
       "idx": 31,
@@ -437,8 +437,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.52,
-      "reason": "Massive packet concentration (Peak in-degree 80, 1200 flows) overwhelming target service (T1498/T1499 Impact)"
+      "latency_ms": 13.87,
+      "reason": "Target overwhelm detected: in-degree 80, 1200 flows with non-responsive reciprocity 0.01 (T1498/T1499 Impact)"
     },
     {
       "idx": 32,
@@ -451,8 +451,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.17,
-      "reason": "Massive packet concentration (Peak in-degree 50, 650 flows) overwhelming target service (T1498/T1499 Impact)"
+      "latency_ms": 13.88,
+      "reason": "Target overwhelm detected: in-degree 50, 650 flows with non-responsive reciprocity 0.04 (T1498/T1499 Impact)"
     },
     {
       "idx": 33,
@@ -465,8 +465,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 11.27,
-      "reason": "Targeted perimeter ingress attack against exposed service port 80 (T1190 / T1110 Initial Access)"
+      "latency_ms": 10.82,
+      "reason": "Perimeter ingress attack targeting exposed service port 80 on 192.168.1.10 (T1190 / T1110 Initial Access)"
     },
     {
       "idx": 34,
@@ -479,8 +479,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.89,
-      "reason": "Internal East-West (LAN->LAN) administrative traversal targeting service port 445 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 11.2,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 445 (T1021 Remote Services / SMB / PsExec)"
     },
     {
       "idx": 35,
@@ -493,8 +493,8 @@
       "threat_passed": true,
       "stage_passed": true,
       "status": "PASS",
-      "latency_ms": 10.1,
-      "reason": "Internal East-West (LAN->LAN) administrative traversal targeting service port 389 (T1021 Remote Services / SMB / PsExec)"
+      "latency_ms": 12.52,
+      "reason": "Internal East-West (LAN->LAN) traversal targeting known service port 389 (T1021 Remote Services / SMB / PsExec)"
     }
   ]
 }

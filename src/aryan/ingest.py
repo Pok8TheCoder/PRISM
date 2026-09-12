@@ -10,12 +10,29 @@ Live/pcap 242-d is the same builder, not the same distribution as CIC-IDS-2018.
 
 from __future__ import annotations
 
+import ipaddress
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from src.aryan.constants import CICIDS_LABEL_TO_MITRE, MITRE_STAGES
+
+_PRIVATE_CACHE: dict[str, bool] = {}
+
+
+def _is_private_ip_fast(ip_str: str) -> bool:
+    """Fast amortized check if an IP string belongs to RFC 1918 private subnets."""
+    cached = _PRIVATE_CACHE.get(ip_str)
+    if cached is not None:
+        return cached
+    try:
+        res = ipaddress.ip_address(ip_str.strip()).is_private
+    except Exception:
+        res = False
+    _PRIVATE_CACHE[ip_str] = res
+    return res
+
 
 TARGET_DIM = 242
 WINDOW_SEC = 30.0
@@ -71,6 +88,51 @@ def _aggregate_window(window: pd.DataFrame) -> np.ndarray:
             break
     else:
         features.extend([0.0, 0.0])
+
+    # --- Graph Topology & Directional Invariants (Gen 10) ---
+    src_c = next((c for c in ["Src IP", "src_ip", "src", "src_ip_hash"] if c in window.columns), None)
+    dst_c = next((c for c in ["Dst IP", "dst_ip", "dst", "dst_ip_hash"] if c in window.columns), None)
+
+    # 1. Peak Out-Degree (Fan-Out) -> Detects S1 Reconnaissance
+    if src_c and len(window) > 0:
+        features.append(float(window[src_c].value_counts().max()))
+    else:
+        features.append(0.0)
+
+    # 2. Peak In-Degree (Target Concentration) -> Detects S2/S6 Focus
+    if dst_c and len(window) > 0:
+        features.append(float(window[dst_c].value_counts().max()))
+    else:
+        features.append(0.0)
+
+    # 3. Subnet Directionality Ratios
+    if src_c and dst_c and len(window) > 0:
+        src_priv = window[src_c].astype(str).map(_is_private_ip_fast)
+        dst_priv = window[dst_c].astype(str).map(_is_private_ip_fast)
+        total_flows = float(len(window))
+        features.append(float((~src_priv & dst_priv).sum()) / total_flows)  # WAN -> LAN (S2)
+        features.append(float((src_priv & dst_priv).sum()) / total_flows)   # LAN -> LAN (S3)
+        features.append(float((src_priv & ~dst_priv).sum()) / total_flows)  # LAN -> WAN (S4/S5)
+    else:
+        features.extend([0.0, 0.0, 0.0])
+
+    # 4. Graph Reciprocity Ratio (Response verification)
+    bwd_c = next(
+        (c for c in ["TotLen Bwd Pkts", "Total Length of Bwd Packets", "bwd_bytes", "Bwd Pkts/s"] if c in window.columns),
+        None,
+    )
+    if bwd_c and len(window) > 0:
+        features.append(float((pd.to_numeric(window[bwd_c], errors="coerce").fillna(0) > 0).sum()) / float(len(window)))
+    else:
+        features.append(0.0)
+
+    # 5. Bipartite Interaction Density
+    if src_c and dst_c and len(window) > 0:
+        n_src = max(window[src_c].nunique(), 1)
+        n_dst = max(window[dst_c].nunique(), 1)
+        features.append(float(len(window)) / float(n_src * n_dst))
+    else:
+        features.append(0.0)
 
     numeric_cols = [
         c for c in window.select_dtypes(include=[np.number]).columns
