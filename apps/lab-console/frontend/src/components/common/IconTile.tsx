@@ -22,18 +22,31 @@ const toneColor: Record<string, string> = {
   info: 'var(--badge-info)',
 }
 
-export function IconTile({ icon: Icon, tone = 'brand', size = 36 }: IconTileProps) {
+export function IconTile({
+  icon: Icon,
+  tone = 'brand',
+  size = 36,
+}: IconTileProps) {
+  const iconSize = Math.max(14, size * 0.46)
+
   return (
     <div
-      className="flex shrink-0 items-center justify-center rounded-xl border"
+      className="flex shrink-0 items-center justify-center rounded-lg border transition-colors duration-200"
       style={{
         width: size,
         height: size,
         background: toneBg[tone],
-        borderColor: tone === 'brand' ? 'var(--border)' : 'transparent',
+        borderColor:
+          tone === 'brand'
+            ? 'var(--border)'
+            : 'transparent',
       }}
     >
-      <Icon size={size * 0.52} color={toneColor[tone]} strokeWidth={2.25} />
+      <Icon
+        size={iconSize}
+        color={toneColor[tone]}
+        strokeWidth={2}
+      />
     </div>
   )
 }

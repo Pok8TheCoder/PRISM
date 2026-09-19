@@ -18,9 +18,19 @@ import { useDashboardData } from '../../hooks/useLabApi'
 
 export function DashboardPage() {
   const { data: d, source } = useDashboardData()
-  const runningCount = d.containers.filter((c) => c.status === 'running').length
-  const loadedModels = d.models.filter((m) => m.loaded).length
-  const latestP = d.metricsTimeseries[d.metricsTimeseries.length - 1]?.pAttack ?? 0
+
+  const runningCount = d.containers.filter(
+    (c) => c.status === 'running',
+  ).length
+
+  const loadedModels = d.models.filter(
+    (m) => m.loaded,
+  ).length
+
+  const latestP =
+    d.metricsTimeseries[
+      d.metricsTimeseries.length - 1
+    ]?.pAttack ?? 0
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -29,7 +39,8 @@ export function DashboardPage() {
         subtitle="Live network activity & background job insights"
         right={<ApiSourceBadge source={source} />}
       />
-      <div className="flex-1 overflow-y-auto p-6">
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 lg:px-6 lg:py-6">
         {/* KPI row */}
         <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricTile
@@ -40,14 +51,28 @@ export function DashboardPage() {
             icon={Boxes}
             tone="brand"
           />
+
           <MetricTile
             label="P(attack) now"
             value={`${(latestP * 100).toFixed(0)}%`}
-            delta={latestP > 0.5 ? 'elevated' : 'nominal'}
-            deltaTone={latestP > 0.5 ? 'error' : 'ok'}
+            delta={
+              latestP > 0.5
+                ? 'elevated'
+                : 'nominal'
+            }
+            deltaTone={
+              latestP > 0.5
+                ? 'error'
+                : 'ok'
+            }
             icon={ShieldAlert}
-            tone={latestP > 0.5 ? 'error' : 'ok'}
+            tone={
+              latestP > 0.5
+                ? 'error'
+                : 'ok'
+            }
           />
+
           <MetricTile
             label="Models loaded"
             value={`${loadedModels}/${d.models.length}`}
@@ -56,9 +81,14 @@ export function DashboardPage() {
             icon={BrainCircuit}
             tone="info"
           />
+
           <MetricTile
             label="GPU"
-            value={d.device.cuda ? `${d.device.vramGb} GB` : 'CPU only'}
+            value={
+              d.device.cuda
+                ? `${d.device.vramGb} GB`
+                : 'CPU only'
+            }
             delta={d.device.deviceName}
             deltaTone="ok"
             icon={Cpu}
@@ -66,21 +96,56 @@ export function DashboardPage() {
           />
         </div>
 
-        <div className="mb-5 grid gap-4 xl:grid-cols-3">
-          <StatCard title="Network activity" icon={Activity} tone="brand" className="xl:col-span-2">
-            <AreaChart data={d.metricsTimeseries} height={220} />
+        {/* Main monitoring section */}
+        <div className="mb-6 grid gap-4 xl:grid-cols-3">
+          {/* Primary monitoring panel */}
+          <StatCard
+            title="Network activity"
+            icon={Activity}
+            tone="brand"
+            className="xl:col-span-2"
+          >
+            <div className="pt-1">
+              <AreaChart
+                data={d.metricsTimeseries}
+                height={240}
+              />
+            </div>
           </StatCard>
 
-          <StatCard title="Protected networks" icon={Network} tone="info">
-            <ul className="space-y-2.5">
+          {/* Protected networks */}
+          <StatCard
+            title="Protected networks"
+            icon={Network}
+            tone="info"
+          >
+            <ul className="divide-y divide-[var(--border)]">
               {d.networks.map((n) => (
-                <li key={n.name} className="flex items-center justify-between text-sm">
-                  <div>
-                    <p className="font-medium text-[var(--text-primary)]">{n.name}</p>
-                    <p className="font-mono text-xs text-[var(--text-muted)]">{n.cidr}</p>
+                <li
+                  key={n.name}
+                  className="flex items-center justify-between gap-3 py-3 first:pt-1 last:pb-1"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                      {n.name}
+                    </p>
+
+                    <p className="mt-0.5 font-mono text-[11px] text-[var(--text-muted)]">
+                      {n.cidr}
+                    </p>
                   </div>
-                  <Badge tone={n.protected ? 'ok' : 'neutral'} dot>
-                    {n.protected ? 'protected' : 'unmonitored'}
+
+                  <Badge
+                    tone={
+                      n.protected
+                        ? 'ok'
+                        : 'neutral'
+                    }
+                    dot
+                  >
+                    {n.protected
+                      ? 'protected'
+                      : 'unmonitored'}
                   </Badge>
                 </li>
               ))}
@@ -88,14 +153,45 @@ export function DashboardPage() {
           </StatCard>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard title="Active containers" icon={Boxes} tone="brand">
-            <ul className="space-y-2.5">
+        {/* Secondary system overview */}
+        <div className="mb-3 flex items-center justify-between px-1">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+              System overview
+            </p>
+
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              Runtime, training, model and dataset status
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {/* Active containers */}
+          <StatCard
+            title="Active containers"
+            icon={Boxes}
+            tone="brand"
+            className="rounded-lg bg-[var(--bg-surface)]/50 shadow-none hover:-translate-y-0 hover:shadow-none"
+          >
+            <ul className="divide-y divide-[var(--border)]">
               {d.containers.map((c) => (
-                <li key={c.name} className="flex items-center justify-between text-sm">
-                  <span className="truncate text-[var(--text-secondary)]">{c.name}</span>
+                <li
+                  key={c.name}
+                  className="flex items-center justify-between gap-3 py-2.5 first:pt-1 last:pb-1"
+                >
+                  <span className="truncate text-sm text-[var(--text-secondary)]">
+                    {c.name}
+                  </span>
+
                   <Badge
-                    tone={c.status === 'running' ? 'ok' : c.status === 'error' ? 'error' : 'neutral'}
+                    tone={
+                      c.status === 'running'
+                        ? 'ok'
+                        : c.status === 'error'
+                          ? 'error'
+                          : 'neutral'
+                    }
                     dot
                   >
                     {c.status}
@@ -105,46 +201,97 @@ export function DashboardPage() {
             </ul>
           </StatCard>
 
-          <StatCard title="Training / lab-adapt" icon={GraduationCap} tone={d.training.active ? 'warn' : 'ok'}>
+          {/* Training */}
+          <StatCard
+            title="Training / lab-adapt"
+            icon={GraduationCap}
+            tone={
+              d.training.active
+                ? 'warn'
+                : 'ok'
+            }
+            className="rounded-lg bg-[var(--bg-surface)]/50 shadow-none hover:-translate-y-0 hover:shadow-none"
+          >
             {d.training.active ? (
-              <div>
+              <div className="space-y-3">
                 <Badge tone="warn" dot>
                   running
                 </Badge>
-                <p className="mt-2 text-sm text-[var(--text-secondary)]">{d.training.job}</p>
+
+                <p className="text-sm leading-5 text-[var(--text-secondary)]">
+                  {d.training.job}
+                </p>
               </div>
             ) : (
-              <div>
+              <div className="space-y-3">
                 <Badge tone="ok" dot>
                   idle
                 </Badge>
-                <p className="mt-2 text-sm text-[var(--text-muted)]">{d.training.message}</p>
+
+                <p className="text-sm leading-5 text-[var(--text-muted)]">
+                  {d.training.message}
+                </p>
               </div>
             )}
           </StatCard>
 
-          <StatCard title="Models" icon={BrainCircuit} tone="info">
-            <ul className="space-y-2.5">
+          {/* Models */}
+          <StatCard
+            title="Models"
+            icon={BrainCircuit}
+            tone="info"
+            className="rounded-lg bg-[var(--bg-surface)]/50 shadow-none hover:-translate-y-0 hover:shadow-none"
+          >
+            <ul className="divide-y divide-[var(--border)]">
               {d.models.map((m) => (
-                <li key={m.id} className="flex items-center justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">
-                    {m.name} <span className="text-[var(--text-muted)]">{m.version}</span>
+                <li
+                  key={m.id}
+                  className="flex items-center justify-between gap-3 py-2.5 first:pt-1 last:pb-1"
+                >
+                  <span className="truncate text-sm text-[var(--text-secondary)]">
+                    {m.name}{' '}
+                    <span className="text-[var(--text-muted)]">
+                      {m.version}
+                    </span>
                   </span>
-                  <Badge tone={m.loaded ? 'ok' : 'neutral'} dot>
-                    {m.loaded ? 'loaded' : 'idle'}
+
+                  <Badge
+                    tone={
+                      m.loaded
+                        ? 'ok'
+                        : 'neutral'
+                    }
+                    dot
+                  >
+                    {m.loaded
+                      ? 'loaded'
+                      : 'idle'}
                   </Badge>
                 </li>
               ))}
             </ul>
           </StatCard>
 
-          <StatCard title="Datasets" icon={Database} tone="brand">
-            <ul className="space-y-3">
+          {/* Datasets */}
+          <StatCard
+            title="Datasets"
+            icon={Database}
+            tone="brand"
+            className="rounded-lg bg-[var(--bg-surface)]/50 shadow-none hover:-translate-y-0 hover:shadow-none"
+          >
+            <ul className="divide-y divide-[var(--border)]">
               {d.datasets.map((ds) => (
-                <li key={ds.name} className="text-sm">
-                  <p className="font-medium text-[var(--text-primary)]">{ds.name}</p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {ds.samples?.toLocaleString()} samples · {ds.sizeMb} MB
+                <li
+                  key={ds.name}
+                  className="py-2.5 first:pt-1 last:pb-1"
+                >
+                  <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                    {ds.name}
+                  </p>
+
+                  <p className="mt-1 text-[11px] text-[var(--text-muted)]">
+                    {ds.samples?.toLocaleString()}{' '}
+                    samples · {ds.sizeMb} MB
                   </p>
                 </li>
               ))}

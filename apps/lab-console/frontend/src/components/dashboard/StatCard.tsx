@@ -12,22 +12,42 @@ interface StatCardProps {
   action?: ReactNode
 }
 
-export function StatCard({ title, icon, tone = 'brand', children, className, action }: StatCardProps) {
+export function StatCard({
+  title,
+  icon,
+  tone = 'brand',
+  children,
+  className,
+  action,
+}: StatCardProps) {
   return (
     <div
       className={clsx(
-        'glass-panel animate-fade-up rounded-2xl p-5 transition-shadow duration-300 hover:shadow-[var(--shadow-glow)]',
+        'glass-panel animate-fade-up rounded-xl p-4 md:p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)]',
         className,
       )}
     >
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          {icon && <IconTile icon={icon} tone={tone} size={32} />}
-          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{title}</h3>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {icon && (
+            <IconTile
+              icon={icon}
+              tone={tone}
+              size={32}
+            />
+          )}
+
+          <h3 className="truncate text-[13px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            {title}
+          </h3>
         </div>
+
         {action}
       </div>
-      {children}
+
+      <div className="min-w-0">
+        {children}
+      </div>
     </div>
   )
 }
