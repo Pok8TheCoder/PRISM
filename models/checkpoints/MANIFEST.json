@@ -1,0 +1,164 @@
+{
+  "updated_at": "2026-09-29T16:13:00.050706+00:00",
+  "checkpoints": [
+    {
+      "file": "hx_c_v4_w5s.pt",
+      "description": "HX-C v4 causal classifier (primary)",
+      "train": "cd Automode && python train/build_hx_bulk_mix.py && python train/train_hx_c_v4.py",
+      "bytes": 47847843,
+      "sha256": "2d2fa2aa35fab6d02aa7df1de114f19400594b2684298f52c8ef5fd4fa22f99b",
+      "metrics": {
+        "fp": 0.37817258883248733,
+        "score": 0.2183115610663321,
+        "epoch": 14,
+        "fp_rate": 0.37817258883248733,
+        "recall": 0.9697858609562922,
+        "recon_acc": 0.13611615245009073,
+        "lateral_acc": 0.16871455576559546,
+        "recon_n": 2755,
+        "lateral_n": 2116
+      }
+    },
+    {
+      "file": "hx_c_v3_w5s.pt",
+      "description": "HX-C v3",
+      "train": "cd Automode && python train/train_hx_c_v3.py",
+      "bytes": 47847907,
+      "sha256": "fc7700ac41521a1ad917dd314308a9f189103896741b5b2236d9ba236cc895bb",
+      "metrics": {
+        "fp": 0.024757804090419805,
+        "score": 2.1607697697030783,
+        "epoch": 22,
+        "train_recall": 0.971319871232075,
+        "recon_acc": 0.9674289674289674,
+        "lateral_acc": 0.27421494913754973
+      }
+    },
+    {
+      "file": "hx_c_v2_w5s.pt",
+      "description": "HX-C v2",
+      "train": "cd Automode && python train/train_hx_c_v2.py",
+      "bytes": 47847907,
+      "sha256": "df581d9f18909c6407f5c2dbf993683b1fdd684e52013cf7dbb1460ebdadf0bd",
+      "metrics": {
+        "fp": 0.022604951560818085,
+        "score": 1.8499254398095746,
+        "epoch": 23,
+        "train_recall": 0.9125799573560768,
+        "recon_acc": 0.9724137931034482,
+        "lateral_acc": 0.010568031704095112
+      }
+    },
+    {
+      "file": "hx_c_w5s.pt",
+      "description": "HX-C v1 causal",
+      "train": "cd Automode && python train/train_hx_c.py",
+      "bytes": 15231885,
+      "sha256": "e8efcb3fae2c576759d147dc15b23456912a4bea0c188506c111fd016d05e48a",
+      "metrics": {
+        "fp": 0.008611410118406888,
+        "rec": 0.9103815439219166,
+        "epoch": 9
+      }
+    },
+    {
+      "file": "hx_w5s.pt",
+      "description": "HX v1 Shaun-wrap",
+      "train": "cd Automode && python train/train_hx.py",
+      "bytes": 10988385,
+      "sha256": "df07dc71521c5f74fe408cd1f18fc7835204529172a619f4273fef80e607958d",
+      "metrics": {
+        "fp": 0.0010741138560687433,
+        "rec": 0.8877128393925449,
+        "epoch": 6
+      }
+    },
+    {
+      "file": "shaun_branch_fairfit.pt",
+      "description": "Shaun fair-fit branch",
+      "train": "cd Automode && python train/finetune_shaun_quiet_lab.py",
+      "bytes": 10842335,
+      "sha256": "86d9b552709429f8464b88e7e75f5d807f1d8dd356a2095fbe61d49f93cd005b",
+      "metrics": {
+        "path": "D:\\Cursor\\Automode\\train\\checkpoints\\shaun_branch_fairfit.pt",
+        "epochs": 6
+      }
+    },
+    {
+      "file": "shaun_quietlab_e6.pt",
+      "description": "Shaun quiet-lab e6",
+      "train": "cd Automode && python train/finetune_shaun_quiet_lab.py",
+      "bytes": 10842156,
+      "sha256": "6cf9ec429f572ac972f0a0bfa6537654596984631e143747fa2b8a4b622d9322",
+      "metrics": {
+        "path": "D:\\Cursor\\Automode\\train\\checkpoints\\shaun_quietlab_e6.pt",
+        "epochs": 6
+      }
+    },
+    {
+      "file": "ary_5sv01.pt",
+      "description": "ARY 5s v01",
+      "train": "PRISM training scripts",
+      "bytes": 15234845,
+      "sha256": "3844b2632849bb06bb11578b89d1547a261d0d3d399aeca3a8d43672dd91bc64",
+      "metrics": {
+        "model_name": "ARY-5sV01",
+        "checkpoint": "models\\checkpoints\\ary_5sv01.pt",
+        "alias": "models\\checkpoints\\ary5s_v01.pt",
+        "tag": "ARY-5sV01",
+        "splits_dir": "data\\aryan_splits_5s",
+        "best_epoch": 120,
+        "best_val_score": 1.3333271546003655,
+        "train_sec": 621.7,
+        "cfg": {
+          "seed": 42,
+          "batch_size": 64,
+          "epochs": 200,
+          "patience": 200,
+          "lr": 0.0002,
+          "weight_decay": 0.0001,
+          "grad_clip": 1.0,
+          "lambda_dynamics": 0.5,
+          "lambda_infiltration": 1.2,
+          "lambda_mitre": 1.0,
+          "lookback": 20
+        },
+        "test_binary_f1": 0.9846938775510204,
+        "test_binary_precision": 0.9747474747474747,
+        "test_binary_recall": 0.9948453608247423,
+        "test_binary_fpr": 0.0023946360153256703,
+        "test_mitre_f1_macro": 0.9632221450580403,
+        "test_val_score": 1.4663049500800405,
+        "test_dynamics_mse": 5.074760437011719,
+        "window_sec": 5,
+        "recipe": "ARY.01 origin/aryan @ 1ec06bc on data/aryan_splits_5s",
+        "description": "TemporalTransformerWorldModel trained on CIC-IDS-2018 5s windows"
+      }
+    },
+    {
+      "file": "ary5s_v01.pt",
+      "description": "ARY 5s v01 alt name",
+      "train": "PRISM training scripts",
+      "bytes": 15234845,
+      "sha256": "3844b2632849bb06bb11578b89d1547a261d0d3d399aeca3a8d43672dd91bc64",
+      "metrics": {}
+    },
+    {
+      "file": "aryan_world_model_best.pt",
+      "description": "ARY world model best",
+      "train": "PRISM / Aryan train pipeline",
+      "bytes": 45714126,
+      "sha256": "e7bcd4156da96ac94a7ff258f633e89742a9b5e70a96544dae87525ee73ccbb2",
+      "metrics": {}
+    },
+    {
+      "file": "xmt_world_model_best.pt",
+      "description": "XMT world model",
+      "train": "PRISM training scripts",
+      "bytes": 15243173,
+      "sha256": "c88b3587e81a5185a03e66989e1b9b24080d213ba85ef75d7ab6c7d80adb5ab2",
+      "metrics": {}
+    }
+  ],
+  "missing_sources": []
+}

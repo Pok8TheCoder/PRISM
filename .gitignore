@@ -16,10 +16,11 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 data/lab_events/
-models/checkpoints/*
-!models/checkpoints/.gitkeep
+# Versioned weights live in models/checkpoints/ (Git LFS) — see docs/MODELS.md
 *.pth
 *.pt
+!models/checkpoints/
+!models/checkpoints/**
 *.onnx
 *.parquet
 *.h5

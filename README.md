@@ -2,6 +2,8 @@
 
 **PRISM** is an AI-powered network attack forecasting platform leveraging **World Models** to move cyber defense from reactive intrusion detection to proactive, forward-looking attack prediction.
 
+**Install:** [docs/SETUP.md](docs/SETUP.md) · **Model checkpoints (HX-C, ARY, Shaun lab):** [docs/MODELS.md](docs/MODELS.md) — weights in `models/checkpoints/` via Git LFS (`git lfs install` then `git lfs pull`).
+
 Rather than classifying isolated network flows in hindsight, PRISM learns the temporal state-transition dynamics of computer networks $P(S_{t+1} \mid S_t)$, simulates potential future attack trajectories $K$-steps ahead, maps predicted behaviors to recognized **MITRE ATT&CK** stages, and provides interpretable decision support for defenders in Enterprise and Critical Information Infrastructure (CII) environments.
 
 ---

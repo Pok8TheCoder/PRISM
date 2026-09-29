@@ -1,0 +1,33 @@
+{
+  "model_name": "ARY-5sV01",
+  "checkpoint": "models\\checkpoints\\ary_5sv01.pt",
+  "alias": "models\\checkpoints\\ary5s_v01.pt",
+  "tag": "ARY-5sV01",
+  "splits_dir": "data\\aryan_splits_5s",
+  "best_epoch": 120,
+  "best_val_score": 1.3333271546003655,
+  "train_sec": 621.7,
+  "cfg": {
+    "seed": 42,
+    "batch_size": 64,
+    "epochs": 200,
+    "patience": 200,
+    "lr": 0.0002,
+    "weight_decay": 0.0001,
+    "grad_clip": 1.0,
+    "lambda_dynamics": 0.5,
+    "lambda_infiltration": 1.2,
+    "lambda_mitre": 1.0,
+    "lookback": 20
+  },
+  "test_binary_f1": 0.9846938775510204,
+  "test_binary_precision": 0.9747474747474747,
+  "test_binary_recall": 0.9948453608247423,
+  "test_binary_fpr": 0.0023946360153256703,
+  "test_mitre_f1_macro": 0.9632221450580403,
+  "test_val_score": 1.4663049500800405,
+  "test_dynamics_mse": 5.074760437011719,
+  "window_sec": 5,
+  "recipe": "ARY.01 origin/aryan @ 1ec06bc on data/aryan_splits_5s",
+  "description": "TemporalTransformerWorldModel trained on CIC-IDS-2018 5s windows"
+}

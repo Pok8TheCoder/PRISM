@@ -1,0 +1,32 @@
+{
+  "checkpoint": "D:\\Cursor\\PRISM\\models\\checkpoints\\ary_5sv02.pt",
+  "tag": "ARY-5sV02",
+  "splits_dir": "data/aryan_splits_5s_v02",
+  "best_epoch": 1,
+  "best_val_score": 1.3274434765441416,
+  "train_sec": 436.3,
+  "cfg": {
+    "seed": 42,
+    "batch_size": 64,
+    "epochs": 80,
+    "patience": 200,
+    "lr": 5e-05,
+    "weight_decay": 0.0001,
+    "grad_clip": 1.0,
+    "lambda_dynamics": 0.5,
+    "lambda_infiltration": 1.2,
+    "lambda_mitre": 1.0,
+    "lookback": 20
+  },
+  "test_binary_f1": 0.9872122762148338,
+  "test_binary_precision": 0.9796954314720813,
+  "test_binary_recall": 0.9948453608247423,
+  "test_binary_fpr": 0.0019157088122605363,
+  "test_mitre_f1_macro": 0.918171407265367,
+  "test_val_score": 1.4462979798475173,
+  "test_dynamics_mse": 5.230715274810791,
+  "model_name": "ARY-5sV02",
+  "window_sec": 5,
+  "init_from": "ARY-5sV01",
+  "recipe": "Fine-tune v01 on CIC 5s + all lab PCAPs (failed PCAPs x20 oversample)"
+}
